@@ -1,0 +1,94 @@
+import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+
+const ARTIST_NAV = [
+  { id: 'overview', icon: '📊', label: 'Overview', path: '/dashboard' },
+  { id: 'artworks', icon: '🎨', label: 'Artworks', path: '/dashboard/artworks' },
+  { id: 'orders', icon: '📦', label: 'Orders', path: '/dashboard/orders' },
+  { id: 'earnings', icon: '💰', label: 'Earnings', path: '/dashboard/earnings' },
+  { id: 'profile', icon: '👤', label: 'Profile', path: '/dashboard/profile' },
+];
+
+const CHARITY_NAV = [
+  { id: 'overview', icon: '📊', label: 'Overview', path: '/dashboard' },
+  { id: 'funders', icon: '🤝', label: 'Funders', path: '/dashboard/funders' },
+  { id: 'messages', icon: '✉️', label: 'Messages', path: '/dashboard/messages' },
+  { id: 'resources', icon: '📁', label: 'Resources', path: '/dashboard/resources' },
+];
+
+const ADMIN_NAV = [
+  { id: 'overview', icon: '📊', label: 'Overview', path: '/dashboard' },
+  { id: 'users', icon: '👥', label: 'Users', path: '/dashboard/users' },
+  { id: 'moderation', icon: '🔍', label: 'Moderation', path: '/dashboard/moderation' },
+];
+
+export default function DashboardShell({ children, title }) {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const [collapsed, setCollapsed] = useState(false);
+
+  const nav = user?.role === 'ARTIST' ? ARTIST_NAV
+    : user?.role === 'CHARITY' ? CHARITY_NAV
+    : user?.role === 'ADMIN' ? ADMIN_NAV
+    : [{ id: 'overview', icon: '📊', label: 'Overview', path: '/dashboard' }];
+
+  const roleLabel = user?.role === 'ARTIST' ? 'Artist Studio'
+    : user?.role === 'CHARITY' ? 'Charity Dashboard'
+    : user?.role === 'ADMIN' ? 'Admin Panel'
+    : 'Dashboard';
+
+  return (
+    <div style={{ display: 'flex', minHeight: 'calc(100vh - 68px)' }}>
+      {/* Sidebar */}
+      <div className="dash-sidebar" style={{ width: collapsed ? 68 : 248 }}>
+        <div style={{ padding: '18px 16px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          {!collapsed && <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)', letterSpacing: .5 }}>{roleLabel}</div>}
+          <button className="btn btn-g" style={{ padding: 4, fontSize: 14, color: 'var(--muted)' }} onClick={() => setCollapsed(c => !c)}>
+            {collapsed ? '→' : '←'}
+          </button>
+        </div>
+        <div style={{ padding: '4px 0' }}>
+          {nav.map(item => (
+            <div key={item.id} className={`sb-item${pathname === item.path ? ' on' : ''}`}
+              onClick={() => navigate(item.path)}
+              style={{ justifyContent: collapsed ? 'center' : 'flex-start', paddingLeft: collapsed ? 0 : 20 }}>
+              <span className="sb-icon">{item.icon}</span>
+              {!collapsed && <span>{item.label}</span>}
+            </div>
+          ))}
+        </div>
+        {!collapsed && (
+          <div style={{ padding: '16px 20px', marginTop: 'auto', borderTop: '1px solid var(--border)' }}>
+            <div style={{ fontSize: 12, fontWeight: 500, marginBottom: 2 }}>
+              {user?.artistProfile?.displayName || user?.charityProfile?.name || user?.firstName || 'User'}
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--muted)' }}>{user?.email}</div>
+            {user?.artistProfile?.verified && <div className="badge b-green" style={{ marginTop: 6, fontSize: 9 }}>✓ Verified</div>}
+          </div>
+        )}
+      </div>
+
+      {/* Main content */}
+      <div style={{ flex: 1, background: 'var(--base)', padding: '28px 36px 60px', overflow: 'auto' }}>
+        {title && <h1 className="display" style={{ fontSize: 32, marginBottom: 24 }}>{title}</h1>}
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// Stat card component
+export function StatCard({ icon, label, value, sub, color }) {
+  return (
+    <div className="card" style={{ padding: '20px 22px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'var(--muted)' }}>{label}</div>
+        <span style={{ fontSize: 20 }}>{icon}</span>
+      </div>
+      <div style={{ fontFamily: 'var(--fd)', fontSize: 30, fontWeight: 700, color: color || 'var(--accent)', lineHeight: 1 }}>{value}</div>
+      {sub && <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 6 }}>{sub}</div>}
+    </div>
+  );
+}

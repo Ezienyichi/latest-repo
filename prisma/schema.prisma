@@ -1,0 +1,271 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole    { BUYER ARTIST CHARITY ADMIN }
+enum ProductType { SIMPLE VARIABLE GROUPED VIRTUAL DOWNLOADABLE }
+enum ProductStatus { DRAFT ACTIVE SOLD SUSPENDED }
+enum ProductCategory { ARTWORK EBOOK MUSIC GRAPHIC ANIMATION }
+enum OrderStatus { PENDING PROCESSING SHIPPED DELIVERED CANCELLED REFUNDED }
+enum MessageType { APPRECIATION NEWSLETTER RESOURCE_SHARE }
+enum ResourceVisibility { PUBLIC FUNDERS_ONLY }
+enum FunderSource { NEWSLETTER DONATION MANUAL }
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  passwordHash     String?
+  emailVerified    DateTime?
+  verificationCode String?
+  role             UserRole  @default(BUYER)
+  firstName        String?
+  lastName         String?
+  avatarUrl        String?
+  phone            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  artistProfile    ArtistProfile?
+  charityProfile   CharityProfile?
+  orders           Order[]
+  reviews          Review[]
+  wishlistItems    WishlistItem[]
+  funderRelations  FunderRelationship[]
+  notifications    Notification[]
+}
+
+model ArtistProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName     String
+  avatarUrl       String?
+  artistStatement String?  @db.Text
+  biography       String?  @db.Text
+  location        String?
+  socialLinks     Json?
+  exhibitions     Json[]   @default([])
+  awards          Json[]   @default([])
+  verified        Boolean  @default(false)
+  sdgIds          Int[]    @default([])
+  totalSold       Decimal  @default(0) @db.Decimal(12,2)
+  artworkCount    Int      @default(0)
+  joinedYear      Int?
+  products        Product[]
+  partnerships    ArtistCharityPartnership[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model CharityProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  logo            String?
+  mission         String?  @db.Text
+  registrationNo  String?
+  sdgIds          Int[]    @default([])
+  verified        Boolean  @default(false)
+  raised          Decimal  @default(0) @db.Decimal(12,2)
+  target          Decimal  @default(0) @db.Decimal(12,2)
+  funderCount     Int      @default(0)
+  websiteUrl      String?
+  products        Product[]
+  partnerships    ArtistCharityPartnership[]
+  messages        CharityMessage[]
+  templates       MessageTemplate[]
+  resources       CharityResource[]
+  funderRelations FunderRelationship[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ArtistCharityPartnership {
+  id        String         @id @default(cuid())
+  artistId  String
+  charityId String
+  artist    ArtistProfile  @relation(fields: [artistId], references: [id])
+  charity   CharityProfile @relation(fields: [charityId], references: [id])
+  status    String         @default("active")
+  createdAt DateTime       @default(now())
+  @@unique([artistId, charityId])
+}
+
+model Product {
+  id              String          @id @default(cuid())
+  artistId        String
+  artist          ArtistProfile   @relation(fields: [artistId], references: [id])
+  charityId       String?
+  charity         CharityProfile? @relation(fields: [charityId], references: [id])
+  title           String
+  slug            String          @unique
+  description     String?         @db.Text
+  productType     ProductType     @default(SIMPLE)
+  category        ProductCategory @default(ARTWORK)
+  basePrice       Decimal         @db.Decimal(10,2)
+  comparePrice    Decimal?        @db.Decimal(10,2)
+  status          ProductStatus   @default(DRAFT)
+  sku             String?         @unique
+  stockQuantity   Int?
+  medium          String?
+  year            Int?
+  dimensions      String?
+  fileUrl         String?
+  fileFormat      String?
+  previewUrl      String?
+  pages           Int?
+  certificateUrl  String?
+  autoCertificate Boolean         @default(false)
+  certificateId   String?         @unique
+  sdgIds          Int[]           @default([])
+  images          Json[]          @default([])
+  gallery         Json?
+  videoUrl        String?
+  tags            String[]        @default([])
+  featured        Boolean         @default(false)
+  upsellIds       String[]        @default([])
+  crossSellIds    String[]        @default([])
+  variations      ProductVariation[]
+  addons          ProductAddon[]
+  orderItems      OrderItem[]
+  reviews         Review[]
+  wishlistItems   WishlistItem[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model ProductVariation {
+  id                   String  @id @default(cuid())
+  productId            String
+  product              Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  attributeCombination Json
+  price                Decimal @db.Decimal(10,2)
+  sku                  String?
+  stockQuantity        Int?
+  imageUrl             String?
+  orderItems           OrderItem[]
+}
+
+model ProductAddon {
+  id            String  @id @default(cuid())
+  productId     String
+  product       Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  fieldType     String
+  label         String
+  required      Boolean @default(false)
+  options       Json?
+  priceModifier Decimal? @db.Decimal(10,2)
+  sortOrder     Int     @default(0)
+}
+
+model Order {
+  id                    String      @id @default(cuid())
+  buyerId               String
+  buyer                 User        @relation(fields: [buyerId], references: [id])
+  status                OrderStatus @default(PENDING)
+  totalAmount           Decimal     @db.Decimal(10,2)
+  shippingAmount        Decimal     @default(0) @db.Decimal(10,2)
+  platformFee           Decimal     @default(0) @db.Decimal(10,2)
+  charitySplit          Decimal     @default(0) @db.Decimal(10,2)
+  shippingAddress       Json?
+  stripePaymentIntentId String?
+  items                 OrderItem[]
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+}
+
+model OrderItem {
+  id              String            @id @default(cuid())
+  orderId         String
+  order           Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product           @relation(fields: [productId], references: [id])
+  variationId     String?
+  variation       ProductVariation? @relation(fields: [variationId], references: [id])
+  quantity        Int
+  unitPrice       Decimal           @db.Decimal(10,2)
+  addonSelections Json?
+  charitySplitAmt Decimal           @default(0) @db.Decimal(10,2)
+  platformFeeAmt  Decimal           @default(0) @db.Decimal(10,2)
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  rating    Int
+  text      String?  @db.Text
+  createdAt DateTime @default(now())
+}
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  @@unique([userId, productId])
+}
+
+model FunderRelationship {
+  id        String         @id @default(cuid())
+  userId    String
+  user      User           @relation(fields: [userId], references: [id])
+  charityId String
+  charity   CharityProfile @relation(fields: [charityId], references: [id])
+  source    FunderSource   @default(NEWSLETTER)
+  optedInAt DateTime       @default(now())
+  @@unique([userId, charityId])
+}
+
+model CharityMessage {
+  id             String         @id @default(cuid())
+  charityId      String
+  charity        CharityProfile @relation(fields: [charityId], references: [id])
+  messageType    MessageType
+  subject        String
+  bodyHtml       String         @db.Text
+  sentAt         DateTime       @default(now())
+  recipientCount Int            @default(0)
+}
+
+model MessageTemplate {
+  id        String         @id @default(cuid())
+  charityId String
+  charity   CharityProfile @relation(fields: [charityId], references: [id])
+  name      String
+  subject   String
+  bodyHtml  String         @db.Text
+  isSystem  Boolean        @default(false)
+  createdAt DateTime       @default(now())
+}
+
+model CharityResource {
+  id         String             @id @default(cuid())
+  charityId  String
+  charity    CharityProfile     @relation(fields: [charityId], references: [id])
+  title      String
+  fileUrl    String
+  fileType   String
+  visibility ResourceVisibility @default(PUBLIC)
+  uploadedAt DateTime           @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  icon      String?
+  title     String
+  body      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

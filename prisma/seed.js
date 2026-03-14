@@ -1,0 +1,330 @@
+// prisma/seed.js — Seeds all demo data from the original JSX
+import 'dotenv/config';
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+
+const prisma = new PrismaClient();
+const hash = (p) => bcrypt.hashSync(p, 12);
+
+async function main() {
+  console.log('🌱 Seeding Change Art Gallery...');
+
+  // ── USERS ─────────────────────────────────────────────────
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'admin@changeartgallery.com' },
+    update: {},
+    create: { email: 'admin@changeartgallery.com', passwordHash: hash('Admin123!'), role: 'ADMIN', firstName: 'Platform', lastName: 'Admin', emailVerified: new Date() },
+  });
+
+  const buyerUser = await prisma.user.upsert({
+    where: { email: 'buyer@demo.com' },
+    update: {},
+    create: { email: 'buyer@demo.com', passwordHash: hash('Buyer123!'), role: 'BUYER', firstName: 'Sarah', lastName: 'Mitchell', emailVerified: new Date() },
+  });
+
+  // Artist users
+  const artistUsers = [];
+  const artistData = [
+    { email: 'amara@demo.com', first: 'Amara', last: 'Diallo' },
+    { email: 'kofi@demo.com', first: 'Kofi', last: 'Mensah' },
+    { email: 'yemi@demo.com', first: 'Yemi', last: 'Adebayo' },
+    { email: 'nia@demo.com', first: 'Nia', last: 'Hassan' },
+    { email: 'elena@demo.com', first: 'Elena', last: 'Okonkwo' },
+    // Digital creators
+    { email: 'zara@demo.com', first: 'Zara', last: 'Ogundimu' },
+    { email: 'adeola@demo.com', first: 'Adeola', last: 'Beats' },
+    { email: 'studio.osei@demo.com', first: 'Kwabena', last: 'Osei' },
+    { email: 'fatima@demo.com', first: 'Fatima', last: 'Al-Rashid' },
+    { email: 'chukwuemeka@demo.com', first: 'Chukwuemeka', last: 'Sound' },
+    { email: 'priya@demo.com', first: 'Priya', last: 'Rajan' },
+  ];
+  for (const a of artistData) {
+    const u = await prisma.user.upsert({
+      where: { email: a.email },
+      update: {},
+      create: { email: a.email, passwordHash: hash('Artist123!'), role: 'ARTIST', firstName: a.first, lastName: a.last, emailVerified: new Date() },
+    });
+    artistUsers.push(u);
+  }
+
+  // Charity users
+  const charityUsers = [];
+  const charityData = [
+    { email: 'wateraid@demo.com', first: 'Water', last: 'Aid' },
+    { email: 'greenpeace@demo.com', first: 'Green', last: 'Peace' },
+    { email: 'camfed@demo.com', first: 'CAM', last: 'FED' },
+    { email: 'oxfam@demo.com', first: 'Ox', last: 'Fam' },
+  ];
+  for (const c of charityData) {
+    const u = await prisma.user.upsert({
+      where: { email: c.email },
+      update: {},
+      create: { email: c.email, passwordHash: hash('Charity123!'), role: 'CHARITY', firstName: c.first, lastName: c.last, emailVerified: new Date() },
+    });
+    charityUsers.push(u);
+  }
+
+  // ── ARTIST PROFILES ───────────────────────────────────────
+  const profiles = [
+    { userId: artistUsers[0].id, displayName: 'Amara Diallo', location: 'Dakar, Senegal · Paris, France',
+      avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=90',
+      artistStatement: 'My practice explores the intersection of ancestral memory and ecological urgency.',
+      biography: 'Amara Diallo (b. 1989, Dakar) is a multidisciplinary artist. MFA from École des Beaux-Arts, Paris. Partnership with WaterAid has channelled over £34,000 to clean water projects.',
+      socialLinks: { instagram: '@amaradiallo_art', website: 'amaradiallo.art' },
+      exhibitions: [{ yr: '2025', title: 'Roots & Routes', venue: 'Tate Modern, London' }, { yr: '2024', title: 'Water Memory', venue: 'Palais de Tokyo, Paris' }],
+      awards: [{ yr: '2025', title: 'Frieze Artist of the Year', org: 'Frieze' }],
+      sdgIds: [6, 14, 11], verified: true, joinedYear: 2023, totalSold: 34200, artworkCount: 18 },
+    { userId: artistUsers[1].id, displayName: 'Kofi Mensah', location: 'Accra, Ghana · London, UK',
+      avatarUrl: 'https://images.unsplash.com/photo-1463453091185-61582044d556?w=600&q=90',
+      artistStatement: 'I use the detritus of industrial civilisation as both material and metaphor.',
+      biography: 'Kofi Mensah (b. 1987, Accra) works in mixed media and installation. MFA from the Slade School of Fine Art.',
+      socialLinks: { instagram: '@kofimensah', website: 'kofimensah.com' },
+      exhibitions: [{ yr: '2025', title: 'Anthropocene Dreams', venue: 'Serpentine Gallery' }],
+      awards: [{ yr: '2025', title: 'Turner Prize Nominee', org: 'Tate Britain' }],
+      sdgIds: [13, 15, 9], verified: true, joinedYear: 2023, totalSold: 28500, artworkCount: 12 },
+    { userId: artistUsers[2].id, displayName: 'Yemi Adebayo', location: 'Lagos, Nigeria',
+      avatarUrl: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&q=90',
+      artistStatement: 'The watercolour medium is a form of trust. You cannot fully control water.',
+      biography: 'Yemi Adebayo (b. 1993, Lagos) is a self-taught watercolourist. Her Futures series raised over £18,000 for CAMFED.',
+      socialLinks: { instagram: '@yemiadebayoart' },
+      sdgIds: [4, 5, 10], verified: false, joinedYear: 2024, totalSold: 18000, artworkCount: 8 },
+    { userId: artistUsers[3].id, displayName: 'Nia Hassan', location: 'Nairobi, Kenya · Toronto, Canada',
+      avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=600&q=90',
+      artistStatement: 'Digital art democratises creation — any screen is a canvas.',
+      biography: 'Nia Hassan (b. 1995, Nairobi) is a digital artist and creative technologist. Exhibited at Art Basel Miami and Design Museum London.',
+      socialLinks: { instagram: '@niahassan.art', website: 'niahassan.com' },
+      sdgIds: [3, 5, 10], verified: true, joinedYear: 2024, totalSold: 12300, artworkCount: 6 },
+    { userId: artistUsers[4].id, displayName: 'Elena Okonkwo', location: 'Lagos, Nigeria · London, UK',
+      avatarUrl: 'https://images.unsplash.com/photo-1522529599102-193c0d76b5b6?w=600&q=90',
+      artistStatement: 'Every baobab I paint is a portrait of endurance.',
+      biography: 'Elena Okonkwo (b. 1991, Lagos) MFA from the Slade School of Fine Art. Turner Prize Winner 2026.',
+      socialLinks: { instagram: '@elenaokonkwo', website: 'elenaokonkwo.com' },
+      sdgIds: [15, 1, 13], verified: true, joinedYear: 2023, totalSold: 42000, artworkCount: 22 },
+    // Digital creators
+    { userId: artistUsers[5].id, displayName: 'Zara Ogundimu', location: 'Lagos, Nigeria',
+      avatarUrl: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=600&q=90',
+      artistStatement: 'I write stories that centre African childhoods and futures.',
+      biography: 'Zara Ogundimu (b. 1994, Lagos) is a writer and illustrator. Debut novel shortlisted for the Baileys Women\'s Prize.',
+      sdgIds: [4, 10, 5], verified: true, joinedYear: 2024, totalSold: 8400, artworkCount: 6 },
+    { userId: artistUsers[6].id, displayName: 'Adeola Beats', location: 'Accra, Ghana · Berlin, Germany',
+      avatarUrl: 'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=600&q=90',
+      artistStatement: 'Sound is memory made physical.',
+      biography: 'Adeola (b. 1991, Accra) is a producer and multi-instrumentalist. Mercury Prize Nominee.',
+      sdgIds: [11, 3, 10], verified: true, joinedYear: 2023, totalSold: 22000, artworkCount: 14 },
+    { userId: artistUsers[7].id, displayName: 'Studio Osei', location: 'Kumasi, Ghana',
+      avatarUrl: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=600&q=90',
+      artistStatement: 'Design is a language rooted in Kente geometry and Adinkra symbolism.',
+      biography: 'Studio Osei is the practice of Kwabena Osei (b. 1992, Kumasi). Pan-African design assets used in 40+ countries.',
+      sdgIds: [9, 11, 8], verified: true, joinedYear: 2024, totalSold: 15600, artworkCount: 28 },
+    { userId: artistUsers[8].id, displayName: 'Fatima Al-Rashid', location: 'Khartoum, Sudan · London, UK',
+      avatarUrl: 'https://images.unsplash.com/photo-1548449112-96a38a643324?w=600&q=90',
+      artistStatement: 'Animation lets me tell stories too fragile for live action.',
+      biography: 'Fatima Al-Rashid (b. 1997, Khartoum) is an animator. \'Before the Rains\' won Sundance 2026 Best Animated Short.',
+      sdgIds: [16, 10, 4], verified: true, joinedYear: 2024, totalSold: 9800, artworkCount: 8 },
+    { userId: artistUsers[9].id, displayName: 'Chukwuemeka Sound', location: 'Enugu, Nigeria',
+      avatarUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=600&q=90',
+      artistStatement: 'I make music for ceremonies that haven\'t happened yet.',
+      biography: 'Chukwuemeka (b. 1999, Enugu) is a self-taught composer. Igbo highlife meets ambient and post-classical.',
+      sdgIds: [3, 1, 10], verified: false, joinedYear: 2025, totalSold: 4200, artworkCount: 7 },
+    { userId: artistUsers[10].id, displayName: 'Priya Rajan Studio', location: 'Chennai, India · Manchester, UK',
+      avatarUrl: 'https://images.unsplash.com/photo-1589156229687-496a31ad1d1f?w=600&q=90',
+      artistStatement: 'I create tools for other creators.',
+      biography: 'Priya Rajan (b. 1993, Chennai) produces open-licence assets for educators and NGOs.',
+      sdgIds: [5, 3, 4], verified: true, joinedYear: 2024, totalSold: 11200, artworkCount: 19 },
+  ];
+
+  const artistProfiles = [];
+  for (const p of profiles) {
+    const existing = await prisma.artistProfile.findUnique({ where: { userId: p.userId } });
+    if (existing) { artistProfiles.push(existing); continue; }
+    const created = await prisma.artistProfile.create({ data: p });
+    artistProfiles.push(created);
+  }
+
+  // ── CHARITY PROFILES ──────────────────────────────────────
+  const charityProfiles = [];
+  const charities = [
+    { userId: charityUsers[0].id, name: 'WaterAid UK', logo: '💧', mission: 'WaterAid is determined to make clean water, decent toilets and good hygiene normal for everyone, everywhere within a generation.', registrationNo: '288701', sdgIds: [6, 3, 1], verified: true, raised: 42000, target: 100000, funderCount: 1284 },
+    { userId: charityUsers[1].id, name: 'Greenpeace Africa', logo: '🌿', mission: 'Greenpeace Africa campaigns for environmental protection and the rights of African communities to a healthy, sustainable future.', registrationNo: 'GP-AF-2019', sdgIds: [13, 15, 14], verified: true, raised: 28500, target: 75000, funderCount: 876 },
+    { userId: charityUsers[2].id, name: 'CAMFED', logo: '📚', mission: 'CAMFED supports girls to go to school and succeed, and young women to establish livelihoods and become leaders.', registrationNo: '1029542', sdgIds: [4, 5, 10], verified: true, raised: 18000, target: 50000, funderCount: 632 },
+    { userId: charityUsers[3].id, name: 'Oxfam', logo: '🌍', mission: 'Oxfam is a global organisation working to end the injustice of poverty.', registrationNo: '202918', sdgIds: [1, 2, 10], verified: true, raised: 95000, target: 200000, funderCount: 2140 },
+  ];
+
+  for (const c of charities) {
+    const existing = await prisma.charityProfile.findUnique({ where: { userId: c.userId } });
+    if (existing) { charityProfiles.push(existing); continue; }
+    const created = await prisma.charityProfile.create({ data: c });
+    charityProfiles.push(created);
+  }
+
+  // ── ARTWORKS ──────────────────────────────────────────────
+  const artworks = [
+    { artistIdx: 0, charityIdx: 0, title: 'Silent River', slug: 'silent-river', category: 'ARTWORK', basePrice: 950, medium: 'Oil on Canvas', year: 2025, sdgIds: [6, 14], sku: 'AD-SR-001', stockQuantity: 1, productType: 'SIMPLE', autoCertificate: true, certificateId: 'AFC-2025-A1K9M', featured: true, tags: ['landscape', 'water', 'Africa'],
+      description: 'A meditation on water\'s quiet power and the communities that depend on it. Through layered azure and viridian pigments, Diallo captures the life-giving force of rivers in West Africa.',
+      images: [{ url: 'https://images.unsplash.com/photo-1541367777708-7905fe3296c0?w=1200&q=85', label: 'Front View' }, { url: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=1200&q=85', label: 'Brushwork Detail' }],
+      gallery: { video: 'mhBiUK70XqE', images: [{ url: 'https://images.unsplash.com/photo-1541367777708-7905fe3296c0?w=1200&q=85', label: 'Front View' }, { url: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=1200&q=85', label: 'Brushwork Detail' }, { url: 'https://images.unsplash.com/photo-1541544537156-7627a7a4aa1c?w=1200&q=85', label: 'Project Impact — WaterAid' }] } },
+    { artistIdx: 1, charityIdx: 1, title: 'Ember Fields', slug: 'ember-fields', category: 'ARTWORK', basePrice: 1400, comparePrice: 1600, medium: 'Mixed Media', year: 2025, sdgIds: [13, 15], sku: 'KM-EF-002', stockQuantity: 1, productType: 'SIMPLE', autoCertificate: true, certificateId: 'AFC-2025-B2L4N', featured: true, tags: ['climate', 'Africa'],
+      description: 'Mensah layers acrylic, charcoal and reclaimed industrial materials to conjure the scorched earth of a warming planet.',
+      images: [{ url: 'https://images.unsplash.com/photo-1549490349-8643362247b5?w=1200&q=85', label: 'Front View' }],
+      gallery: { video: 'v69GKvREFd8', images: [{ url: 'https://images.unsplash.com/photo-1549490349-8643362247b5?w=1200&q=85', label: 'Front View' }, { url: 'https://images.unsplash.com/photo-1578926288207-a90a103f3c53?w=1200&q=85', label: 'Mixed Media Detail' }] } },
+    { artistIdx: 2, charityIdx: 2, title: 'The Scholar', slug: 'the-scholar', category: 'ARTWORK', basePrice: 680, medium: 'Watercolour', year: 2024, sdgIds: [4, 10], sku: 'YA-TS-003', productType: 'VARIABLE', autoCertificate: true, certificateId: 'AFC-2024-C3P7Q', featured: true, tags: ['education', 'portrait'],
+      description: 'Adebayo\'s delicate watercolours celebrate the transformative power of education.',
+      images: [{ url: 'https://images.unsplash.com/photo-1580136579312-94651dfd596d?w=1200&q=85', label: 'Front View' }],
+      gallery: { video: 'SqzLJ0tHFJM', images: [{ url: 'https://images.unsplash.com/photo-1580136579312-94651dfd596d?w=1200&q=85', label: 'Front View' }, { url: 'https://images.unsplash.com/photo-1452860606245-08befc0ff44b?w=1200&q=85', label: 'Watercolour Detail' }] } },
+    { artistIdx: 3, charityIdx: 0, title: 'Spectrum of Life', slug: 'spectrum-of-life', category: 'ARTWORK', basePrice: 2100, medium: 'Digital Art (Archival Print)', year: 2025, sdgIds: [3, 5], sku: 'NH-SL-004', productType: 'DOWNLOADABLE', autoCertificate: true, certificateId: 'AFC-2025-D4R2S', featured: true, tags: ['digital', 'identity'],
+      description: 'Hassan\'s breakthrough digital work explores intersectional identity through cascading biomorphic forms.',
+      images: [{ url: 'https://images.unsplash.com/photo-1617791160505-6f00504e3519?w=1200&q=85', label: 'Full Composition' }],
+      gallery: { video: 'jJ5qdGMrRsA', images: [{ url: 'https://images.unsplash.com/photo-1617791160505-6f00504e3519?w=1200&q=85', label: 'Full Composition' }] } },
+    { artistIdx: 4, charityIdx: 1, title: 'Roots of Tomorrow', slug: 'roots-of-tomorrow', category: 'ARTWORK', basePrice: 1200, medium: 'Oil on Canvas', year: 2026, sdgIds: [15, 1], sku: 'EO-RT-005', stockQuantity: 1, productType: 'SIMPLE', autoCertificate: true, certificateId: 'AFC-2026-X4K9M2', featured: true, tags: ['trees', 'nature'],
+      description: 'A monumental celebration of the African baobab. Turner Prize winner 2026.',
+      images: [{ url: 'https://images.unsplash.com/photo-1490750967868-88df5691130c?w=1200&q=85', label: 'Front View' }],
+      gallery: { video: '5pLIfTVRDFI', images: [{ url: 'https://images.unsplash.com/photo-1490750967868-88df5691130c?w=1200&q=85', label: 'Front View' }] } },
+    { artistIdx: 0, charityIdx: 3, title: 'Urban Harvest', slug: 'urban-harvest', category: 'ARTWORK', basePrice: 850, medium: 'Acrylic', year: 2025, sdgIds: [11, 2], sku: 'AD-UH-006', stockQuantity: 2, productType: 'SIMPLE', tags: ['urban', 'food'],
+      description: 'Diallo turns her gaze to urban food systems, painting rooftop gardens as sites of quiet revolution.',
+      images: [{ url: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=1200&q=85', label: 'Front View' }],
+      gallery: { images: [{ url: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=1200&q=85', label: 'Front View' }] } },
+    { artistIdx: 3, charityIdx: 0, title: 'Deep Currents', slug: 'deep-currents', category: 'ARTWORK', basePrice: 1800, medium: 'Digital (Limited Edition of 50)', year: 2026, sdgIds: [14, 6], sku: 'NH-DC-007', stockQuantity: 50, productType: 'DOWNLOADABLE', autoCertificate: true, certificateId: 'AFC-2026-G7T3P', tags: ['ocean', 'digital'],
+      description: 'A luminous digital work exploring ocean ecosystems through generative pattern.',
+      images: [{ url: 'https://images.unsplash.com/photo-1605106702734-205df224ecce?w=1200&q=85', label: 'Print View' }] },
+    { artistIdx: 1, charityIdx: 1, title: 'Green Horizon', slug: 'green-horizon', category: 'ARTWORK', basePrice: 1650, medium: 'Mixed Media', year: 2026, sdgIds: [13, 11], sku: 'KM-GH-008', stockQuantity: 1, productType: 'SIMPLE', autoCertificate: true, certificateId: 'AFC-2026-H8V2Q', tags: ['climate', 'hope'],
+      description: 'Mensah reimagines the African horizon through layers of salvaged urban material and lush forest pigments.',
+      images: [{ url: 'https://images.unsplash.com/photo-1578321272176-b7bbc0679853?w=1200&q=85', label: 'Front View' }] },
+  ];
+
+  // Digital products
+  const digitals = [
+    { artistIdx: 5, charityIdx: 2, title: 'The Salt Road', slug: 'the-salt-road', category: 'EBOOK', basePrice: 14.99, productType: 'DOWNLOADABLE', year: 2025, sdgIds: [4, 10], autoCertificate: true, certificateId: 'AFC-2025-EB01', featured: true, fileFormat: 'ePub + PDF', pages: 284, tags: ['fiction', 'Africa', 'education'],
+      description: 'A coming-of-age novel following three girls across three generations of a Lagos family. Shortlisted for the Baileys Women\'s Prize.',
+      images: [{ url: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=700&q=85', label: 'Book Cover' }],
+      gallery: { video: '4Y3JiNBv9C0', images: [{ url: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=700&q=85', label: 'Book Cover' }, { url: 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=700&q=85', label: 'Project Impact — CAMFED' }] } },
+    { artistIdx: 6, charityIdx: 0, title: 'Volta Sessions', slug: 'volta-sessions', category: 'MUSIC', basePrice: 12.99, productType: 'DOWNLOADABLE', year: 2024, sdgIds: [11, 3], autoCertificate: true, certificateId: 'AFC-2024-MU01', featured: true, fileFormat: 'FLAC + MP3', tags: ['Afroelectronica', 'ambient', 'Ghana'],
+      description: 'Recorded on the banks of the Volta River. Blends Afroelectronica, jazz and ambient field recordings. 20% of sales go to WaterAid.',
+      images: [{ url: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=700&q=85', label: 'Studio' }],
+      gallery: { video: 'H3v9unphfi0', images: [{ url: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=700&q=85', label: 'Studio' }, { url: 'https://images.unsplash.com/photo-1541544537156-7627a7a4aa1c?w=700&q=85', label: 'Project Impact — WaterAid' }] } },
+    { artistIdx: 7, charityIdx: 1, title: 'Adinkra Symbols Vector Pack', slug: 'adinkra-symbols-vector-pack', category: 'GRAPHIC', basePrice: 29.99, productType: 'DOWNLOADABLE', year: 2025, sdgIds: [9, 4], autoCertificate: true, certificateId: 'AFC-2025-GR01', featured: true, fileFormat: 'SVG + AI + PNG', tags: ['vectors', 'Adinkra', 'African'],
+      description: '64 hand-redrawn Adinkra symbols. SVG, Illustrator and hi-res PNG. Includes cultural context booklet.',
+      images: [{ url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=700&q=85', label: 'Vector Design' }] },
+    { artistIdx: 8, charityIdx: 3, title: 'Before the Rains', slug: 'before-the-rains', category: 'ANIMATION', basePrice: 6.99, productType: 'DOWNLOADABLE', year: 2026, sdgIds: [16, 10], autoCertificate: true, certificateId: 'AFC-2026-AN01', featured: true, fileFormat: 'MP4 4K + HD', tags: ['short film', 'animation', 'Sudan'],
+      description: 'Sundance 2026 Best Animated Short. A fourteen-minute hand-animated film following a Sudanese girl through displacement.',
+      images: [{ url: 'https://images.unsplash.com/photo-1536240478700-b869ad10e128?w=700&q=85', label: 'Film Still' }],
+      gallery: { video: 'XvDzLzdXbPg', images: [{ url: 'https://images.unsplash.com/photo-1536240478700-b869ad10e128?w=700&q=85', label: 'Film Still' }] } },
+    { artistIdx: 5, charityIdx: 2, title: 'Futures We Carry', slug: 'futures-we-carry', category: 'EBOOK', basePrice: 9.99, comparePrice: 12.99, productType: 'DOWNLOADABLE', year: 2026, sdgIds: [5, 10], autoCertificate: true, certificateId: 'AFC-2026-EB02', fileFormat: 'ePub + PDF', pages: 148, tags: ['short stories', 'women'],
+      description: 'Eight short stories exploring what it means to be a woman building something new in a continent mid-transformation.',
+      images: [{ url: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=700&q=85', label: 'Cover' }] },
+    { artistIdx: 6, charityIdx: 0, title: 'Ceremony (EP)', slug: 'ceremony-ep', category: 'MUSIC', basePrice: 7.99, productType: 'DOWNLOADABLE', year: 2025, sdgIds: [10, 3], autoCertificate: true, certificateId: 'AFC-2025-MU02', fileFormat: 'FLAC + MP3', tags: ['ambient', 'meditative', 'EP'],
+      description: 'A five-track EP designed for in-between spaces — the hour before ceremony, the silence after.',
+      images: [{ url: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=700&q=85', label: 'Live Performance' }] },
+    { artistIdx: 9, charityIdx: 3, title: 'Motherland Frequencies', slug: 'motherland-frequencies', category: 'MUSIC', basePrice: 10.99, productType: 'DOWNLOADABLE', year: 2025, sdgIds: [3, 1], autoCertificate: true, certificateId: 'AFC-2025-MU03', fileFormat: 'MP3 + WAV', tags: ['highlife', 'ambient', 'Igbo'],
+      description: 'Igbo highlife meets lo-fi ambient. Recorded in a home studio in Enugu with local instrumentalists.',
+      images: [{ url: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=700&q=85', label: 'Recording Session' }] },
+    { artistIdx: 7, charityIdx: 1, title: 'AfroFuture Icon Set', slug: 'afrofuture-icon-set', category: 'GRAPHIC', basePrice: 24.99, productType: 'DOWNLOADABLE', year: 2026, sdgIds: [9, 11], autoCertificate: true, certificateId: 'AFC-2026-GR02', fileFormat: 'SVG + PNG + Figma', tags: ['icons', 'Afrofuturism', 'UI'],
+      description: '240 custom icons blending Adinkra symbolism with Afrofuturist technology design language.',
+      images: [{ url: 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=700&q=85', label: 'Icon Grid' }] },
+    { artistIdx: 10, charityIdx: 2, title: 'Melanin Portrait Brush Set', slug: 'melanin-portrait-brush-set', category: 'GRAPHIC', basePrice: 18.99, productType: 'DOWNLOADABLE', year: 2025, sdgIds: [5, 10], autoCertificate: true, certificateId: 'AFC-2025-GR03', fileFormat: 'ABR + Procreate', tags: ['brushes', 'portrait', 'skin tones'],
+      description: '48 Procreate + Photoshop brushes calibrated for rich melanin skin tone rendering.',
+      images: [{ url: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?w=700&q=85', label: 'Brush Samples' }] },
+    { artistIdx: 7, charityIdx: 1, title: 'Kente in Motion — Loop Pack', slug: 'kente-in-motion-loop-pack', category: 'ANIMATION', basePrice: 44.99, productType: 'DOWNLOADABLE', year: 2026, sdgIds: [9, 4], autoCertificate: true, certificateId: 'AFC-2026-AN02', fileFormat: 'MOV + MP4 + GIF', tags: ['motion graphics', 'Kente', 'loops'],
+      description: '24 seamlessly looping animated patterns based on traditional Kente cloth geometry.',
+      images: [{ url: 'https://images.unsplash.com/photo-1574717025058-2f8737d2e2b7?w=700&q=85', label: 'Loop Preview' }] },
+    { artistIdx: 8, charityIdx: 2, title: 'Voices — Animated Poem Series', slug: 'voices-animated-poem-series', category: 'ANIMATION', basePrice: 12.99, productType: 'DOWNLOADABLE', year: 2025, sdgIds: [10, 5], autoCertificate: true, certificateId: 'AFC-2025-AN03', fileFormat: 'MP4 HD', tags: ['poetry', 'animation', 'women'],
+      description: 'Five short animated poems by African women poets. Silkscreen-inspired animation style.',
+      images: [{ url: 'https://images.unsplash.com/photo-1616400619175-5beda3a17896?w=700&q=85', label: 'Animation Frame' }] },
+    { artistIdx: 10, charityIdx: 3, title: 'SDG Infographic Kit', slug: 'sdg-infographic-kit', category: 'GRAPHIC', basePrice: 34.99, productType: 'DOWNLOADABLE', year: 2026, sdgIds: [17, 4], autoCertificate: true, certificateId: 'AFC-2026-GR04', fileFormat: 'Figma + PowerPoint + Canva', tags: ['templates', 'NGO', 'SDG'],
+      description: '120 professionally designed infographic templates built around all 17 UN SDGs.',
+      images: [{ url: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=700&q=85', label: 'Template Overview' }] },
+    { artistIdx: 7, charityIdx: 1, title: 'AfroFuture — Motion Bundle', slug: 'afrofuture-motion-bundle', category: 'ANIMATION', basePrice: 89.99, comparePrice: 119.99, productType: 'DOWNLOADABLE', year: 2026, sdgIds: [9, 11], autoCertificate: true, certificateId: 'AFC-2026-AN04', fileFormat: 'AEP + MOV + MP4', tags: ['After Effects', 'Afrofuturism', 'broadcast'],
+      description: '48 After Effects templates and motion graphics presets for an Afrofuturist visual language.',
+      images: [{ url: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=700&q=85', label: 'Bundle Overview' }] },
+  ];
+
+  const allProducts = [...artworks, ...digitals];
+  for (const p of allProducts) {
+    const existing = await prisma.product.findUnique({ where: { slug: p.slug } });
+    if (existing) continue;
+
+    const { artistIdx, charityIdx, ...data } = p;
+    await prisma.product.create({
+      data: {
+        ...data,
+        artistId: artistProfiles[artistIdx].id,
+        charityId: charityIdx !== undefined ? charityProfiles[charityIdx].id : undefined,
+        status: 'ACTIVE',
+      },
+    });
+  }
+
+  // ── VARIATIONS for The Scholar ────────────────────────────
+  const scholar = await prisma.product.findUnique({ where: { slug: 'the-scholar' } });
+  if (scholar) {
+    const existingVars = await prisma.productVariation.findMany({ where: { productId: scholar.id } });
+    if (existingVars.length === 0) {
+      await prisma.productVariation.createMany({
+        data: [
+          { productId: scholar.id, attributeCombination: { Size: 'Original' }, price: 680, stockQuantity: 1, sku: 'YA-TS-003-OR' },
+          { productId: scholar.id, attributeCombination: { Size: 'A3 Print' }, price: 95, stockQuantity: 50, sku: 'YA-TS-003-A3' },
+          { productId: scholar.id, attributeCombination: { Size: 'A2 Print' }, price: 145, stockQuantity: 20, sku: 'YA-TS-003-A2' },
+        ],
+      });
+    }
+  }
+
+  // ── PARTNERSHIPS ──────────────────────────────────────────
+  const partnershipPairs = [
+    [0, 0], [0, 3], // Amara → WaterAid, Oxfam
+    [1, 1], // Kofi → Greenpeace
+    [2, 2], // Yemi → CAMFED
+    [3, 0], // Nia → WaterAid
+    [4, 1], // Elena → Greenpeace
+    [5, 2], // Zara → CAMFED
+    [6, 0], // Adeola → WaterAid
+    [7, 1], // Studio Osei → Greenpeace
+    [8, 3], [8, 2], // Fatima → Oxfam, CAMFED
+    [9, 3], // Chukwuemeka → Oxfam
+    [10, 2], [10, 3], // Priya → CAMFED, Oxfam
+  ];
+  for (const [ai, ci] of partnershipPairs) {
+    await prisma.artistCharityPartnership.upsert({
+      where: { artistId_charityId: { artistId: artistProfiles[ai].id, charityId: charityProfiles[ci].id } },
+      update: {},
+      create: { artistId: artistProfiles[ai].id, charityId: charityProfiles[ci].id },
+    });
+  }
+
+  // ── CHARITY RESOURCES ─────────────────────────────────────
+  const resources = [
+    { charityIdx: 0, title: 'Annual Impact Report 2025', fileUrl: '#', fileType: 'pdf', visibility: 'PUBLIC' },
+    { charityIdx: 0, title: 'Project Update: Sahel Clean Water Initiative', fileUrl: '#', fileType: 'pdf', visibility: 'FUNDERS_ONLY' },
+    { charityIdx: 1, title: 'Climate Crisis Report 2025', fileUrl: '#', fileType: 'pdf', visibility: 'PUBLIC' },
+  ];
+  for (const r of resources) {
+    const { charityIdx, ...data } = r;
+    const count = await prisma.charityResource.count({ where: { charityId: charityProfiles[charityIdx].id, title: data.title } });
+    if (count === 0) {
+      await prisma.charityResource.create({ data: { ...data, charityId: charityProfiles[charityIdx].id } });
+    }
+  }
+
+  // ── MESSAGE TEMPLATES ─────────────────────────────────────
+  const templates = [
+    { charityIdx: 0, name: 'Monthly Appreciation', subject: 'Thank you — your support is changing lives', bodyHtml: '<p>Dear Friend,</p><p>Thank you for your continued support. This month, your generosity has helped bring clean water access to 47 more families.</p><p>With gratitude,<br/>The WaterAid Team</p>' },
+    { charityIdx: 0, name: 'Project Milestone', subject: 'We\'ve reached a milestone!', bodyHtml: '<p>Dear Friend,</p><p>Our Clean Water Initiative has reached its 6-month milestone, providing safe water to over 2,000 people.</p><p>Thank you,<br/>WaterAid UK</p>' },
+    { charityIdx: 1, name: 'Quarterly Update', subject: 'Climate action update', bodyHtml: '<p>Dear Supporter,</p><p>With your help, we\'ve protected 15,000 hectares of endangered forest.</p><p>Greenpeace Africa Team</p>' },
+  ];
+  for (const t of templates) {
+    const { charityIdx, ...data } = t;
+    const count = await prisma.messageTemplate.count({ where: { charityId: charityProfiles[charityIdx].id, name: data.name } });
+    if (count === 0) {
+      await prisma.messageTemplate.create({ data: { ...data, charityId: charityProfiles[charityIdx].id } });
+    }
+  }
+
+  console.log('✅ Seeding complete!');
+  console.log(`   ${artistProfiles.length} artists, ${charityProfiles.length} charities, ${allProducts.length} products`);
+  console.log('   Demo logins:');
+  console.log('   Admin:   admin@changeartgallery.com / Admin123!');
+  console.log('   Buyer:   buyer@demo.com / Buyer123!');
+  console.log('   Artist:  amara@demo.com / Artist123!');
+  console.log('   Charity: wateraid@demo.com / Charity123!');
+}
+
+main().catch(console.error).finally(() => prisma.$disconnect());

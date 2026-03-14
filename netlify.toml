@@ -1,0 +1,26 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--legacy-peer-deps"
+
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["@prisma/client", "prisma", "stripe", "bcryptjs", "jsonwebtoken", "express-rate-limit"]
+  included_files = ["prisma/schema.prisma", "node_modules/.prisma/**", "node_modules/@prisma/client/**"]
+
+# API routes proxy to the serverless function
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+# SPA fallback — everything else goes to index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
