@@ -105,7 +105,7 @@ router.post('/', authenticate, async (req, res) => {
         platformFee,
         charitySplit,
         shippingAddress,
-        stripePaymentIntentId,
+        paymentRef: stripePaymentIntentId,
         status: stripePaymentIntentId ? 'PENDING' : 'PROCESSING', // Demo mode skips payment
         items: { create: orderItems },
       },

@@ -1,0 +1,6 @@
+# Copy this file to .dev.vars (gitignored) and fill in the real value.
+# Local-dev-only: lets `wrangler pages dev` connect directly to Postgres,
+# bypassing the Hyperdrive edge proxy that's used in production/preview.
+# Safe to point this at the same Supabase connection string used for
+# DATABASE_URL in .env — it's just a different consumer of the same DB.
+WRANGLER_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE=postgresql://postgres.aclhcqatqcvptocvsuuw:<password>@aws-1-eu-west-2.pooler.supabase.com:5432/postgres

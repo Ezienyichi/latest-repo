@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -84,6 +85,7 @@ model User {
   wishlistItems    WishlistItem[]
   funderRelations  FunderRelationship[]
   notifications    Notification[]
+  tcAcceptances    TCAcceptance[]
 }
 
 model ArtistProfile {
@@ -213,19 +215,20 @@ model ProductAddon {
 }
 
 model Order {
-  id                    String      @id @default(cuid())
-  buyerId               String
-  buyer                 User        @relation(fields: [buyerId], references: [id])
-  status                OrderStatus @default(PENDING)
-  totalAmount           Decimal     @db.Decimal(10, 2)
-  shippingAmount        Decimal     @default(0) @db.Decimal(10, 2)
-  platformFee           Decimal     @default(0) @db.Decimal(10, 2)
-  charitySplit          Decimal     @default(0) @db.Decimal(10, 2)
-  shippingAddress       Json?
-  stripePaymentIntentId String?
-  items                 OrderItem[]
-  createdAt             DateTime    @default(now())
-  updatedAt             DateTime    @updatedAt
+  id              String      @id @default(cuid())
+  buyerId         String?
+  buyer           User?       @relation(fields: [buyerId], references: [id])
+  buyerEmail      String
+  status          OrderStatus @default(PENDING)
+  totalAmount     Decimal     @db.Decimal(10, 2)
+  shippingAmount  Decimal     @default(0) @db.Decimal(10, 2)
+  platformFee     Decimal     @default(0) @db.Decimal(10, 2)
+  charitySplit    Decimal     @default(0) @db.Decimal(10, 2)
+  shippingAddress Json?
+  paymentRef      String?
+  items           OrderItem[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 }
 
 model OrderItem {
@@ -319,4 +322,19 @@ model Notification {
   body      String
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+model TCAcceptance {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       UserRole
+  version    String
+  acceptedAt DateTime @default(now())
+}
+
+model SiteSetting {
+  key       String   @unique
+  value     Json
+  updatedAt DateTime @updatedAt
 }

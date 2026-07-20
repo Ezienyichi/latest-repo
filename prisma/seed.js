@@ -9,6 +9,10 @@ const hash = (p) => bcrypt.hashSync(p, 12);
 async function main() {
   console.log('🌱 Seeding Change Art Gallery...');
 
+  // ── SITE SETTINGS (payment split rates — admin-editable) ──
+  await prisma.siteSetting.upsert({ where: { key: 'charity_pct' }, update: {}, create: { key: 'charity_pct', value: 0.10 } });
+  await prisma.siteSetting.upsert({ where: { key: 'platform_pct' }, update: {}, create: { key: 'platform_pct', value: 0.10 } });
+
   // ── USERS ─────────────────────────────────────────────────
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@changeartgallery.com' },
