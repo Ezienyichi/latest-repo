@@ -32,3 +32,19 @@ CORS_ORIGIN = "*"
 [[env.preview.hyperdrive]]
 binding = "HYPERDRIVE"
 id = "09a2f01f894543b9a073951bfe955c96"
+
+# Per-user rate limiting for /api/uploads/sign (KV counter, not Cloudflare's
+# native Rate Limiting binding — that one isn't confirmed supported on Pages
+# Functions projects). Same caveat as Hyperdrive above: if this binding
+# doesn't show up after deploy, attach it manually via the dashboard —
+# Pages project > Settings > Functions > KV namespace bindings — for both
+# the production and preview environments. Until it's actually bound, the
+# rate limiter fails open (logs a warning, allows the request) rather than
+# blocking uploads outright.
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "ae457f6a560d4ff787e2712ab896f17e"
+
+[[env.preview.kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "46795920a085462e8a7ac59c6da7c237"

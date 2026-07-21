@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { SDGs, DIGITAL_CATS } from '../../data/constants';
 import DashboardShell from './DashboardShell';
+import Uploader from '../../components/ui/Uploader';
 import api from '../../utils/api';
 
 const STATUS_BADGE = { ACTIVE: 'b-green', DRAFT: 'b-gold', SOLD: 'b-muted', SUSPENDED: 'b-red' };
@@ -174,8 +175,18 @@ export default function ArtworkManager() {
               <div style={{ marginBottom: 16 }}>
                 <div className="fl" style={{ marginBottom: 8 }}>Product Images</div>
                 {form.images.map((img, i) => (
-                  <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                    <input className="fi" value={img.url} onChange={e => updateImage(i, 'url', e.target.value)} placeholder="Image URL (Unsplash, Cloudinary...)" style={{ flex: 2 }} />
+                  <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'flex-start' }}>
+                    <div style={{ flex: 2 }}>
+                      <Uploader
+                        bucket="previews"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        maxBytes={15 * 1024 * 1024}
+                        kind="image"
+                        value={img.url ? { path: null, publicUrl: img.url } : null}
+                        onUploaded={({ publicUrl }) => updateImage(i, 'url', publicUrl)}
+                        label={img.label || `Image ${i + 1}`}
+                      />
+                    </div>
                     <input className="fi" value={img.label} onChange={e => updateImage(i, 'label', e.target.value)} placeholder="Label" style={{ flex: 1 }} />
                     {form.images.length > 1 && <button className="btn btn-danger btn-sm" onClick={() => removeImage(i)}>×</button>}
                   </div>

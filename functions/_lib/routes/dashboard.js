@@ -3,6 +3,46 @@ import { authenticate, requireRole } from '../auth.js';
 
 const dashboard = new Hono();
 
+// ── BUYER / FUNDER DASHBOARD ────────────────────────────────
+dashboard.get('/buyer', authenticate, requireRole('BUYER'), async (c) => {
+  const prisma = c.get('prisma');
+  try {
+    const userId = c.get('userId');
+    const [orders, funderRelations] = await Promise.all([
+      prisma.order.findMany({
+        where: { buyerId: userId },
+        include: {
+          items: {
+            include: {
+              product: { select: { title: true, images: true, slug: true, artist: { select: { displayName: true } }, charity: { select: { name: true, logo: true } } } },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.funderRelationship.findMany({
+        where: { userId },
+        include: { charity: { select: { id: true, name: true, logo: true, raised: true, target: true } } },
+        orderBy: { optedInAt: 'desc' },
+      }),
+    ]);
+
+    const totalSpent = orders.reduce((sum, o) => sum + Number(o.totalAmount), 0);
+    const charityContributed = orders.reduce((sum, o) => sum + Number(o.charitySplit), 0);
+
+    return c.json({
+      stats: {
+        totalOrders: orders.length,
+        totalSpent,
+        charityContributed,
+        charitiesSupported: funderRelations.length,
+      },
+      recentOrders: orders.slice(0, 8),
+      funderRelations,
+    });
+  } catch (e) { console.error(e); return c.json({ error: 'Failed' }, 500); }
+});
+
 // ── ARTIST DASHBOARD ────────────────────────────────────────
 dashboard.get('/artist', authenticate, requireRole('ARTIST'), async (c) => {
   const prisma = c.get('prisma');

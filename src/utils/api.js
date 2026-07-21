@@ -71,6 +71,12 @@ class ApiClient {
   getCharity(id) { return this.get(`/charities/${id}`); }
   becomeFunder(charityId) { return this.post(`/charities/${charityId}/funder`, {}); }
 
+  // Settings
+  getPublicSettings() { return this.get('/settings/public'); }
+
+  // Uploads
+  signUpload(data) { return this.post('/uploads/sign', data); }
+
   // Orders
   validateCoupon(code, subtotal) { return this.post('/orders/validate-coupon', { code, subtotal }); }
   createOrder(data) { return this.post('/orders', data); }
@@ -78,6 +84,7 @@ class ApiClient {
   getOrder(id) { return this.get(`/orders/${id}`); }
 
   // Dashboard
+  getBuyerDashboard() { return this.get('/dashboard/buyer'); }
   getArtistDashboard() { return this.get('/dashboard/artist'); }
   getCharityDashboard() { return this.get('/dashboard/charity'); }
   getAdminDashboard() { return this.get('/dashboard/admin'); }

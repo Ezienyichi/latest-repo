@@ -10,6 +10,8 @@ import charitiesRoutes from './routes/charities.js';
 import dashboardRoutes from './routes/dashboard.js';
 import certificatesRoutes from './routes/certificates.js';
 import adminRoutes from './routes/admin.js';
+import settingsRoutes from './routes/settings.js';
+import uploadsRoutes from './routes/uploads.js';
 
 const app = new Hono();
 
@@ -29,6 +31,8 @@ app.route('/api/charities', charitiesRoutes);
 app.route('/api/dashboard', dashboardRoutes);
 app.route('/api/certificates', certificatesRoutes);
 app.route('/api/admin', adminRoutes);
+app.route('/api/settings', settingsRoutes);
+app.route('/api/uploads', uploadsRoutes);
 
 app.onError((err, c) => {
   console.error('API Error:', err.message);

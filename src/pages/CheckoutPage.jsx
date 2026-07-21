@@ -1,8 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
+
+// Matches the backend fallback in functions/_lib/split.js — used only until
+// the real rates load, so the numbers never visibly jump for the common
+// case where the admin hasn't changed them from the default.
+const DEFAULT_RATES = { charity_pct: 0.10, platform_pct: 0.10 };
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
@@ -13,14 +18,17 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [shipping, setShipping] = useState({ firstName: user?.firstName || '', lastName: user?.lastName || '', email: user?.email || '', phone: '', address1: '', address2: '', city: '', postcode: '', country: 'United Kingdom' });
   const [paymentMethod, setPaymentMethod] = useState('card');
+  const [rates, setRates] = useState(DEFAULT_RATES);
+
+  useEffect(() => { api.getPublicSettings().then(setRates).catch(() => {}); }, []);
 
   const discountAmt = location.state?.discount || 0;
   const couponCode = location.state?.couponCode || null;
   const afterDiscount = cartTotal - discountAmt;
   const shippingCost = afterDiscount > 500 ? 0 : 12.99;
   const hasDigitalOnly = cart.every(item => item.price < 100); // rough heuristic
-  const platformFee = afterDiscount * 0.1;
-  const charitySplit = afterDiscount * 0.1;
+  const platformFee = afterDiscount * rates.platform_pct;
+  const charitySplit = afterDiscount * rates.charity_pct;
   const grandTotal = afterDiscount + shippingCost;
 
   const set = (k, v) => setShipping(p => ({ ...p, [k]: v }));
@@ -197,8 +205,8 @@ export default function CheckoutPage() {
               {[
                 ['Subtotal', `£${cartTotal.toFixed(2)}`],
                 ...(discountAmt > 0 ? [[`Discount (${couponCode})`, `-£${discountAmt.toFixed(2)}`, 'var(--sage)']] : []),
-                ['Platform (10%)', `£${platformFee.toFixed(2)}`],
-                ['Charity (10%)', `£${charitySplit.toFixed(2)}`],
+                [`Platform (${Math.round(rates.platform_pct * 100)}%)`, `£${platformFee.toFixed(2)}`],
+                [`Charity (${Math.round(rates.charity_pct * 100)}%)`, `£${charitySplit.toFixed(2)}`],
                 ['Shipping', shippingCost === 0 ? 'Free' : `£${shippingCost.toFixed(2)}`],
               ].map(([k, v, c]) => (
                 <div key={k} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7, fontSize: 13 }}>

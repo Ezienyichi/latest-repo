@@ -65,27 +65,41 @@ enum FunderSource {
   MANUAL
 }
 
+enum CouponType {
+  PERCENT
+  FIXED
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
-  id               String               @id @default(cuid())
-  email            String               @unique
-  passwordHash     String?
-  emailVerified    DateTime?
-  verificationCode String?
-  role             UserRole             @default(BUYER)
-  firstName        String?
-  lastName         String?
-  avatarUrl        String?
-  phone            String?
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
-  artistProfile    ArtistProfile?
-  charityProfile   CharityProfile?
-  orders           Order[]
-  reviews          Review[]
-  wishlistItems    WishlistItem[]
-  funderRelations  FunderRelationship[]
-  notifications    Notification[]
-  tcAcceptances    TCAcceptance[]
+  id                String               @id @default(cuid())
+  email             String               @unique
+  passwordHash      String?
+  emailVerified     DateTime?
+  verificationCode  String?
+  role              UserRole             @default(BUYER)
+  firstName         String?
+  lastName          String?
+  avatarUrl         String?
+  phone             String?
+  deactivatedAt     DateTime?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  artistProfile     ArtistProfile?
+  charityProfile    CharityProfile?
+  orders            Order[]
+  reviews           Review[]
+  wishlistItems     WishlistItem[]
+  funderRelations   FunderRelationship[]
+  notifications     Notification[]
+  tcAcceptances     TCAcceptance[]
+  auditLogs         AuditLog[]
+  reviewedDocuments CharityDocument[]
 }
 
 model ArtistProfile {
@@ -129,6 +143,7 @@ model CharityProfile {
   partnerships    ArtistCharityPartnership[]
   messages        CharityMessage[]
   templates       MessageTemplate[]
+  documents       CharityDocument[]
   resources       CharityResource[]
   funderRelations FunderRelationship[]
   createdAt       DateTime                   @default(now())
@@ -226,6 +241,8 @@ model Order {
   charitySplit    Decimal     @default(0) @db.Decimal(10, 2)
   shippingAddress Json?
   paymentRef      String?
+  refundRequested Boolean     @default(false)
+  refundedAt      DateTime?
   items           OrderItem[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
@@ -313,6 +330,20 @@ model CharityResource {
   uploadedAt DateTime           @default(now())
 }
 
+model CharityDocument {
+  id           String         @id @default(cuid())
+  charityId    String
+  charity      CharityProfile @relation(fields: [charityId], references: [id], onDelete: Cascade)
+  label        String
+  storagePath  String
+  uploadedAt   DateTime       @default(now())
+  reviewStatus ReviewStatus   @default(PENDING)
+  reviewedBy   String?
+  reviewer     User?          @relation(fields: [reviewedBy], references: [id])
+  reviewedAt   DateTime?
+  reviewNote   String?        @db.Text
+}
+
 model Notification {
   id        String   @id @default(cuid())
   userId    String
@@ -337,4 +368,66 @@ model SiteSetting {
   key       String   @unique
   value     Json
   updatedAt DateTime @updatedAt
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  admin      User     @relation(fields: [adminId], references: [id])
+  action     String
+  targetType String
+  targetId   String
+  before     Json?
+  after      Json?
+  createdAt  DateTime @default(now())
+
+  @@index([targetType, targetId])
+  @@index([adminId])
+  @@index([createdAt])
+}
+
+model PageContent {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String?
+  body      Json
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+}
+
+model TermsDocument {
+  id          String   @id @default(cuid())
+  role        UserRole
+  version     String
+  body        String   @db.Text
+  publishedAt DateTime @default(now())
+  createdBy   String
+
+  @@unique([role, version])
+}
+
+model CategoryMeta {
+  key       ProductCategory @id
+  label     String
+  icon      String?
+  color     String?
+  bg        String?
+  sortOrder Int             @default(0)
+  active    Boolean         @default(true)
+  updatedAt DateTime        @updatedAt
+}
+
+model Coupon {
+  id         String     @id @default(cuid())
+  code       String     @unique
+  type       CouponType
+  value      Decimal    @db.Decimal(10, 2)
+  minSpend   Decimal    @default(0) @db.Decimal(10, 2)
+  usageLimit Int?
+  usedCount  Int        @default(0)
+  validFrom  DateTime?
+  validUntil DateTime?
+  active     Boolean    @default(true)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
 }

@@ -1,8 +1,36 @@
 import { Hono } from 'hono';
 import { authenticate, requireRole } from '../auth.js';
+import { writeAuditLog } from '../audit.js';
 
 const admin = new Hono();
 admin.use('*', authenticate, requireRole('ADMIN'));
+
+// Known SiteSetting keys and their validators. PUT rejects anything not
+// listed here — a typo'd key should fail loudly, not silently create a
+// setting nothing reads.
+const SETTING_VALIDATORS = {
+  charity_pct: async (value, prisma) => {
+    if (typeof value !== 'number' || !isFinite(value) || value < 0) return 'Must be a non-negative number';
+    const otherRow = await prisma.siteSetting.findUnique({ where: { key: 'platform_pct' } });
+    const other = typeof otherRow?.value === 'number' ? otherRow.value : 0.10;
+    if (value + other > 1) return `charity_pct + platform_pct cannot exceed 1 (platform_pct is currently ${other}) — the artist share would go negative`;
+    return null;
+  },
+  platform_pct: async (value, prisma) => {
+    if (typeof value !== 'number' || !isFinite(value) || value < 0) return 'Must be a non-negative number';
+    const otherRow = await prisma.siteSetting.findUnique({ where: { key: 'charity_pct' } });
+    const other = typeof otherRow?.value === 'number' ? otherRow.value : 0.10;
+    if (value + other > 1) return `charity_pct + platform_pct cannot exceed 1 (charity_pct is currently ${other}) — the artist share would go negative`;
+    return null;
+  },
+  site_name: async (value) => (typeof value === 'string' && value.trim()) ? null : 'Must be a non-empty string',
+  tagline: async (value) => (typeof value === 'string' && value.trim()) ? null : 'Must be a non-empty string',
+  footer_copyright: async (value) => (typeof value === 'string' && value.trim()) ? null : 'Must be a non-empty string',
+  contact_email: async (value) => (typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) ? null : 'Must be a valid email address',
+  maintenance_mode: async (value) => (typeof value === 'boolean') ? null : 'Must be true or false',
+  maintenance_message: async (value) => (typeof value === 'string') ? null : 'Must be a string',
+  show_homepage_stats: async (value) => (typeof value === 'boolean') ? null : 'Must be true or false',
+};
 
 admin.get('/users', async (c) => {
   const prisma = c.get('prisma');
@@ -27,10 +55,14 @@ admin.get('/users', async (c) => {
 admin.patch('/users/:id', async (c) => {
   const prisma = c.get('prisma');
   try {
+    const id = c.req.param('id');
     const { role } = await c.req.json();
+    const before = await prisma.user.findUnique({ where: { id }, select: { role: true } });
+    if (!before) return c.json({ error: 'Not found' }, 404);
     const data = {};
     if (role) data.role = role;
-    const user = await prisma.user.update({ where: { id: c.req.param('id') }, data });
+    const user = await prisma.user.update({ where: { id }, data });
+    await writeAuditLog(prisma, { adminId: c.get('userId'), action: 'user.role_change', targetType: 'User', targetId: id, before, after: { role: user.role } });
     return c.json(user);
   } catch (e) { return c.json({ error: 'Update failed' }, 500); }
 });
@@ -38,7 +70,11 @@ admin.patch('/users/:id', async (c) => {
 admin.post('/verify-artist/:id', async (c) => {
   const prisma = c.get('prisma');
   try {
-    const profile = await prisma.artistProfile.update({ where: { id: c.req.param('id') }, data: { verified: true } });
+    const id = c.req.param('id');
+    const before = await prisma.artistProfile.findUnique({ where: { id }, select: { verified: true } });
+    if (!before) return c.json({ error: 'Not found' }, 404);
+    const profile = await prisma.artistProfile.update({ where: { id }, data: { verified: true } });
+    await writeAuditLog(prisma, { adminId: c.get('userId'), action: 'artist.verify', targetType: 'ArtistProfile', targetId: id, before, after: { verified: profile.verified } });
     return c.json({ message: 'Artist verified', profile });
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
 });
@@ -46,7 +82,11 @@ admin.post('/verify-artist/:id', async (c) => {
 admin.post('/verify-charity/:id', async (c) => {
   const prisma = c.get('prisma');
   try {
-    const profile = await prisma.charityProfile.update({ where: { id: c.req.param('id') }, data: { verified: true } });
+    const id = c.req.param('id');
+    const before = await prisma.charityProfile.findUnique({ where: { id }, select: { verified: true } });
+    if (!before) return c.json({ error: 'Not found' }, 404);
+    const profile = await prisma.charityProfile.update({ where: { id }, data: { verified: true } });
+    await writeAuditLog(prisma, { adminId: c.get('userId'), action: 'charity.verify', targetType: 'CharityProfile', targetId: id, before, after: { verified: profile.verified } });
     return c.json({ message: 'Charity verified', profile });
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
 });
@@ -66,10 +106,40 @@ admin.get('/moderation', async (c) => {
 admin.patch('/products/:id/moderate', async (c) => {
   const prisma = c.get('prisma');
   try {
+    const id = c.req.param('id');
     const { status } = await c.req.json();
-    const product = await prisma.product.update({ where: { id: c.req.param('id') }, data: { status } });
+    const before = await prisma.product.findUnique({ where: { id }, select: { status: true } });
+    if (!before) return c.json({ error: 'Not found' }, 404);
+    const product = await prisma.product.update({ where: { id }, data: { status } });
+    await writeAuditLog(prisma, { adminId: c.get('userId'), action: 'product.status_change', targetType: 'Product', targetId: id, before, after: { status: product.status } });
     return c.json(product);
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
+});
+
+admin.get('/settings', async (c) => {
+  const prisma = c.get('prisma');
+  try {
+    const rows = await prisma.siteSetting.findMany();
+    const map = {};
+    for (const r of rows) map[r.key] = r.value;
+    return c.json(map);
+  } catch (e) { return c.json({ error: 'Failed' }, 500); }
+});
+
+admin.put('/settings/:key', async (c) => {
+  const prisma = c.get('prisma');
+  try {
+    const key = c.req.param('key');
+    const validate = SETTING_VALIDATORS[key];
+    if (!validate) return c.json({ error: `Unknown setting key: ${key}` }, 400);
+    const { value } = await c.req.json();
+    const validationError = await validate(value, prisma);
+    if (validationError) return c.json({ error: validationError }, 400);
+    const before = await prisma.siteSetting.findUnique({ where: { key } });
+    const row = await prisma.siteSetting.upsert({ where: { key }, update: { value }, create: { key, value } });
+    await writeAuditLog(prisma, { adminId: c.get('userId'), action: 'setting.update', targetType: 'SiteSetting', targetId: key, before: before ? { value: before.value } : null, after: { value: row.value } });
+    return c.json(row);
+  } catch (e) { return c.json({ error: 'Update failed' }, 500); }
 });
 
 admin.get('/analytics', async (c) => {

@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
+const BUYER_NAV = [
+  { id: 'overview', icon: '📊', label: 'Overview', path: '/dashboard' },
+];
+
 const ARTIST_NAV = [
   { id: 'overview', icon: '📊', label: 'Overview', path: '/dashboard' },
   { id: 'artworks', icon: '🎨', label: 'Artworks', path: '/dashboard/artworks' },
@@ -32,7 +36,7 @@ export default function DashboardShell({ children, title }) {
   const nav = user?.role === 'ARTIST' ? ARTIST_NAV
     : user?.role === 'CHARITY' ? CHARITY_NAV
     : user?.role === 'ADMIN' ? ADMIN_NAV
-    : [{ id: 'overview', icon: '📊', label: 'Overview', path: '/dashboard' }];
+    : BUYER_NAV;
 
   const roleLabel = user?.role === 'ARTIST' ? 'Artist Studio'
     : user?.role === 'CHARITY' ? 'Charity Dashboard'
