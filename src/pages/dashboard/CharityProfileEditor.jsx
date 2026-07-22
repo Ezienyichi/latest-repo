@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { Check } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { SDGs } from '../../data/constants';
 import DashboardShell from './DashboardShell';
 import Uploader from '../../components/ui/Uploader';
+import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
 
 const DOC_BADGE = { PENDING: 'b-gold', APPROVED: 'b-green', REJECTED: 'b-red' };
@@ -66,7 +68,7 @@ export default function CharityProfileEditor() {
   return (
     <DashboardShell title="Edit Profile">
       {profile?.verified ? (
-        <div className="alert alert-ok" style={{ marginBottom: 20 }}>✓ Your charity is verified and visible on the platform</div>
+        <div className="alert alert-ok" style={{ marginBottom: 20 }}><Icon icon={Check} size="inline" /> Your charity is verified and visible on the platform</div>
       ) : (
         <div className="alert alert-w" style={{ marginBottom: 20 }}>⏳ Your charity profile is pending verification</div>
       )}

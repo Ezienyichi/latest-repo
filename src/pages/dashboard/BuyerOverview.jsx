@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Package, Wallet, Leaf, Handshake, ArrowRight } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import DashboardShell, { StatCard } from './DashboardShell';
+import Icon from '../../components/ui/Icon';
+import CharityLogo from '../../components/ui/CharityLogo';
 import api from '../../utils/api';
 
 export default function BuyerOverview() {
@@ -22,10 +25,10 @@ export default function BuyerOverview() {
   return (
     <DashboardShell title="Overview">
       <div className="g4" style={{ marginBottom: 28 }}>
-        <StatCard icon="📦" label="Total Orders" value={stats.totalOrders} sub="All time" />
-        <StatCard icon="💰" label="Total Spent" value={`£${stats.totalSpent.toLocaleString()}`} sub="Across all orders" />
-        <StatCard icon="🌿" label="Charity Impact" value={`£${stats.charityContributed.toLocaleString()}`} sub="Directed to charities" color="var(--sage)" />
-        <StatCard icon="🤝" label="Charities Supported" value={stats.charitiesSupported} sub="As a funder" />
+        <StatCard icon={Package} label="Total Orders" value={stats.totalOrders} sub="All time" />
+        <StatCard icon={Wallet} label="Total Spent" value={`£${stats.totalSpent.toLocaleString()}`} sub="Across all orders" />
+        <StatCard icon={Leaf} label="Charity Impact" value={`£${stats.charityContributed.toLocaleString()}`} sub="Directed to charities" color="var(--sage)" />
+        <StatCard icon={Handshake} label="Charities Supported" value={stats.charitiesSupported} sub="As a funder" />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginBottom: 28 }}>
@@ -50,7 +53,7 @@ export default function BuyerOverview() {
           <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 14 }}>Charities You Support</div>
           {funderRelations?.length > 0 ? funderRelations.map(f => (
             <div key={f.charity.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', fontSize: 12, cursor: 'pointer' }} onClick={() => navigate(`/charities/${f.charity.id}`)}>
-              <span>{f.charity.logo || '🌿'}</span>
+              <CharityLogo logo={f.charity.logo} size={18} />
               <span>{f.charity.name}</span>
             </div>
           )) : <div style={{ fontSize: 13, color: 'var(--muted)' }}>Not supporting any charities yet</div>}
@@ -61,7 +64,7 @@ export default function BuyerOverview() {
       <div className="card" style={{ padding: 22 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <div style={{ fontSize: 15, fontWeight: 600 }}>Recent Orders</div>
-          <button className="btn btn-g btn-sm" onClick={() => navigate('/orders')}>View All →</button>
+          <button className="btn btn-g btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }} onClick={() => navigate('/orders')}>View All <Icon icon={ArrowRight} size="inline" /></button>
         </div>
         {recentOrders?.length > 0 ? (
           <table className="tbl">

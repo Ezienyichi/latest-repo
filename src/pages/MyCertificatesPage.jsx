@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Award, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import api from '../utils/api';
+import Icon from '../components/ui/Icon';
 
 export default function MyCertificatesPage() {
   const navigate = useNavigate();
@@ -28,10 +30,10 @@ export default function MyCertificatesPage() {
       <div className="wrap" style={{ paddingTop: 28, maxWidth: 900 }}>
         {loading ? <div>{[1,2].map(i => <div key={i} className="skel" style={{ height: 120, borderRadius: 'var(--rl)', marginBottom: 12 }} />)}</div> : certs.length === 0 ? (
           <div className="empty" style={{ padding: 48 }}>
-            <div style={{ fontSize: 48, marginBottom: 12, opacity: .3 }}>🏛</div>
+            <div style={{ marginBottom: 12, opacity: .3, display: 'flex', justifyContent: 'center' }}><Icon icon={Award} size={48} /></div>
             <div className="empty-t">No certificates yet</div>
             <p style={{ color: 'var(--muted)', marginBottom: 20 }}>Purchase artwork with the Certificate of Authenticity badge to receive premium certificates</p>
-            <button className="btn btn-p btn-lg" onClick={() => navigate('/shop')}>Browse Artworks →</button>
+            <button className="btn btn-p btn-lg" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => navigate('/shop')}>Browse Artworks <Icon icon={ArrowRight} size="inline" /></button>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>

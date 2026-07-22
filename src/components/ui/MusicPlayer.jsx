@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { Music } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import Icon from './Icon';
 
 export default function MusicPlayer({ product }) {
   const { toast } = useCart();
@@ -41,7 +43,7 @@ export default function MusicPlayer({ product }) {
       {/* Now playing bar */}
       <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)', display: 'flex', gap: 12, alignItems: 'center' }}>
         <div style={{ width: 52, height: 52, borderRadius: 'var(--rs)', overflow: 'hidden', flexShrink: 0, background: 'linear-gradient(145deg,#041525,#2EB8E644)' }}>
-          {imgUrl ? <img src={imgUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>🎵</div>}
+          {imgUrl ? <img src={imgUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon icon={Music} /></div>}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tracks[sel]}</div>

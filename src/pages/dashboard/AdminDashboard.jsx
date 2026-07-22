@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Users, Palette, Package, Wallet, Landmark, Leaf, Search, Check } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import DashboardShell, { StatCard } from './DashboardShell';
+import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
 
 export default function AdminDashboard() {
@@ -72,15 +74,15 @@ export default function AdminDashboard() {
       {/* ═══ OVERVIEW ═══ */}
       {tab === 'overview' && (<>
         <div className="g4" style={{ marginBottom: 28 }}>
-          <StatCard icon="👥" label="Total Users" value={s.users || 0} />
-          <StatCard icon="🎨" label="Active Products" value={s.products || 0} />
-          <StatCard icon="📦" label="Total Orders" value={s.orders || 0} />
-          <StatCard icon="💰" label="Total Revenue" value={`£${(s.revenue || 0).toLocaleString()}`} />
+          <StatCard icon={Users} label="Total Users" value={s.users || 0} />
+          <StatCard icon={Palette} label="Active Products" value={s.products || 0} />
+          <StatCard icon={Package} label="Total Orders" value={s.orders || 0} />
+          <StatCard icon={Wallet} label="Total Revenue" value={`£${(s.revenue || 0).toLocaleString()}`} />
         </div>
         <div className="g3" style={{ marginBottom: 28 }}>
-          <StatCard icon="🏦" label="Platform Revenue" value={`£${(s.platformRevenue || 0).toLocaleString()}`} sub="10% commission" color="var(--gold)" />
-          <StatCard icon="🌿" label="Charity Impact" value={`£${(s.charityTotal || 0).toLocaleString()}`} sub="Directed to charities" color="var(--sage)" />
-          <StatCard icon="🔍" label="Pending Review" value={(moderation?.pendingArtists?.length || 0) + (moderation?.pendingCharities?.length || 0)} sub="Artists + charities" color="#3b82f6" />
+          <StatCard icon={Landmark} label="Platform Revenue" value={`£${(s.platformRevenue || 0).toLocaleString()}`} sub="10% commission" color="var(--gold)" />
+          <StatCard icon={Leaf} label="Charity Impact" value={`£${(s.charityTotal || 0).toLocaleString()}`} sub="Directed to charities" color="var(--sage)" />
+          <StatCard icon={Search} label="Pending Review" value={(moderation?.pendingArtists?.length || 0) + (moderation?.pendingCharities?.length || 0)} sub="Artists + charities" color="#3b82f6" />
         </div>
 
         {/* Recent orders */}
@@ -118,7 +120,7 @@ export default function AdminDashboard() {
                     <td style={{ fontWeight: 500 }}>{a.displayName}</td>
                     <td style={{ fontSize: 12 }}>{a.user?.email}</td>
                     <td style={{ fontSize: 12, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.artistStatement?.slice(0, 80)}</td>
-                    <td><button className="btn btn-p btn-sm" onClick={() => verifyArtist(a.id)}>✓ Verify</button></td>
+                    <td><button className="btn btn-p btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }} onClick={() => verifyArtist(a.id)}><Icon icon={Check} size="inline" /> Verify</button></td>
                   </tr>
                 ))}
               </tbody>
@@ -138,7 +140,7 @@ export default function AdminDashboard() {
                     <td style={{ fontWeight: 500 }}>{c.name}</td>
                     <td style={{ fontFamily: 'var(--fm)', fontSize: 11 }}>{c.registrationNo}</td>
                     <td style={{ fontSize: 12 }}>{c.user?.email}</td>
-                    <td><button className="btn btn-p btn-sm" onClick={() => verifyCharity(c.id)}>✓ Verify</button></td>
+                    <td><button className="btn btn-p btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }} onClick={() => verifyCharity(c.id)}><Icon icon={Check} size="inline" /> Verify</button></td>
                   </tr>
                 ))}
               </tbody>
@@ -214,7 +216,7 @@ export default function AdminDashboard() {
                   <td style={{ fontWeight: 500 }}>{u.firstName} {u.lastName}</td>
                   <td style={{ fontSize: 12 }}>{u.email}</td>
                   <td><span className={`badge ${u.role === 'ADMIN' ? 'b-red' : u.role === 'ARTIST' ? 'b-purple' : u.role === 'CHARITY' ? 'b-green' : 'b-muted'}`} style={{ fontSize: 10 }}>{u.role}</span></td>
-                  <td>{u.emailVerified ? <span style={{ color: 'var(--sage)' }}>✓</span> : <span style={{ color: 'var(--muted)' }}>—</span>}</td>
+                  <td>{u.emailVerified ? <span style={{ color: 'var(--sage)' }}><Icon icon={Check} size="inline" /></span> : <span style={{ color: 'var(--muted)' }}>—</span>}</td>
                   <td style={{ fontSize: 12 }}>{new Date(u.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}</td>
                 </tr>
               ))}
@@ -261,7 +263,7 @@ export default function AdminDashboard() {
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
                 <div>
                   <span style={{ fontWeight: 500 }}>{a.displayName}</span>
-                  {a.verified && <span style={{ color: 'var(--sage)', marginLeft: 4, fontSize: 11 }}>✓</span>}
+                  {a.verified && <span style={{ color: 'var(--sage)', marginLeft: 4 }}><Icon icon={Check} size="inline" /></span>}
                   <div style={{ fontSize: 11, color: 'var(--muted)' }}>{a.artworkCount} works</div>
                 </div>
                 <span style={{ fontFamily: 'var(--fd)', fontWeight: 700, color: 'var(--accent)' }}>£{Number(a.totalSold).toLocaleString()}</span>

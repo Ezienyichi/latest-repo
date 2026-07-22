@@ -5,6 +5,7 @@ import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import Toasts from './components/ui/Toasts';
 import HomePage from './pages/HomePage';
+import AboutPage from './pages/AboutPage';
 import ShopPage from './pages/ShopPage';
 import ProductPage from './pages/ProductPage';
 import DigitalsPage from './pages/DigitalsPage';
@@ -70,6 +71,7 @@ function WithLayout() {
       <Navbar />
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<AboutPage />} />
         <Route path="/shop" element={<ShopPage />} />
         <Route path="/shop/:slug" element={<ProductPage />} />
         <Route path="/digitals" element={<DigitalsPage />} />

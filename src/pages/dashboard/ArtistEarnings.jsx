@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { Wallet, Landmark, Leaf, Info } from 'lucide-react';
 import DashboardShell, { StatCard } from './DashboardShell';
+import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
 
 export default function ArtistEarnings() {
@@ -16,9 +18,9 @@ export default function ArtistEarnings() {
   return (
     <DashboardShell title="Earnings & Payouts">
       <div className="g3" style={{ marginBottom: 28 }}>
-        <StatCard icon="💰" label="Gross Revenue" value={`£${(s.grossRevenue || 0).toLocaleString()}`} sub="Total sales before fees" />
-        <StatCard icon="🏦" label="Net Earnings" value={`£${(s.netEarnings || 0).toLocaleString()}`} sub="After platform & charity splits" color="var(--accent)" />
-        <StatCard icon="🌿" label="Charity Contributed" value={`£${(s.charityContributed || 0).toLocaleString()}`} sub="Your impact through art" color="var(--sage)" />
+        <StatCard icon={Wallet} label="Gross Revenue" value={`£${(s.grossRevenue || 0).toLocaleString()}`} sub="Total sales before fees" />
+        <StatCard icon={Landmark} label="Net Earnings" value={`£${(s.netEarnings || 0).toLocaleString()}`} sub="After platform & charity splits" color="var(--accent)" />
+        <StatCard icon={Leaf} label="Charity Contributed" value={`£${(s.charityContributed || 0).toLocaleString()}`} sub="Your impact through art" color="var(--sage)" />
       </div>
 
       {/* Breakdown */}
@@ -42,7 +44,7 @@ export default function ArtistEarnings() {
 
         <div className="card" style={{ padding: 24 }}>
           <h3 style={{ fontFamily: 'var(--fd)', fontSize: 20, marginBottom: 18 }}>Payout Schedule</h3>
-          <div className="alert alert-i" style={{ marginBottom: 14 }}><span>ℹ</span><div>Payouts are processed on the 1st and 15th of each month for orders marked as delivered.</div></div>
+          <div className="alert alert-i" style={{ marginBottom: 14 }}><Icon icon={Info} size="inline" /><div>Payouts are processed on the 1st and 15th of each month for orders marked as delivered.</div></div>
           <div style={{ fontSize: 13, color: 'var(--txt2)', lineHeight: 1.7 }}>
             <p style={{ marginBottom: 8 }}>Next payout: <strong>1st of next month</strong></p>
             <p style={{ marginBottom: 8 }}>Payout method: <strong>Bank Transfer (Stripe Connect)</strong></p>

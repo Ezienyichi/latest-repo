@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { Check } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { SDGs } from '../../data/constants';
 import DashboardShell from './DashboardShell';
 import Uploader from '../../components/ui/Uploader';
+import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
 
 export default function ArtistProfileEditor() {
@@ -55,7 +57,7 @@ export default function ArtistProfileEditor() {
 
   return (
     <DashboardShell title="Edit Profile">
-      {profile?.verified && <div className="alert alert-ok" style={{ marginBottom: 20 }}>✓ Your artist profile is verified</div>}
+      {profile?.verified && <div className="alert alert-ok" style={{ marginBottom: 20 }}><Icon icon={Check} size="inline" /> Your artist profile is verified</div>}
       {!profile?.verified && <div className="alert alert-w" style={{ marginBottom: 20 }}>⏳ Your profile is pending verification</div>}
 
       <div className="tabs-container" style={{ marginBottom: 24 }}>

@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { Folder, FileText, Image as ImageIcon, Paperclip } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import DashboardShell from './DashboardShell';
 import Uploader from '../../components/ui/Uploader';
+import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
 
 export default function CharityResources() {
@@ -49,7 +51,7 @@ export default function CharityResources() {
   return (
     <DashboardShell title="Resource Repository">
       <div className="alert alert-i" style={{ marginBottom: 20 }}>
-        <span>📁</span>
+        <Icon icon={Folder} />
         <div>Upload PDFs, reports, and documents for your funders. <strong>Public</strong> resources are visible on your charity profile page. <strong>Funders Only</strong> resources are shared exclusively with your supporters via the platform.</div>
       </div>
 
@@ -107,7 +109,7 @@ export default function CharityResources() {
                 <tr key={r.id}>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <span style={{ fontSize: 18 }}>{r.fileType === 'pdf' ? '📄' : r.fileType === 'image' ? '🖼️' : '📎'}</span>
+                      <Icon icon={r.fileType === 'pdf' ? FileText : r.fileType === 'image' ? ImageIcon : Paperclip} />
                       <span style={{ fontWeight: 500 }}>{r.title}</span>
                     </div>
                   </td>
@@ -127,7 +129,7 @@ export default function CharityResources() {
         </div>
       ) : !showAdd && (
         <div className="empty" style={{ padding: 48 }}>
-          <div style={{ fontSize: 40, marginBottom: 12, opacity: .3 }}>📁</div>
+          <div style={{ marginBottom: 12, opacity: .3, display: 'flex', justifyContent: 'center' }}><Icon icon={Folder} size={40} /></div>
           <div className="empty-t">No resources yet</div>
           <p style={{ color: 'var(--muted)', marginBottom: 16 }}>Upload impact reports, project updates, and documents for your funders</p>
           <button className="btn btn-p" onClick={() => setShowAdd(true)}>Upload First Resource</button>

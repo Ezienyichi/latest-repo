@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Leaf, Check } from 'lucide-react';
 import { SDGs } from '../data/constants';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import api from '../utils/api';
+import Icon from '../components/ui/Icon';
+import CharityLogo from '../components/ui/CharityLogo';
 
 function SdgDot({ id }) {
   const s = SDGs.find(x => x.id === id); if (!s) return null;
@@ -41,7 +44,7 @@ export default function CharityProfilePage() {
     if (!user) { toast('Sign in to become a funder', 'err'); return; }
     try {
       await api.becomeFunder(id);
-      toast(`You're now supporting ${charity.name}! 🌿`, 'ok');
+      toast(`You're now supporting ${charity.name}!`, 'ok');
     } catch (e) { toast(e.message, 'err'); }
   };
 
@@ -57,8 +60,8 @@ export default function CharityProfilePage() {
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 20, flexWrap: 'wrap' }}>
             <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>{charity.sdgIds?.map(id => <SdgDot key={id} id={id} />)}{charity.verified && <span className="badge b-green">✓ Verified</span>}</div>
-              <h1 style={{ fontFamily: 'var(--fd)', fontSize: 44, color: '#fff', fontWeight: 600, marginBottom: 4 }}>{charity.logo} {charity.name}</h1>
+              <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>{charity.sdgIds?.map(id => <SdgDot key={id} id={id} />)}{charity.verified && <span className="badge b-green" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Icon icon={Check} size="inline" /> Verified</span>}</div>
+              <h1 style={{ fontFamily: 'var(--fd)', fontSize: 44, color: '#fff', fontWeight: 600, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 12 }}><CharityLogo logo={charity.logo} size={40} /> {charity.name}</h1>
               {charity.registrationNo && <div style={{ fontSize: 12, color: 'rgba(255,255,255,.45)' }}>Reg: {charity.registrationNo}</div>}
             </div>
             <button className="btn btn-p" onClick={() => navigate('/shop')}>Support via Art Purchase</button>
@@ -96,7 +99,7 @@ export default function CharityProfilePage() {
 
             {/* What we provide */}
             <div className="alert alert-ok" style={{ marginBottom: 20 }}>
-              <span>🌿</span>
+              <Icon icon={Leaf} />
               <div><strong>What we provide:</strong> High possibility to receive capital campaigns, major gifts, recurrent donations, and publicity for charities registered on our platform.</div>
             </div>
 
@@ -105,7 +108,7 @@ export default function CharityProfilePage() {
               <div className="lbl" style={{ marginBottom: 12 }}>Become a Funder</div>
               <div className="alert alert-i" style={{ marginBottom: 14 }}>Becoming a funder registers you to receive updates and resources from {charity.name}. Your personal details remain private.</div>
               {user ? (
-                <button className="btn btn-p" onClick={becomeFunder}>Become a Funder of {charity.name} 🌿</button>
+                <button className="btn btn-p" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={becomeFunder}>Become a Funder of {charity.name} <Icon icon={Leaf} size="inline" /></button>
               ) : (
                 <div style={{ display: 'flex', gap: 10, maxWidth: 420 }}>
                   <input className="fi" placeholder="your@email.com" value={email} onChange={e => setEmail(e.target.value)} style={{ flex: 1 }} />

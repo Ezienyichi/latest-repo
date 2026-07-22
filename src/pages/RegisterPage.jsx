@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { ShoppingBag, Palette, Leaf, AlertTriangle, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import Icon from '../components/ui/Icon';
 
 const ROLES = [
-  { id: 'BUYER', label: 'Buyer / Funder', icon: '🛍️', desc: 'Browse and purchase art. Support charities through your purchases.' },
-  { id: 'ARTIST', label: 'Artist / Creative', icon: '🎨', desc: 'Sell artwork, digital products. Connect your art to charitable causes.' },
-  { id: 'CHARITY', label: 'Charity / Non-Profit', icon: '🌿', desc: 'Receive donations, manage funders. Partner with artists for impact.' },
+  { id: 'BUYER', label: 'Buyer / Funder', icon: ShoppingBag, desc: 'Browse and purchase art. Support charities through your purchases.' },
+  { id: 'ARTIST', label: 'Artist / Creative', icon: Palette, desc: 'Sell artwork, digital products. Connect your art to charitable causes.' },
+  { id: 'CHARITY', label: 'Charity / Non-Profit', icon: Leaf, desc: 'Receive donations, manage funders. Partner with artists for impact.' },
 ];
 
 export default function RegisterPage() {
@@ -79,7 +81,7 @@ export default function RegisterPage() {
                     background: role === r.id ? 'rgba(23,124,29,.06)' : 'var(--glass)',
                     transition: 'all .18s', display: 'flex', gap: 14, alignItems: 'center',
                   }}>
-                  <span style={{ fontSize: 28 }}>{r.icon}</span>
+                  <Icon icon={r.icon} size={28} />
                   <div>
                     <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 2 }}>{r.label}</div>
                     <div style={{ fontSize: 12, color: 'var(--muted)', lineHeight: 1.5 }}>{r.desc}</div>
@@ -87,8 +89,8 @@ export default function RegisterPage() {
                 </div>
               ))}
             </div>
-            <button className="btn btn-p" style={{ width: '100%', justifyContent: 'center', padding: '14px 0' }} onClick={() => setStep(2)}>
-              Continue as {ROLES.find(r => r.id === role)?.label} →
+            <button className="btn btn-p" style={{ width: '100%', justifyContent: 'center', padding: '14px 0', display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => setStep(2)}>
+              Continue as {ROLES.find(r => r.id === role)?.label} <Icon icon={ArrowRight} size="inline" />
             </button>
           </div>
         )}
@@ -96,12 +98,12 @@ export default function RegisterPage() {
         {step === 2 && (
           <form onSubmit={handleSubmit}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, padding: '10px 14px', background: 'rgba(23,124,29,.06)', border: '1px solid rgba(23,124,29,.15)', borderRadius: 'var(--r)' }}>
-              <span style={{ fontSize: 20 }}>{ROLES.find(r => r.id === role)?.icon}</span>
+              <Icon icon={ROLES.find(r => r.id === role)?.icon} />
               <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent)' }}>Registering as {ROLES.find(r => r.id === role)?.label}</span>
               <button type="button" className="btn btn-g btn-sm" style={{ marginLeft: 'auto', fontSize: 11 }} onClick={() => setStep(1)}>Change</button>
             </div>
 
-            {error && <div className="alert alert-w" style={{ marginBottom: 16 }}>⚠ {error}</div>}
+            {error && <div className="alert alert-w" style={{ marginBottom: 16 }}><Icon icon={AlertTriangle} size="inline" /> {error}</div>}
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
               <div className="fg" style={{ margin: 0 }}>
@@ -130,8 +132,8 @@ export default function RegisterPage() {
               <input className="fi" type="password" value={form.confirmPassword} onChange={e => set('confirmPassword', e.target.value)} placeholder="Repeat password" required />
             </div>
 
-            <button className="btn btn-p" type="submit" disabled={loading} style={{ width: '100%', justifyContent: 'center', padding: '14px 0', marginTop: 8 }}>
-              {loading ? 'Creating Account...' : 'Create Account →'}
+            <button className="btn btn-p" type="submit" disabled={loading} style={{ width: '100%', justifyContent: 'center', padding: '14px 0', marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              {loading ? 'Creating Account...' : <>Create Account <Icon icon={ArrowRight} size="inline" /></>}
             </button>
 
             <div style={{ textAlign: 'center', marginTop: 18, fontSize: 13, color: 'var(--muted)' }}>

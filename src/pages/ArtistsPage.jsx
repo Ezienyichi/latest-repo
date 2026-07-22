@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Check } from 'lucide-react';
 import { SDGs } from '../data/constants';
 import api from '../utils/api';
+import Icon from '../components/ui/Icon';
 
 function SdgDot({ id }) {
   const s = SDGs.find(x => x.id === id); if (!s) return null;
@@ -37,7 +39,7 @@ export default function ArtistsPage() {
                     <h3 style={{ fontFamily: 'var(--fd)', fontSize: 22, color: '#fff', fontWeight: 600 }}>{a.displayName}</h3>
                     <div style={{ fontSize: 12, color: 'rgba(255,255,255,.6)' }}>{a.location}</div>
                   </div>
-                  {a.verified && <div className="badge b-green" style={{ position: 'absolute', top: 12, right: 12 }}>✓ Verified</div>}
+                  {a.verified && <div className="badge b-green" style={{ position: 'absolute', top: 12, right: 12, display: 'inline-flex', alignItems: 'center', gap: 4 }}><Icon icon={Check} size="inline" /> Verified</div>}
                 </div>
                 <div style={{ padding: '14px 16px' }}>
                   <div style={{ display: 'flex', gap: 3, marginBottom: 8 }}>{a.sdgIds?.slice(0, 5).map(id => <SdgDot key={id} id={id} />)}</div>

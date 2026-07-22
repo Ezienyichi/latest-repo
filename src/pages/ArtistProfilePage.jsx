@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Check } from 'lucide-react';
 import { SDGs } from '../data/constants';
 import { useCart } from '../context/CartContext';
 import api from '../utils/api';
+import Icon from '../components/ui/Icon';
 
 function SdgDot({ id }) {
   const s = SDGs.find(x => x.id === id); if (!s) return null;
@@ -43,7 +45,7 @@ export default function ArtistProfilePage() {
           <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
             {artist.avatarUrl && <img src={artist.avatarUrl} alt="" style={{ width: 80, height: 80, borderRadius: '50%', border: '3px solid rgba(255,255,255,.2)', objectFit: 'cover' }} />}
             <div>
-              <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>{artist.sdgIds?.map(id => <SdgDot key={id} id={id} />)}{artist.verified && <span className="badge b-green">✓ Verified</span>}</div>
+              <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>{artist.sdgIds?.map(id => <SdgDot key={id} id={id} />)}{artist.verified && <span className="badge b-green" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Icon icon={Check} size="inline" /> Verified</span>}</div>
               <h1 style={{ fontFamily: 'var(--fd)', fontSize: 40, color: '#fff', fontWeight: 600 }}>{artist.displayName}</h1>
               <div style={{ fontSize: 13, color: 'rgba(255,255,255,.55)' }}>{artist.location}</div>
             </div>

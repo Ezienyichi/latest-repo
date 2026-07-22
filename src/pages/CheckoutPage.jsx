@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { Check, ArrowRight, ArrowLeft, CreditCard, FlaskConical, Lock } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
+import Icon from '../components/ui/Icon';
 
 // Matches the backend fallback in functions/_lib/split.js — used only until
 // the real rates load, so the numbers never visibly jump for the common
@@ -86,7 +88,7 @@ export default function CheckoutPage() {
         <div className="stepper" style={{ justifyContent: 'center', marginBottom: 32 }}>
           {[{ n: 1, l: 'Shipping' }, { n: 2, l: 'Payment' }, { n: 3, l: 'Review' }].map((s, i) => (
             <div key={s.n} className="step">
-              <div className={`step-c ${step > s.n ? 'done' : step === s.n ? 'active' : 'pending'}`} onClick={() => s.n < step && setStep(s.n)} style={{ cursor: s.n < step ? 'pointer' : 'default' }}>{step > s.n ? '✓' : s.n}</div>
+              <div className={`step-c ${step > s.n ? 'done' : step === s.n ? 'active' : 'pending'}`} onClick={() => s.n < step && setStep(s.n)} style={{ cursor: s.n < step ? 'pointer' : 'default' }}>{step > s.n ? <Icon icon={Check} size="inline" /> : s.n}</div>
               <span className={`step-lbl${step === s.n ? ' active' : ''}`}>{s.l}</span>
               {i < 2 && <div className="step-conn" />}
             </div>
@@ -114,8 +116,8 @@ export default function CheckoutPage() {
                   <div className="fg" style={{ margin: 0 }}><label className="fl">Postcode *</label><input className="fi" value={shipping.postcode} onChange={e => set('postcode', e.target.value)} required /></div>
                   <div className="fg" style={{ margin: 0 }}><label className="fl">Country</label><select className="fi fsel" value={shipping.country} onChange={e => set('country', e.target.value)}><option>United Kingdom</option><option>United States</option><option>Nigeria</option><option>Ghana</option><option>Kenya</option><option>South Africa</option><option>France</option><option>Germany</option></select></div>
                 </div>
-                <button className="btn btn-p btn-lg" style={{ width: '100%', justifyContent: 'center', marginTop: 18 }} onClick={() => { if (validateShipping()) setStep(2); }}>
-                  Continue to Payment →
+                <button className="btn btn-p btn-lg" style={{ width: '100%', justifyContent: 'center', marginTop: 18, display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => { if (validateShipping()) setStep(2); }}>
+                  Continue to Payment <Icon icon={ArrowRight} size="inline" />
                 </button>
               </div>
             )}
@@ -125,8 +127,8 @@ export default function CheckoutPage() {
                 <h3 style={{ fontFamily: 'var(--fd)', fontSize: 22, marginBottom: 20 }}>Payment Method</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
                   {[
-                    { id: 'card', label: 'Credit / Debit Card', icon: '💳', desc: 'Visa, Mastercard, Amex — powered by Stripe' },
-                    { id: 'demo', label: 'Demo Mode (Skip Payment)', icon: '🧪', desc: 'Place order without real payment — for testing' },
+                    { id: 'card', label: 'Credit / Debit Card', icon: CreditCard, desc: 'Visa, Mastercard, Amex — powered by Stripe' },
+                    { id: 'demo', label: 'Demo Mode (Skip Payment)', icon: FlaskConical, desc: 'Place order without real payment — for testing' },
                   ].map(m => (
                     <div key={m.id} onClick={() => setPaymentMethod(m.id)} style={{
                       padding: '16px 20px', borderRadius: 'var(--r)', cursor: 'pointer',
@@ -134,7 +136,7 @@ export default function CheckoutPage() {
                       background: paymentMethod === m.id ? 'rgba(23,124,29,.06)' : 'var(--glass)',
                       display: 'flex', gap: 14, alignItems: 'center', transition: 'all .18s',
                     }}>
-                      <span style={{ fontSize: 24 }}>{m.icon}</span>
+                      <Icon icon={m.icon} size={24} />
                       <div><div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{m.label}</div><div style={{ fontSize: 11, color: 'var(--muted)' }}>{m.desc}</div></div>
                     </div>
                   ))}
@@ -147,13 +149,13 @@ export default function CheckoutPage() {
                       <div className="fg" style={{ margin: 0 }}><label className="fl">Expiry</label><input className="fi stripe-field" placeholder="MM / YY" /></div>
                       <div className="fg" style={{ margin: 0 }}><label className="fl">CVC</label><input className="fi stripe-field" placeholder="123" maxLength={4} /></div>
                     </div>
-                    <div className="alert alert-i" style={{ marginTop: 10 }}><span>🔒</span><div>Payment is processed securely via Stripe. We never store your card details.</div></div>
+                    <div className="alert alert-i" style={{ marginTop: 10 }}><Icon icon={Lock} size="inline" /><div>Payment is processed securely via Stripe. We never store your card details.</div></div>
                   </div>
                 )}
 
                 <div style={{ display: 'flex', gap: 10 }}>
-                  <button className="btn btn-s btn-lg" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setStep(1)}>← Back</button>
-                  <button className="btn btn-p btn-lg" style={{ flex: 2, justifyContent: 'center' }} onClick={() => setStep(3)}>Review Order →</button>
+                  <button className="btn btn-s btn-lg" style={{ flex: 1, justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => setStep(1)}><Icon icon={ArrowLeft} size="inline" /> Back</button>
+                  <button className="btn btn-p btn-lg" style={{ flex: 2, justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => setStep(3)}>Review Order <Icon icon={ArrowRight} size="inline" /></button>
                 </div>
               </div>
             )}
@@ -188,7 +190,7 @@ export default function CheckoutPage() {
                 </div>
 
                 <div style={{ display: 'flex', gap: 10 }}>
-                  <button className="btn btn-s btn-lg" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setStep(2)}>← Back</button>
+                  <button className="btn btn-s btn-lg" style={{ flex: 1, justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => setStep(2)}><Icon icon={ArrowLeft} size="inline" /> Back</button>
                   <button className="btn btn-p btn-lg" style={{ flex: 2, justifyContent: 'center' }} onClick={placeOrder} disabled={loading}>
                     {loading ? 'Processing...' : `Place Order — £${grandTotal.toFixed(2)}`}
                   </button>

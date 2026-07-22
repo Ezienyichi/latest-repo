@@ -401,6 +401,47 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
 .product-card:hover .product-card-overlay{opacity:1}
 .product-card-body{padding:14px}
 
+/* ═══ THEORY OF CHANGE (homepage) ═══ */
+.theory-flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:20px;align-items:stretch}
+@media(max-width:900px){.theory-flow{grid-template-columns:1fr}}
+.theory-connector{display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--gold);opacity:.55;font-family:var(--fd)}
+@media(max-width:900px){.theory-connector{transform:rotate(90deg);padding:4px 0}}
+.theory-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:var(--rl);padding:30px;backdrop-filter:blur(10px);display:flex;flex-direction:column}
+.theory-card.then{border-color:rgba(255,173,0,.4);background:rgba(255,173,0,.07)}
+.theory-tag{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+.theory-card.then .theory-tag{color:var(--gold)}
+.theory-text{font-size:14px;line-height:1.85;color:rgba(255,255,255,.85)}
+
+/* ═══ ABOUT PAGE ═══ */
+.about-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:30px;display:flex;flex-direction:column}
+.about-card-tag{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+.about-card-text{font-size:14px;line-height:1.85;color:var(--txt2)}
+
+.about-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;text-align:center}
+@media(max-width:768px){.about-stats{grid-template-columns:1fr;gap:36px}}
+.about-stat-val{font-family:var(--fd);font-size:clamp(38px,5vw,56px);font-weight:700;color:var(--accent);line-height:1}
+.about-stat-lbl{font-size:13px;color:var(--muted);line-height:1.65;margin-top:10px;max-width:280px;margin-left:auto;margin-right:auto}
+
+.team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:28px}
+@media(max-width:900px){.team-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.team-grid{grid-template-columns:1fr;max-width:220px;margin:0 auto}}
+.team-card{text-align:center}
+.team-photo{width:120px;height:120px;border-radius:50%;object-fit:cover;margin:0 auto 16px;border:3px solid var(--border);display:block}
+.team-photo-fallback{width:120px;height:120px;border-radius:50%;margin:0 auto 16px;background:var(--glass);display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.team-name{font-family:var(--fd);font-size:17px;font-weight:600;margin-bottom:3px}
+.team-role{font-size:12px;color:var(--muted)}
+
+/* ═══ INTRO GALLERY BAND (homepage) ═══ */
+.intro-gallery{column-count:4;column-gap:14px}
+@media(max-width:1024px){.intro-gallery{column-count:3}}
+@media(max-width:640px){.intro-gallery{column-count:2;column-gap:10px}}
+.intro-gallery-item{break-inside:avoid;margin-bottom:14px;border-radius:var(--r);overflow:hidden;position:relative;background:var(--glass)}
+.intro-gallery-item.clickable{cursor:pointer}
+.intro-gallery-item img{width:100%;display:block;transition:transform .45s var(--ease)}
+.intro-gallery-item.clickable:hover img{transform:scale(1.05)}
+.intro-gallery-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.78) 0%,transparent 50%);opacity:0;transition:opacity .25s;display:flex;align-items:flex-end;padding:12px}
+.intro-gallery-item:hover .intro-gallery-overlay{opacity:1}
+
 /* ═══ GALLERY / LIGHTBOX ═══ */
 .gallery-main{position:relative;border-radius:var(--rl);overflow:hidden;background:var(--glass);border:1px solid var(--border);cursor:zoom-in}
 .gallery-main img{width:100%;height:100%;object-fit:cover;display:block;animation:carouselSlide .3s ease}

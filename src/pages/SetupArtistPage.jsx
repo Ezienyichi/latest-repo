@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Palette, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { SDGs } from '../data/constants';
+import Icon from '../components/ui/Icon';
 
 export default function SetupArtistPage() {
   const { user, setupArtistProfile } = useAuth();
@@ -53,7 +55,7 @@ export default function SetupArtistPage() {
         </div>
 
         <div className="alert alert-i" style={{ marginBottom: 24 }}>
-          <span>🎨</span>
+          <Icon icon={Palette} />
           <div>
             <strong>What we provide for artists:</strong> Value-driven buyers and collectors, increased visibility for your creative works,
             automatic Certificate of Authenticity generation, and direct connection to verified SDG-aligned charity projects.
@@ -116,8 +118,8 @@ export default function SetupArtistPage() {
             </div>
           </div>
 
-          <button className="btn btn-p btn-lg" type="submit" disabled={loading} style={{ width: '100%', justifyContent: 'center' }}>
-            {loading ? 'Creating Profile...' : 'Submit Artist Profile for Review →'}
+          <button className="btn btn-p btn-lg" type="submit" disabled={loading} style={{ width: '100%', justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            {loading ? 'Creating Profile...' : <>Submit Artist Profile for Review <Icon icon={ArrowRight} size="inline" /></>}
           </button>
         </form>
       </div>

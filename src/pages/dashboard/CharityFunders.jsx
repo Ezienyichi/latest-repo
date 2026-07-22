@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Lock, Mail, Folder, Palette, Newspaper, ShoppingCart, Gift } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import DashboardShell, { StatCard } from './DashboardShell';
+import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
 
 export default function CharityFunders() {
@@ -21,7 +23,7 @@ export default function CharityFunders() {
     <DashboardShell title="Funder Management">
       {/* Privacy notice */}
       <div className="alert alert-i" style={{ marginBottom: 24 }}>
-        <span>🔒</span>
+        <Icon icon={Lock} />
         <div>
           <strong>Privacy by design:</strong> Funder identities are anonymous. You can see the total count of supporters and send them messages through the platform, but you cannot view individual personal details. This protects funder privacy while enabling meaningful engagement.
         </div>
@@ -42,9 +44,9 @@ export default function CharityFunders() {
       </div>
 
       <div className="g3" style={{ marginBottom: 28 }}>
-        <StatCard icon="📧" label="Messages Sent" value={stats.messagesSent || 0} sub="Total funder communications" />
-        <StatCard icon="📁" label="Resources Shared" value={stats.resourceCount || 0} sub="Documents & reports" />
-        <StatCard icon="🎨" label="Artist Partners" value={stats.partnerCount || 0} sub="Active collaborations" />
+        <StatCard icon={Mail} label="Messages Sent" value={stats.messagesSent || 0} sub="Total funder communications" />
+        <StatCard icon={Folder} label="Resources Shared" value={stats.resourceCount || 0} sub="Documents & reports" />
+        <StatCard icon={Palette} label="Artist Partners" value={stats.partnerCount || 0} sub="Active collaborations" />
       </div>
 
       {/* Engagement actions */}
@@ -55,9 +57,9 @@ export default function CharityFunders() {
           Research shows that charities with active funder communication see <strong>40% higher retention rates</strong>.
         </p>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <button className="btn btn-p" onClick={() => navigate('/dashboard/messages')}>✉️ Send Appreciation Message</button>
-          <button className="btn btn-gold" onClick={() => navigate('/dashboard/resources')}>📁 Share a Resource</button>
-          <button className="btn btn-s" onClick={() => toast('Newsletter feature coming soon!', 'info')}>📰 Create Newsletter</button>
+          <button className="btn btn-p" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => navigate('/dashboard/messages')}><Icon icon={Mail} size="inline" /> Send Appreciation Message</button>
+          <button className="btn btn-gold" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => navigate('/dashboard/resources')}><Icon icon={Folder} size="inline" /> Share a Resource</button>
+          <button className="btn btn-s" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => toast('Newsletter feature coming soon!', 'info')}><Icon icon={Newspaper} size="inline" /> Create Newsletter</button>
         </div>
       </div>
 
@@ -66,12 +68,12 @@ export default function CharityFunders() {
         <h3 style={{ fontFamily: 'var(--fd)', fontSize: 20, marginBottom: 16 }}>How Funders Join</h3>
         <div className="g3" style={{ gap: 16 }}>
           {[
-            { icon: '🛒', title: 'Art Purchase', desc: 'Anyone who buys an artwork linked to your charity automatically becomes a funder.' },
-            { icon: '📰', title: 'Newsletter Signup', desc: 'Visitors can sign up on your charity profile page to receive updates.' },
-            { icon: '💝', title: 'Direct Donation', desc: 'Users can opt-in as funders through the platform donation flow.' },
+            { icon: ShoppingCart, title: 'Art Purchase', desc: 'Anyone who buys an artwork linked to your charity automatically becomes a funder.' },
+            { icon: Newspaper, title: 'Newsletter Signup', desc: 'Visitors can sign up on your charity profile page to receive updates.' },
+            { icon: Gift, title: 'Direct Donation', desc: 'Users can opt-in as funders through the platform donation flow.' },
           ].map(s => (
             <div key={s.title} style={{ padding: 16, background: 'var(--glass)', borderRadius: 'var(--r)', border: '1px solid var(--border)' }}>
-              <div style={{ fontSize: 24, marginBottom: 8 }}>{s.icon}</div>
+              <div style={{ marginBottom: 8 }}><Icon icon={s.icon} size={24} /></div>
               <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{s.title}</div>
               <div style={{ fontSize: 12, color: 'var(--muted)', lineHeight: 1.6 }}>{s.desc}</div>
             </div>

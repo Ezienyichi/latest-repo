@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Leaf, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { SDGs } from '../data/constants';
+import Icon from '../components/ui/Icon';
 
 export default function SetupCharityPage() {
   const { user, setupCharityProfile } = useAuth();
@@ -43,7 +45,7 @@ export default function SetupCharityPage() {
         </div>
 
         <div className="alert alert-ok" style={{ marginBottom: 24 }}>
-          <span>🌿</span>
+          <Icon icon={Leaf} />
           <div>
             <strong>What we provide for charities:</strong> High possibility to receive capital campaigns, major gifts,
             recurrent donations, and publicity. Our platform connects your mission directly to value-driven art buyers and collectors.
@@ -94,8 +96,8 @@ export default function SetupCharityPage() {
             </div>
           </div>
 
-          <button className="btn btn-p btn-lg" type="submit" disabled={loading} style={{ width: '100%', justifyContent: 'center' }}>
-            {loading ? 'Submitting...' : 'Submit Charity Application for Review →'}
+          <button className="btn btn-p btn-lg" type="submit" disabled={loading} style={{ width: '100%', justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            {loading ? 'Submitting...' : <>Submit Charity Application for Review <Icon icon={ArrowRight} size="inline" /></>}
           </button>
         </form>
       </div>

@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Palette, ArrowLeft, ArrowRight, Check, Save } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { SDGs, DIGITAL_CATS } from '../../data/constants';
 import DashboardShell from './DashboardShell';
 import Uploader from '../../components/ui/Uploader';
+import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
 
 const STATUS_BADGE = { ACTIVE: 'b-green', DRAFT: 'b-gold', SOLD: 'b-muted', SUSPENDED: 'b-red' };
@@ -109,7 +111,7 @@ export default function ArtworkManager() {
 
           {loading ? <div>{[1,2,3].map(i => <div key={i} className="skel" style={{ height: 60, borderRadius: 8, marginBottom: 8 }} />)}</div> : products.length === 0 ? (
             <div className="empty" style={{ padding: 48 }}>
-              <div style={{ fontSize: 40, marginBottom: 12, opacity: .3 }}>🎨</div>
+              <div style={{ marginBottom: 12, opacity: .3, display: 'flex', justifyContent: 'center' }}><Icon icon={Palette} size={40} /></div>
               <div className="empty-t">No artworks yet</div>
               <p style={{ color: 'var(--muted)', marginBottom: 20 }}>Start listing your creative works</p>
               <button className="btn btn-p" onClick={() => setShowForm(true)}>Create Your First Artwork</button>
@@ -123,7 +125,7 @@ export default function ArtworkManager() {
                     <tr key={p.id}>
                       <td style={{ width: 48 }}>
                         <div style={{ width: 40, height: 40, borderRadius: 6, overflow: 'hidden', background: 'var(--glass)' }}>
-                          {p.images?.[0]?.url ? <img src={p.images[0].url.replace('w=1200', 'w=80')} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: '#1B4332', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, opacity: .4 }}>🎨</div>}
+                          {p.images?.[0]?.url ? <img src={p.images[0].url.replace('w=1200', 'w=80')} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: '#1B4332', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: .4 }}><Icon icon={Palette} size="inline" /></div>}
                         </div>
                       </td>
                       <td style={{ fontWeight: 500 }}>{p.title}</td>
@@ -150,14 +152,14 @@ export default function ArtworkManager() {
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <h2 style={{ fontFamily: 'var(--fd)', fontSize: 24 }}>{editId ? 'Edit Artwork' : 'New Artwork'}</h2>
-            <button className="btn btn-g" onClick={() => { setShowForm(false); setEditId(null); setStep(1); }}>← Back to List</button>
+            <button className="btn btn-g" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => { setShowForm(false); setEditId(null); setStep(1); }}><Icon icon={ArrowLeft} size="inline" /> Back to List</button>
           </div>
 
           {/* Stepper */}
           <div className="stepper" style={{ marginBottom: 24 }}>
             {[{ n: 1, l: 'Basic Info' }, { n: 2, l: 'Media' }, { n: 3, l: 'Pricing' }, { n: 4, l: 'SDGs & Charity' }, { n: 5, l: 'Review' }].map((s, i) => (
               <div key={s.n} className="step">
-                <div className={`step-c ${step > s.n ? 'done' : step === s.n ? 'active' : 'pending'}`} onClick={() => setStep(s.n)} style={{ cursor: 'pointer' }}>{step > s.n ? '✓' : s.n}</div>
+                <div className={`step-c ${step > s.n ? 'done' : step === s.n ? 'active' : 'pending'}`} onClick={() => setStep(s.n)} style={{ cursor: 'pointer' }}>{step > s.n ? <Icon icon={Check} size="inline" /> : s.n}</div>
                 <span className={`step-lbl${step === s.n ? ' active' : ''}`}>{s.l}</span>
                 {i < 4 && <div className="step-conn" />}
               </div>
@@ -312,9 +314,9 @@ export default function ArtworkManager() {
 
             {/* Navigation buttons */}
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 22 }}>
-              {step > 1 ? <button className="btn btn-s" onClick={() => setStep(s => s - 1)}>← Previous</button> : <div />}
-              {step < 5 ? <button className="btn btn-p" onClick={() => setStep(s => s + 1)}>Next →</button>
-                : <button className="btn btn-p btn-lg" onClick={handleSubmit}>💾 Save Artwork</button>}
+              {step > 1 ? <button className="btn btn-s" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => setStep(s => s - 1)}><Icon icon={ArrowLeft} size="inline" /> Previous</button> : <div />}
+              {step < 5 ? <button className="btn btn-p" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => setStep(s => s + 1)}>Next <Icon icon={ArrowRight} size="inline" /></button>
+                : <button className="btn btn-p btn-lg" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={handleSubmit}><Icon icon={Save} size="inline" /> Save Artwork</button>}
             </div>
           </div>
         </div>

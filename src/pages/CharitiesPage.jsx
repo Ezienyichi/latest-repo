@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Leaf, Check } from 'lucide-react';
 import { SDGs } from '../data/constants';
 import api from '../utils/api';
+import Icon from '../components/ui/Icon';
+import CharityLogo from '../components/ui/CharityLogo';
 
 function SdgDot({ id }) {
   const s = SDGs.find(x => x.id === id); if (!s) return null;
@@ -29,7 +32,7 @@ export default function CharitiesPage() {
       {/* What we provide for charities */}
       <div className="wrap" style={{ paddingTop: 28 }}>
         <div className="alert alert-ok" style={{ marginBottom: 28 }}>
-          <span>🌿</span>
+          <Icon icon={Leaf} />
           <div><strong>For charities on our platform:</strong> High possibility to receive capital campaigns, major gifts, recurrent donations, and publicity through creative partnerships with value-driven artists and collectors.</div>
         </div>
       </div>
@@ -42,9 +45,9 @@ export default function CharitiesPage() {
               return (
                 <div key={c.id} className="card card-h" style={{ padding: 28, cursor: 'pointer' }} onClick={() => navigate(`/charities/${c.id}`)}>
                   <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', marginBottom: 16 }}>
-                    <div style={{ fontSize: 36 }}>{c.logo || '🌿'}</div>
+                    <CharityLogo logo={c.logo} size={36} />
                     <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>{c.sdgIds?.map(id => <SdgDot key={id} id={id} />)}{c.verified && <span className="badge b-green">✓ Verified</span>}</div>
+                      <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>{c.sdgIds?.map(id => <SdgDot key={id} id={id} />)}{c.verified && <span className="badge b-green" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Icon icon={Check} size="inline" /> Verified</span>}</div>
                       <h3 style={{ fontFamily: 'var(--fd)', fontSize: 24, fontWeight: 600, marginBottom: 4 }}>{c.name}</h3>
                       {c.registrationNo && <div style={{ fontSize: 11, color: 'var(--muted)' }}>Reg: {c.registrationNo}</div>}
                     </div>

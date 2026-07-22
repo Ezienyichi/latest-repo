@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Star, Globe, Palette, ZoomIn, Award, ArrowRight, Check, Heart, Download, Info } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { SDGs, DIGITAL_CATS } from '../data/constants';
+import Icon from '../components/ui/Icon';
 import ProductAddons from '../components/ui/ProductAddons';
 import CertificateModal from '../components/ui/CertificateModal';
 import SocialShare from '../components/ui/SocialShare';
@@ -11,6 +13,7 @@ import MusicPlayer from '../components/ui/MusicPlayer';
 import GraphicPreview from '../components/ui/GraphicPreview';
 import AnimationPreview from '../components/ui/AnimationPreview';
 import IncludesList from '../components/ui/IncludesList';
+import CharityLogo from '../components/ui/CharityLogo';
 import api from '../utils/api';
 
 function SdgDot({ id, sm }) {
@@ -20,7 +23,7 @@ function SdgDot({ id, sm }) {
 }
 
 function Stars({ val, onChange, ro }) {
-  return <div className="stars">{[1,2,3,4,5].map(i => <span key={i} style={{ cursor: ro ? 'default' : 'pointer', opacity: i <= val ? 1 : .25, fontSize: 19 }} onClick={() => !ro && onChange?.(i)}>★</span>)}</div>;
+  return <div className="stars">{[1,2,3,4,5].map(i => <span key={i} style={{ cursor: ro ? 'default' : 'pointer', color: i <= val ? 'var(--gold)' : 'var(--border)' }} onClick={() => !ro && onChange?.(i)}><Icon icon={Star} size="inline" fill={i <= val ? 'currentColor' : 'none'} /></span>)}</div>;
 }
 
 export default function ProductPage() {
@@ -127,7 +130,7 @@ export default function ProductPage() {
                       <div key={i} className={`gallery-thumb${activeImg === i ? ' active' : ''}`}
                         onClick={() => { setActiveImg(i); setZoomPos(null); }} title={img.label}>
                         <img src={img.url?.replace('w=1200', 'w=120').replace('w=700', 'w=120')} alt={img.label} loading="lazy" />
-                        {isImpact && <div style={{ position: 'absolute', inset: 0, background: 'rgba(23,124,29,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🌍</div>}
+                        {isImpact && <div style={{ position: 'absolute', inset: 0, background: 'rgba(23,124,29,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon icon={Globe} size="inline" /></div>}
                         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,.6)', color: '#fff', fontSize: 7, textAlign: 'center', padding: 2, fontWeight: 700, letterSpacing: .4, textTransform: 'uppercase' }}>{img.label?.split(' — ')[0]}</div>
                       </div>
                     );
@@ -161,14 +164,14 @@ export default function ProductPage() {
                         ...(zoomPos ? { transform: 'scale(1.8)', transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`, transition: 'transform .1s ease' } : { transition: 'transform .3s ease' })
                       }} />
                   ) : (
-                    <div style={{ width: '100%', height: '100%', background: `linear-gradient(145deg,${cat?.bg || '#1B4332'},${cat?.color || '#2D6A4F'}44)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 48, opacity: .2 }}>🎨</span></div>
+                    <div style={{ width: '100%', height: '100%', background: `linear-gradient(145deg,${cat?.bg || '#1B4332'},${cat?.color || '#2D6A4F'}44)`, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: .2 }}><Icon icon={Palette} size={48} /></div>
                   )}
 
                   {/* Category badge */}
-                  {cat && !isVideoActive && <div style={{ position: 'absolute', top: 10, left: 10, background: `${cat.color}dd`, color: '#fff', fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', padding: '3px 10px', borderRadius: 20, zIndex: 3 }}>{cat.icon} {cat.label}</div>}
+                  {cat && !isVideoActive && <div style={{ position: 'absolute', top: 10, left: 10, background: `${cat.color}dd`, color: '#fff', fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', padding: '3px 10px', borderRadius: 20, zIndex: 3, display: 'flex', alignItems: 'center', gap: 4 }}><Icon icon={cat.icon} size="inline" /> {cat.label}</div>}
 
                   {/* Zoom hint */}
-                  {!isVideoActive && !zoomPos && <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,.45)', color: 'rgba(255,255,255,.8)', fontSize: 10, padding: '3px 9px', borderRadius: 20, pointerEvents: 'none' }}>🔍 Hover to zoom · Click for lightbox</div>}
+                  {!isVideoActive && !zoomPos && <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,.45)', color: 'rgba(255,255,255,.8)', fontSize: 10, padding: '3px 9px', borderRadius: 20, pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: 4 }}><Icon icon={ZoomIn} size="inline" /> Hover to zoom · Click for lightbox</div>}
 
                   {/* Counter */}
                   {totalSlides > 1 && <div style={{ position: 'absolute', bottom: 10, right: 10, background: 'rgba(0,0,0,.52)', color: '#fff', fontSize: 11, fontFamily: 'var(--fm)', padding: '3px 9px', borderRadius: 20, pointerEvents: 'none' }}>{isVideoActive ? '▶ Video' : `${activeImg + 1} / ${images.length}`}</div>}
@@ -197,10 +200,10 @@ export default function ProductPage() {
             {product.autoCertificate && (
               <div style={{ marginTop: 16, padding: '12px 16px', background: 'linear-gradient(135deg,#fff 0%,#faf8f2 100%)', border: '2px solid var(--gold)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}
                 onClick={() => setCertOpen(true)}>
-                <span style={{ fontSize: 24 }}>🏛</span>
+                <Icon icon={Award} size={24} style={{ color: 'var(--gold)' }} />
                 <div style={{ flex: 1 }}><div style={{ fontSize: 12, fontWeight: 700, color: '#1B4332', letterSpacing: 1 }}>Certificate of Authenticity</div>
                   <div style={{ fontSize: 11, color: '#6b7280' }}>ID: {product.certificateId} · Click to preview</div></div>
-                <span style={{ color: 'var(--gold)', fontSize: 18 }}>→</span>
+                <Icon icon={ArrowRight} style={{ color: 'var(--gold)' }} />
               </div>
             )}
           </div>
@@ -241,7 +244,7 @@ export default function ProductPage() {
                   {product.variations.map(v => (
                     <div key={v.id} onClick={() => setSelVar(v)} style={{ padding: '12px 16px', borderRadius: 'var(--r)', border: `2px solid ${selVar?.id === v.id ? 'var(--mint)' : 'var(--border)'}`, cursor: 'pointer', background: selVar?.id === v.id ? 'rgba(23,124,29,.08)' : 'var(--glass)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all .18s' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        {selVar?.id === v.id && <span style={{ color: 'var(--mint)' }}>✓</span>}
+                        {selVar?.id === v.id && <span style={{ color: 'var(--mint)' }}><Icon icon={Check} size="inline" /></span>}
                         <span style={{ fontSize: 14 }}>{Object.values(v.attributeCombination || {}).join(' · ')}</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -272,7 +275,7 @@ export default function ProductPage() {
               <button className={`btn ${isWished(product.id) ? 'btn-p' : 'btn-s'} btn-icon`} style={{ width: 48, height: 48 }}
                 onClick={() => { toggleWishlist(product.id); toast(isWished(product.id) ? 'Removed from wishlist' : 'Added to wishlist', 'ok'); }}
                 title={isWished(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}>
-                ♥
+                <Icon icon={Heart} fill={isWished(product.id) ? 'currentColor' : 'none'} />
               </button>
             </div>
 
@@ -285,12 +288,12 @@ export default function ProductPage() {
             {product.charity && (
               <div className="card" style={{ padding: 18, marginBottom: 22, display: 'flex', gap: 14, alignItems: 'center', cursor: 'pointer', background: 'rgba(23,124,29,.04)', border: '1px solid rgba(23,124,29,.15)' }}
                 onClick={() => navigate(`/charities/${product.charity.id}`)}>
-                <div style={{ fontSize: 28 }}>{product.charity.logo || '🌿'}</div>
+                <CharityLogo logo={product.charity.logo} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent)' }}>{product.charity.name}</div>
                   <div style={{ fontSize: 12, color: 'var(--txt2)', lineHeight: 1.5 }}>10% of this sale goes directly to their SDG-aligned projects</div>
                 </div>
-                <span style={{ color: 'var(--accent)', fontSize: 13, flexShrink: 0 }}>View charity →</span>
+                <span style={{ color: 'var(--accent)', fontSize: 13, flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 4 }}>View charity <Icon icon={ArrowRight} size="inline" /></span>
               </div>
             )}
 
@@ -331,7 +334,7 @@ export default function ProductPage() {
             {tab === 'shipping' && (
               <div style={{ fontSize: 13, color: 'var(--txt2)', lineHeight: 1.85 }}>
                 {isDigital ? (
-                  <div className="alert alert-ok"><span>📥</span><div>This is a <strong>digital product</strong>. After purchase, you'll receive instant download access via email and your account dashboard. No shipping required.</div></div>
+                  <div className="alert alert-ok"><Icon icon={Download} size="inline" /><div>This is a <strong>digital product</strong>. After purchase, you'll receive instant download access via email and your account dashboard. No shipping required.</div></div>
                 ) : (
                   <>
                     <p style={{ marginBottom: 12 }}>Free shipping on orders over £500. Standard shipping: £12.99.</p>
@@ -346,15 +349,15 @@ export default function ProductPage() {
               <div>
                 {product.autoCertificate ? (
                   <>
-                    <div className="alert alert-ok" style={{ marginBottom: 16 }}><span>🏛</span><div>This {isDigital ? 'product' : 'artwork'} includes a <strong>premium Certificate of Authenticity</strong> with a unique QR verification code.</div></div>
+                    <div className="alert alert-ok" style={{ marginBottom: 16 }}><Icon icon={Award} size="inline" /><div>This {isDigital ? 'product' : 'artwork'} includes a <strong>premium Certificate of Authenticity</strong> with a unique QR verification code.</div></div>
                     <div style={{ fontSize: 13, color: 'var(--txt2)', lineHeight: 1.85, marginBottom: 16 }}>
                       <p>The certificate includes: artist name, artwork title, charity partner, SDG project, platform seal, unique certificate ID, and a QR code linking to the verification page.</p>
                       <p style={{ marginTop: 8 }}>Delivered digitally upon purchase and downloadable from your account.</p>
                     </div>
-                    <button className="btn btn-gold" onClick={() => setCertOpen(true)}>Preview Certificate →</button>
+                    <button className="btn btn-gold" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => setCertOpen(true)}>Preview Certificate <Icon icon={ArrowRight} size="inline" /></button>
                   </>
                 ) : (
-                  <div className="alert alert-i"><span>ℹ</span><div>This product does not include an auto-generated certificate. The artist may provide their own certificate separately.</div></div>
+                  <div className="alert alert-i"><Icon icon={Info} size="inline" /><div>This product does not include an auto-generated certificate. The artist may provide their own certificate separately.</div></div>
                 )}
               </div>
             )}
@@ -379,7 +382,7 @@ export default function ProductPage() {
                 <div style={{ marginTop: 24, padding: 18, background: 'var(--glass)', borderRadius: 'var(--r)' }}>
                   <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10 }}>Write a Review</div>
                   <div style={{ display: 'flex', gap: 2, marginBottom: 10 }}>
-                    {[1,2,3,4,5].map(i => <span key={i} style={{ cursor: 'pointer', fontSize: 24, color: i <= rating ? 'var(--gold)' : 'var(--border)' }} onClick={() => setRating(i)}>★</span>)}
+                    {[1,2,3,4,5].map(i => <span key={i} style={{ cursor: 'pointer', color: i <= rating ? 'var(--gold)' : 'var(--border)' }} onClick={() => setRating(i)}><Icon icon={Star} size={24} fill={i <= rating ? 'currentColor' : 'none'} /></span>)}
                   </div>
                   <textarea className="fi fta" value={rvText} onChange={e => setRvText(e.target.value)} placeholder="Share your thoughts..." rows={3} style={{ marginBottom: 10 }} />
                   <button className="btn btn-p btn-sm" onClick={submitReview}>Submit Review</button>

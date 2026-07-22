@@ -30,6 +30,9 @@ const SETTING_VALIDATORS = {
   maintenance_mode: async (value) => (typeof value === 'boolean') ? null : 'Must be true or false',
   maintenance_message: async (value) => (typeof value === 'string') ? null : 'Must be a string',
   show_homepage_stats: async (value) => (typeof value === 'boolean') ? null : 'Must be true or false',
+  theory_if: async (value) => (typeof value === 'string' && value.trim()) ? null : 'Must be a non-empty string',
+  theory_and_if: async (value) => (typeof value === 'string' && value.trim()) ? null : 'Must be a non-empty string',
+  theory_then: async (value) => (typeof value === 'string' && value.trim()) ? null : 'Must be a non-empty string',
 };
 
 admin.get('/users', async (c) => {

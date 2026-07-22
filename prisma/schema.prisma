@@ -395,6 +395,22 @@ model PageContent {
   updatedBy String?
 }
 
+model TeamMember {
+  id        String   @id @default(cuid())
+  name      String
+  role      String
+  // Despite the name, holds the ready-to-render public URL, not a bare
+  // storage key — `avatars` is a public bucket, and every other public-
+  // bucket field in this schema (ArtistProfile.avatarUrl, CharityProfile.
+  // logo) stores the full URL the Uploader component hands back. Matches
+  // that convention so the future admin form is a drop-in, same as those.
+  photoPath String?
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model TermsDocument {
   id          String   @id @default(cuid())
   role        UserRole

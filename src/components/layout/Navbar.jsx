@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Moon, Sun, Palette, Image as ImageIcon, Monitor, Flame, Leaf, Wallet, Award, Home, Package, ShoppingCart, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { useTheme } from '../../context/ThemeContext';
 import { DIGITAL_CATS } from '../../data/constants';
+import Icon from '../ui/Icon';
 
 function ThemeToggle() {
   const { dark, toggle } = useTheme();
-  return <button className="theme-toggle" onClick={toggle} title={dark ? 'Light mode' : 'Dark mode'}><div className="knob">{dark ? '🌙' : '☀️'}</div></button>;
+  return <button className="theme-toggle" onClick={toggle} title={dark ? 'Light mode' : 'Dark mode'}><div className="knob"><Icon icon={dark ? Moon : Sun} size="inline" /></div></button>;
 }
 
 export default function Navbar() {
@@ -28,23 +30,25 @@ export default function Navbar() {
     { to: '/digitals', label: 'Digital Store' },
     { to: '/artists', label: 'Artists' },
     { to: '/charities', label: 'Charities' },
+    { to: '/about', label: 'About' },
   ];
 
   const shopCats = [
-    { label: 'All Artworks', to: '/shop', icon: '🎨' },
-    { label: 'Paintings', to: '/shop?medium=painting', icon: '🖼️' },
-    { label: 'Digital Art', to: '/shop?type=downloadable', icon: '💻' },
-    { label: 'Mixed Media', to: '/shop?medium=mixed', icon: '🔥' },
+    { label: 'All Artworks', to: '/shop', icon: Palette },
+    { label: 'Paintings', to: '/shop?medium=painting', icon: ImageIcon },
+    { label: 'Digital Art', to: '/shop?type=downloadable', icon: Monitor },
+    { label: 'Mixed Media', to: '/shop?medium=mixed', icon: Flame },
   ];
   const digCats = DIGITAL_CATS.map(c => ({ label: c.label, to: `/digitals?category=${c.id}`, icon: c.icon }));
 
   const enterShop = () => { clearTimeout(hoverTimer.current); setShopHover(true); };
   const leaveShop = () => { hoverTimer.current = setTimeout(() => setShopHover(false), 200); };
 
+  // Mock data (bell dropdown isn't wired to real notifications yet).
   const notifs = [
-    { icon: '🌿', title: 'New artwork listed', body: "Elena Okonkwo added 'Green Horizon'", time: '5m ago', read: false },
-    { icon: '💰', title: 'Charity milestone', body: 'WaterAid UK reached 50% target', time: '1h ago', read: false },
-    { icon: '🏛', title: 'Certificate ready', body: "Certificate for 'Silent River' ready", time: 'Yesterday', read: true },
+    { icon: Leaf, title: 'New artwork listed', body: "Elena Okonkwo added 'Green Horizon'", time: '5m ago', read: false },
+    { icon: Wallet, title: 'Charity milestone', body: 'WaterAid UK reached 50% target', time: '1h ago', read: false },
+    { icon: Award, title: 'Certificate ready', body: "Certificate for 'Silent River' ready", time: 'Yesterday', read: true },
   ];
 
   return (
@@ -63,11 +67,11 @@ export default function Navbar() {
                 <div className="mega-menu" onMouseEnter={enterShop} onMouseLeave={leaveShop}>
                   <div className="mega-col">
                     <div className="mega-title">Artworks</div>
-                    {shopCats.map(c => <div key={c.to} className="mega-item" onClick={() => { navigate(c.to); setShopHover(false); }}><span>{c.icon}</span>{c.label}</div>)}
+                    {shopCats.map(c => <div key={c.to} className="mega-item" onClick={() => { navigate(c.to); setShopHover(false); }}><Icon icon={c.icon} size="inline" />{c.label}</div>)}
                   </div>
                   <div className="mega-col">
                     <div className="mega-title">Digital Products</div>
-                    {digCats.map(c => <div key={c.to} className="mega-item" onClick={() => { navigate(c.to); setShopHover(false); }}><span>{c.icon}</span>{c.label}</div>)}
+                    {digCats.map(c => <div key={c.to} className="mega-item" onClick={() => { navigate(c.to); setShopHover(false); }}><Icon icon={c.icon} size="inline" />{c.label}</div>)}
                   </div>
                   <div className="mega-col mega-feat">
                     <img src="https://images.unsplash.com/photo-1541367777708-7905fe3296c0?w=400&q=80" alt="" style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 10, marginBottom: 8 }} />
@@ -88,7 +92,7 @@ export default function Navbar() {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
               {notifs.filter(n => !n.read).length > 0 && <div className="ndot" />}
             </button>
-            {nfOpen && <div className="nf-panel">{notifs.map((n, i) => <div key={i} className={`nf-item${!n.read ? ' unread' : ''}`}><div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--glass)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>{n.icon}</div><div><div style={{ fontSize: 13, fontWeight: 500 }}>{n.title}</div><div style={{ fontSize: 11, color: 'var(--muted)' }}>{n.body}</div><div style={{ fontSize: 10, color: 'var(--subtle)', marginTop: 2 }}>{n.time}</div></div></div>)}</div>}
+            {nfOpen && <div className="nf-panel">{notifs.map((n, i) => <div key={i} className={`nf-item${!n.read ? ' unread' : ''}`}><div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--glass)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon icon={n.icon} /></div><div><div style={{ fontSize: 13, fontWeight: 500 }}>{n.title}</div><div style={{ fontSize: 11, color: 'var(--muted)' }}>{n.body}</div><div style={{ fontSize: 10, color: 'var(--subtle)', marginTop: 2 }}>{n.time}</div></div></div>)}</div>}
           </div>
           <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => navigate('/cart')}>
             <button className="btn btn-g btn-icon" style={{ color: 'var(--muted)', width: 36, height: 36 }}>
@@ -121,14 +125,14 @@ export default function Navbar() {
       {/* Mobile bottom nav */}
       <div className="mobile-bottom-nav">
         {[
-          { to: '/', icon: '🏠', label: 'Home' },
-          { to: '/shop', icon: '🎨', label: 'Shop' },
-          { to: '/digitals', icon: '📦', label: 'Digital' },
-          { to: '/cart', icon: '🛒', label: 'Cart' },
-          { to: user ? '/dashboard' : '/login', icon: '👤', label: user ? 'Account' : 'Sign In' },
+          { to: '/', icon: Home, label: 'Home' },
+          { to: '/shop', icon: Palette, label: 'Shop' },
+          { to: '/digitals', icon: Package, label: 'Digital' },
+          { to: '/cart', icon: ShoppingCart, label: 'Cart' },
+          { to: user ? '/dashboard' : '/login', icon: User, label: user ? 'Account' : 'Sign In' },
         ].map(b => (
           <Link key={b.to} to={b.to} className={`mob-tab${pathname === b.to ? ' active' : ''}`}>
-            <span style={{ fontSize: 18 }}>{b.icon}</span>
+            <Icon icon={b.icon} size="inline" />
             <span>{b.label}</span>
             {b.to === '/cart' && cartCount > 0 && <span className="mob-tab-badge">{cartCount}</span>}
           </Link>

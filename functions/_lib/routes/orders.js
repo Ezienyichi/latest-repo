@@ -127,7 +127,10 @@ orders.post('/', optionalAuth, async (c) => {
 
     if (userId) {
       await prisma.notification.create({
-        data: { userId, icon: '📦', title: 'Order placed', body: `Order ${order.id.slice(0, 12)} — £${totalAmount.toFixed(2)}`, link: `/orders/${order.id}` },
+        // icon is a semantic key, not an emoji — nothing renders real
+        // Notification rows yet (the navbar bell is still mock data), so
+        // this maps to a lucide icon whenever that UI gets built.
+        data: { userId, icon: 'package', title: 'Order placed', body: `Order ${order.id.slice(0, 12)} — £${totalAmount.toFixed(2)}`, link: `/orders/${order.id}` },
       }).catch(() => {});
     }
 
@@ -171,7 +174,7 @@ orders.patch('/:id/status', authenticate, requireRole('ADMIN'), async (c) => {
     const order = await prisma.order.update({ where: { id: c.req.param('id') }, data: { status } });
     if (order.buyerId) {
       await prisma.notification.create({
-        data: { userId: order.buyerId, icon: status === 'SHIPPED' ? '🚚' : status === 'DELIVERED' ? '✅' : '📋', title: `Order ${status.toLowerCase()}`, body: `Order ${order.id.slice(0, 12)} has been ${status.toLowerCase()}`, link: `/orders/${order.id}` },
+        data: { userId: order.buyerId, icon: status === 'SHIPPED' ? 'truck' : status === 'DELIVERED' ? 'check' : 'clipboard', title: `Order ${status.toLowerCase()}`, body: `Order ${order.id.slice(0, 12)} has been ${status.toLowerCase()}`, link: `/orders/${order.id}` },
       }).catch(() => {});
     }
     return c.json(order);

@@ -74,6 +74,10 @@ class ApiClient {
   // Settings
   getPublicSettings() { return this.get('/settings/public'); }
 
+  // Content
+  getPageContent(slug) { return this.get(`/content/page/${slug}`); }
+  getTeam() { return this.get('/content/team'); }
+
   // Uploads
   signUpload(data) { return this.post('/uploads/sign', data); }
 

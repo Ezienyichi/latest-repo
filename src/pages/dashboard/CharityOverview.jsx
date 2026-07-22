@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Check, Handshake, Wallet, Mail, Palette, Folder, ArrowRight } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import DashboardShell, { StatCard } from './DashboardShell';
+import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
 
 export default function CharityOverview() {
@@ -24,17 +26,17 @@ export default function CharityOverview() {
     <DashboardShell title="Charity Overview">
       {/* Verification status */}
       {profile?.verified ? (
-        <div className="alert alert-ok" style={{ marginBottom: 20 }}>✓ Your charity is verified and visible on the platform</div>
+        <div className="alert alert-ok" style={{ marginBottom: 20 }}><Icon icon={Check} size="inline" /> Your charity is verified and visible on the platform</div>
       ) : (
         <div className="alert alert-w" style={{ marginBottom: 20 }}>⏳ Your charity profile is pending verification by our team</div>
       )}
 
       {/* Stats */}
       <div className="g4" style={{ marginBottom: 28 }}>
-        <StatCard icon="🤝" label="Funders" value={stats.funderCount.toLocaleString()} sub="Anonymous supporters" />
-        <StatCard icon="💰" label="Funds Raised" value={`£${stats.raised.toLocaleString()}`} sub={`${pct}% of £${stats.target.toLocaleString()} target`} />
-        <StatCard icon="✉️" label="Messages Sent" value={stats.messagesSent} sub="Funder communications" />
-        <StatCard icon="🎨" label="Artist Partners" value={stats.partnerCount} sub="Active collaborations" color="var(--gold)" />
+        <StatCard icon={Handshake} label="Funders" value={stats.funderCount.toLocaleString()} sub="Anonymous supporters" />
+        <StatCard icon={Wallet} label="Funds Raised" value={`£${stats.raised.toLocaleString()}`} sub={`${pct}% of £${stats.target.toLocaleString()} target`} />
+        <StatCard icon={Mail} label="Messages Sent" value={stats.messagesSent} sub="Funder communications" />
+        <StatCard icon={Palette} label="Artist Partners" value={stats.partnerCount} sub="Active collaborations" color="var(--gold)" />
       </div>
 
       {/* Fundraising progress */}
@@ -57,9 +59,9 @@ export default function CharityOverview() {
         <div className="card" style={{ padding: 22 }}>
           <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 14 }}>Quick Actions</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <button className="btn btn-p" style={{ width: '100%', justifyContent: 'center' }} onClick={() => navigate('/dashboard/messages')}>✉️ Send Appreciation Message</button>
-            <button className="btn btn-s" style={{ width: '100%', justifyContent: 'center' }} onClick={() => navigate('/dashboard/resources')}>📁 Upload Resource</button>
-            <button className="btn btn-s" style={{ width: '100%', justifyContent: 'center' }} onClick={() => navigate('/dashboard/funders')}>🤝 View Funders</button>
+            <button className="btn btn-p" style={{ width: '100%', justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => navigate('/dashboard/messages')}><Icon icon={Mail} size="inline" /> Send Appreciation Message</button>
+            <button className="btn btn-s" style={{ width: '100%', justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => navigate('/dashboard/resources')}><Icon icon={Folder} size="inline" /> Upload Resource</button>
+            <button className="btn btn-s" style={{ width: '100%', justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => navigate('/dashboard/funders')}><Icon icon={Handshake} size="inline" /> View Funders</button>
           </div>
         </div>
 
@@ -82,7 +84,7 @@ export default function CharityOverview() {
       <div className="card" style={{ padding: 22 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <h3 style={{ fontSize: 15, fontWeight: 600 }}>Recent Messages</h3>
-          <button className="btn btn-g btn-sm" onClick={() => navigate('/dashboard/messages')}>View All →</button>
+          <button className="btn btn-g btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }} onClick={() => navigate('/dashboard/messages')}>View All <Icon icon={ArrowRight} size="inline" /></button>
         </div>
         {messages?.length > 0 ? (
           <table className="tbl">

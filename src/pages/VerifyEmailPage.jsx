@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Mail } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import Icon from '../components/ui/Icon';
 
 export default function VerifyEmailPage() {
   const { user, verifyEmail } = useAuth();
@@ -31,7 +33,7 @@ export default function VerifyEmailPage() {
   return (
     <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <div style={{ maxWidth: 440, width: '100%', textAlign: 'center' }}>
-        <div style={{ fontSize: 48, marginBottom: 16 }}>📧</div>
+        <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center', color: 'var(--accent)' }}><Icon icon={Mail} size={48} /></div>
         <h1 className="display" style={{ fontSize: 36, marginBottom: 12 }}>Verify Your Email</h1>
         <p style={{ fontSize: 14, color: 'var(--muted)', marginBottom: 28, lineHeight: 1.7 }}>
           We sent a 6-digit verification code to <strong>{user?.email}</strong>. Enter it below to verify your account.

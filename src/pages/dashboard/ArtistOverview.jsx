@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Palette, Package, Wallet, Leaf, ArrowRight } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import DashboardShell, { StatCard } from './DashboardShell';
+import Icon from '../../components/ui/Icon';
+import CharityLogo from '../../components/ui/CharityLogo';
 import api from '../../utils/api';
 
 export default function ArtistOverview() {
@@ -23,10 +26,10 @@ export default function ArtistOverview() {
     <DashboardShell title="Overview">
       {/* Stats grid */}
       <div className="g4" style={{ marginBottom: 28 }}>
-        <StatCard icon="🎨" label="Active Listings" value={stats.activeListings} sub={`${stats.draftListings} drafts`} />
-        <StatCard icon="📦" label="Total Orders" value={stats.totalOrders} sub={`${stats.pendingOrders} pending`} />
-        <StatCard icon="💰" label="Net Earnings" value={`£${stats.netEarnings.toLocaleString()}`} sub={`Gross: £${stats.grossRevenue.toLocaleString()}`} />
-        <StatCard icon="🌿" label="Charity Impact" value={`£${stats.charityContributed.toLocaleString()}`} sub="Directed to charities" color="var(--sage)" />
+        <StatCard icon={Palette} label="Active Listings" value={stats.activeListings} sub={`${stats.draftListings} drafts`} />
+        <StatCard icon={Package} label="Total Orders" value={stats.totalOrders} sub={`${stats.pendingOrders} pending`} />
+        <StatCard icon={Wallet} label="Net Earnings" value={`£${stats.netEarnings.toLocaleString()}`} sub={`Gross: £${stats.grossRevenue.toLocaleString()}`} />
+        <StatCard icon={Leaf} label="Charity Impact" value={`£${stats.charityContributed.toLocaleString()}`} sub="Directed to charities" color="var(--sage)" />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginBottom: 28 }}>
@@ -76,7 +79,7 @@ export default function ArtistOverview() {
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 8 }}>Charity Partners</div>
               {partnerships.map(p => (
                 <div key={p.charity.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', fontSize: 12 }}>
-                  <span>{p.charity.logo}</span>
+                  <CharityLogo logo={p.charity.logo} size={18} />
                   <span>{p.charity.name}</span>
                 </div>
               ))}
@@ -89,7 +92,7 @@ export default function ArtistOverview() {
       <div className="card" style={{ padding: 22 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <div style={{ fontSize: 15, fontWeight: 600 }}>Recent Orders</div>
-          <button className="btn btn-g btn-sm" onClick={() => navigate('/dashboard/orders')}>View All →</button>
+          <button className="btn btn-g btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }} onClick={() => navigate('/dashboard/orders')}>View All <Icon icon={ArrowRight} size="inline" /></button>
         </div>
         {recentOrders?.length > 0 ? (
           <table className="tbl">

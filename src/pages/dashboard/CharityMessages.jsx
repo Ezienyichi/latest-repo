@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { Mail, ClipboardList, Send, Gift, Newspaper, Folder } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import DashboardShell from './DashboardShell';
+import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
 
 export default function CharityMessages() {
@@ -57,8 +59,8 @@ export default function CharityMessages() {
   return (
     <DashboardShell title="Messages & Templates">
       <div style={{ display: 'flex', gap: 10, marginBottom: 24 }}>
-        <button className="btn btn-p" onClick={() => { setComposing(true); setShowTemplates(false); setNewTemplate(false); }}>✉️ Compose Message</button>
-        <button className="btn btn-s" onClick={() => { setShowTemplates(true); setComposing(false); setNewTemplate(false); }}>📋 Templates ({templates.length})</button>
+        <button className="btn btn-p" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => { setComposing(true); setShowTemplates(false); setNewTemplate(false); }}><Icon icon={Mail} size="inline" /> Compose Message</button>
+        <button className="btn btn-s" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => { setShowTemplates(true); setComposing(false); setNewTemplate(false); }}><Icon icon={ClipboardList} size="inline" /> Templates ({templates.length})</button>
       </div>
 
       {/* Compose form */}
@@ -69,14 +71,14 @@ export default function CharityMessages() {
             <button className="btn btn-g btn-sm" onClick={() => setComposing(false)}>Cancel</button>
           </div>
           <div className="alert alert-i" style={{ marginBottom: 16 }}>
-            <span>📨</span>
+            <Icon icon={Send} size="inline" />
             <div>This message will be sent to <strong>{data?.stats?.funderCount || 0}</strong> funders via the platform. Funder email addresses remain private.</div>
           </div>
           <div className="fg">
             <label className="fl">Message Type</label>
             <div style={{ display: 'flex', gap: 8 }}>
-              {[['APPRECIATION', '💝 Appreciation'], ['NEWSLETTER', '📰 Newsletter'], ['RESOURCE_SHARE', '📁 Resource Share']].map(([v, l]) => (
-                <button key={v} className={`btn btn-sm ${msgType === v ? 'btn-p' : 'btn-s'}`} onClick={() => setMsgType(v)}>{l}</button>
+              {[['APPRECIATION', Gift, 'Appreciation'], ['NEWSLETTER', Newspaper, 'Newsletter'], ['RESOURCE_SHARE', Folder, 'Resource Share']].map(([v, ico, l]) => (
+                <button key={v} className={`btn btn-sm ${msgType === v ? 'btn-p' : 'btn-s'}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }} onClick={() => setMsgType(v)}><Icon icon={ico} size="inline" /> {l}</button>
               ))}
             </div>
           </div>

@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { Check } from 'lucide-react';
+import Icon from './Icon';
 
 // Renders all product add-on fields dynamically based on type
 // Supports: text, textarea, select, radio, checkbox, color_swatch, date, number, file, heading, note
@@ -111,7 +113,7 @@ export default function ProductAddons({ addons = [], values, onChange, condition
                       display: 'flex', alignItems: 'center', gap: 10, transition: 'all .15s',
                     }}>
                       <div style={{ width: 16, height: 16, borderRadius: 3, border: `2px solid ${checked ? 'var(--mint)' : 'var(--border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: checked ? 'var(--mint)' : 'transparent' }}>
-                        {checked && <span style={{ color: '#fff', fontSize: 10, fontWeight: 700 }}>✓</span>}
+                        {checked && <span style={{ color: '#fff' }}><Icon icon={Check} size="inline" /></span>}
                       </div>
                       <span style={{ fontSize: 13 }}>{label}</span>
                     </div>

@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { AlertTriangle, Lock, ShoppingBag, Palette, Leaf } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import Icon from '../components/ui/Icon';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -52,7 +54,7 @@ export default function LoginPage() {
           <p style={{ fontSize: 14, color: 'var(--muted)' }}>Sign in to your account</p>
         </div>
 
-        {error && <div className="alert alert-w" style={{ marginBottom: 16 }}>⚠ {error}</div>}
+        {error && <div className="alert alert-w" style={{ marginBottom: 16 }}><Icon icon={AlertTriangle} size="inline" /> {error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="fg">
@@ -77,14 +79,14 @@ export default function LoginPage() {
           <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10, textAlign: 'center' }}>Demo Accounts</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             {[
-              ['Admin', 'admin@changeartgallery.com', 'Admin123!', '🔒'],
-              ['Buyer', 'buyer@demo.com', 'Buyer123!', '🛍️'],
-              ['Artist', 'amara@demo.com', 'Artist123!', '🎨'],
-              ['Charity', 'wateraid@demo.com', 'Charity123!', '🌿'],
+              ['Admin', 'admin@changeartgallery.com', 'Admin123!', Lock],
+              ['Buyer', 'buyer@demo.com', 'Buyer123!', ShoppingBag],
+              ['Artist', 'amara@demo.com', 'Artist123!', Palette],
+              ['Charity', 'wateraid@demo.com', 'Charity123!', Leaf],
             ].map(([label, em, pw, ico]) => (
-              <button key={label} className="btn btn-s btn-sm" style={{ justifyContent: 'center', fontSize: 11 }}
+              <button key={label} className="btn btn-s btn-sm" style={{ justifyContent: 'center', fontSize: 11, display: 'inline-flex', alignItems: 'center', gap: 5 }}
                 onClick={() => demoLogin(em, pw, label)} disabled={loading}>
-                {ico} {label}
+                <Icon icon={ico} size="inline" /> {label}
               </button>
             ))}
           </div>

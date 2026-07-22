@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { Package, Heart, Star } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { SDGs, DIGITAL_CATS } from '../data/constants';
 import api from '../utils/api';
+import Icon from '../components/ui/Icon';
 
 function SdgDot({ id }) {
   const s = SDGs.find(x => x.id === id); if (!s) return null;
@@ -46,8 +48,8 @@ export default function DigitalsPage() {
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 20 }}>
             <div>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase', color: activeCatData?.color || 'var(--gold)', marginBottom: 8 }}>
-                {activeCatData ? activeCatData.icon + ' ' + activeCatData.label : '📦 All Digital Products'}
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase', color: activeCatData?.color || 'var(--gold)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Icon icon={activeCatData ? activeCatData.icon : Package} size="inline" /> {activeCatData ? activeCatData.label : 'All Digital Products'}
               </div>
               <h1 style={{ fontFamily: 'var(--fd)', fontSize: 48, color: '#fff', fontWeight: 600, lineHeight: 1.1 }}>
                 {activeCatData ? activeCatData.label : 'Creative Digital Works'}
@@ -62,8 +64,8 @@ export default function DigitalsPage() {
             </div>
             <select className="fi fsel" value={sort} onChange={e => setSort(e.target.value)} style={{ width: 160, background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.15)', color: '#fff' }}>
               <option value="featured">Featured</option>
-              <option value="price_asc">Price ↑</option>
-              <option value="price_desc">Price ↓</option>
+              <option value="price_asc">Price: Low to High</option>
+              <option value="price_desc">Price: High to Low</option>
             </select>
           </div>
 
@@ -79,7 +81,7 @@ export default function DigitalsPage() {
                   ...(activeCat === c.id && { background: c.color, borderColor: c.color }),
                 }}
                 onClick={() => setActiveCat(c.id)}>
-                {c.icon} {c.label}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Icon icon={c.icon} size="inline" /> {c.label}</span>
               </button>
             ))}
           </div>
@@ -111,18 +113,18 @@ export default function DigitalsPage() {
                         <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top,${cat?.bg || '#111'}dd,transparent 55%)` }} />
                       </>
                     ) : (
-                      <div style={{ width: '100%', height: '100%', background: `linear-gradient(145deg,${cat?.bg || '#1B4332'},${cat?.color || '#2D6A4F'}44)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ fontSize: 36, opacity: .3 }}>{cat?.icon || '📦'}</span>
+                      <div style={{ width: '100%', height: '100%', background: `linear-gradient(145deg,${cat?.bg || '#1B4332'},${cat?.color || '#2D6A4F'}44)`, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: .3 }}>
+                        <Icon icon={cat?.icon || Package} size={36} />
                       </div>
                     )}
                     {/* Category badge */}
-                    {cat && <div style={{ position: 'absolute', top: 10, left: 10, background: `${cat.color}dd`, color: '#fff', fontSize: 9, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', padding: '3px 10px', borderRadius: 20, zIndex: 3 }}>{cat.icon} {cat.label}</div>}
+                    {cat && <div style={{ position: 'absolute', top: 10, left: 10, background: `${cat.color}dd`, color: '#fff', fontSize: 9, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', padding: '3px 10px', borderRadius: 20, zIndex: 3, display: 'flex', alignItems: 'center', gap: 4 }}><Icon icon={cat.icon} size="inline" /> {cat.label}</div>}
                     {/* Sale badge */}
                     {p.comparePrice && <div className="badge b-red" style={{ position: 'absolute', top: 10, right: 10, zIndex: 3 }}>SALE</div>}
                     {/* Wishlist */}
                     <button className={`wish-btn${isWished(p.id) ? ' active' : ''}`}
                       style={{ position: 'absolute', bottom: 10, right: 10 }}
-                      onClick={e => { e.stopPropagation(); toggleWishlist(p.id); }}>♥</button>
+                      onClick={e => { e.stopPropagation(); toggleWishlist(p.id); }}><Icon icon={Heart} size="inline" fill={isWished(p.id) ? 'currentColor' : 'none'} /></button>
                     {/* Hover overlay */}
                     <div className="product-card-overlay">
                       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -150,7 +152,7 @@ export default function DigitalsPage() {
                         <span style={{ fontFamily: 'var(--fd)', fontSize: 17, color: 'var(--accent)', fontWeight: 700 }}>£{Number(p.basePrice).toFixed(2)}</span>
                         {p.comparePrice && <span style={{ fontFamily: 'var(--fd)', fontSize: 12, color: 'var(--muted)', textDecoration: 'line-through', marginLeft: 6 }}>£{Number(p.comparePrice).toFixed(2)}</span>}
                       </div>
-                      {p.avgRating && <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: 'var(--gold)' }}>★ {p.avgRating}</div>}
+                      {p.avgRating && <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: 'var(--gold)' }}><Icon icon={Star} size="inline" fill="currentColor" /> {p.avgRating}</div>}
                     </div>
                   </div>
                 </div>

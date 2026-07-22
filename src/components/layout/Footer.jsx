@@ -4,7 +4,7 @@ import { SDGs } from '../../data/constants';
 export default function Footer() {
   const navigate = useNavigate();
   const sections = [
-    ['Platform', [['Discover Art', '/shop'], ['Digital Store', '/digitals'], ['Browse Artists', '/artists'], ['Charities', '/charities']]],
+    ['Platform', [['Discover Art', '/shop'], ['Digital Store', '/digitals'], ['Browse Artists', '/artists'], ['Charities', '/charities'], ['About Us', '/about']]],
     ['Create', [['Sell Your Art', '/register'], ['Partner a Charity', '/register'], ['Artist Studio', '/dashboard']]],
     ['Support', [['Privacy Policy', '/'], ['Contact Us', '/'], ['Documentation', '/']]],
   ];

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { Heart, ArrowRight } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { SDGs } from '../data/constants';
 import api from '../utils/api';
+import Icon from '../components/ui/Icon';
 
 function SdgDot({ id }) {
   const s = SDGs.find(x => x.id === id); if (!s) return null;
@@ -52,7 +54,7 @@ export default function ShopPage() {
             <div style={{ display: 'flex', gap: 9, alignItems: 'center', flexWrap: 'wrap' }}>
               <input className="fi" placeholder="Search…" value={search} onChange={e => setSearch(e.target.value)} style={{ width: 220 }} />
               <select className="fi fsel" value={sort} onChange={e => setSort(e.target.value)} style={{ width: 160 }}>
-                <option value="featured">Featured</option><option value="asc">Price ↑</option><option value="desc">Price ↓</option><option value="newest">Newest</option>
+                <option value="featured">Featured</option><option value="asc">Price: Low to High</option><option value="desc">Price: High to Low</option><option value="newest">Newest</option>
               </select>
               <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 'var(--r)', overflow: 'hidden' }}>
                 {[['grid', '⊞'], ['list', '≡']].map(([v, ico]) => (
@@ -108,7 +110,7 @@ export default function ShopPage() {
                         </div>
                       </div>
                       {p.comparePrice && <div className="badge b-red" style={{ position: 'absolute', top: 10, left: 10, zIndex: 3 }}>SALE</div>}
-                      <button className={`wish-btn${isWished(p.id) ? ' active' : ''}`} onClick={e => { e.stopPropagation(); toggleWishlist(p.id); toast(isWished(p.id) ? 'Removed from wishlist' : 'Added to wishlist'); }}>♥</button>
+                      <button className={`wish-btn${isWished(p.id) ? ' active' : ''}`} onClick={e => { e.stopPropagation(); toggleWishlist(p.id); toast(isWished(p.id) ? 'Removed from wishlist' : 'Added to wishlist'); }}><Icon icon={Heart} size="inline" fill={isWished(p.id) ? 'currentColor' : 'none'} /></button>
                     </div>
                     <div className="product-card-body">
                       <div style={{ display: 'flex', gap: 3, marginBottom: 6 }}>{p.sdgIds?.map(id => <SdgDot key={id} id={id} />)}</div>
@@ -161,7 +163,7 @@ export default function ShopPage() {
                   <p style={{ fontSize: 13, color: 'var(--txt2)', lineHeight: 1.7, marginBottom: 14 }}>{qv.description?.slice(0, 180)}…</p>
                   <div style={{ fontFamily: 'var(--fd)', fontSize: 26, color: 'var(--accent)', fontWeight: 700, marginBottom: 14 }}>£{Number(qv.basePrice).toLocaleString()}</div>
                   <button className="btn btn-p" style={{ width: '100%', justifyContent: 'center' }} onClick={() => { addToCart(qv); setQv(null); }}>Add to Cart</button>
-                  <button className="btn btn-g" style={{ width: '100%', justifyContent: 'center', marginTop: 7 }} onClick={() => { navigate(`/shop/${qv.slug}`); setQv(null); }}>Full Details →</button>
+                  <button className="btn btn-g" style={{ width: '100%', justifyContent: 'center', marginTop: 7, display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => { navigate(`/shop/${qv.slug}`); setQv(null); }}>Full Details <Icon icon={ArrowRight} size="inline" /></button>
                 </div>
               </div>
             </div>

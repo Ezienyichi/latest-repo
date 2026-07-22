@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { XCircle, CheckCircle2, Check, ArrowRight } from 'lucide-react';
 import { SDGs } from '../data/constants';
 import api from '../utils/api';
+import Icon from '../components/ui/Icon';
 
 function SdgDot({ id }) {
   const s = SDGs.find(x => x.id === id); if (!s) return null;
@@ -23,7 +25,7 @@ export default function VerifyCertificatePage() {
   if (error || !data?.valid) return (
     <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <div className="card" style={{ maxWidth: 460, padding: 40, textAlign: 'center' }}>
-        <div style={{ fontSize: 56, marginBottom: 16 }}>❌</div>
+        <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center', color: '#dc2626' }}><Icon icon={XCircle} size={56} /></div>
         <h2 className="display" style={{ fontSize: 28, marginBottom: 8 }}>Certificate Not Found</h2>
         <p style={{ color: 'var(--muted)', marginBottom: 20 }}>The certificate ID <strong style={{ fontFamily: 'var(--fm)' }}>{certId}</strong> could not be verified.</p>
         <Link to="/" className="btn btn-p">Go to Homepage</Link>
@@ -38,7 +40,7 @@ export default function VerifyCertificatePage() {
       <div className="wrap" style={{ maxWidth: 640 }}>
         {/* Verified badge */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ fontSize: 64, marginBottom: 12, animation: 'pop .5s cubic-bezier(.34,1.56,.64,1)' }}>✅</div>
+          <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center', color: 'var(--sage)', animation: 'pop .5s cubic-bezier(.34,1.56,.64,1)' }}><Icon icon={CheckCircle2} size={64} /></div>
           <h1 className="display" style={{ fontSize: 36, marginBottom: 6 }}>Certificate Verified</h1>
           <p style={{ fontSize: 14, color: 'var(--muted)' }}>This is an authentic certificate issued by Change Art Gallery</p>
         </div>
@@ -66,10 +68,10 @@ export default function VerifyCertificatePage() {
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 28 }}>
-            {[['Artwork', c.artwork], ['Artist', `${c.artist}${c.artistVerified ? ' ✓' : ''}`], ['Charity Partner', `${c.charity || 'N/A'}${c.charityVerified ? ' ✓' : ''}`], ['Medium', c.medium || 'Digital'], ['Year', c.year], ['Category', c.category]].map(([k, v]) => (
+            {[['Artwork', c.artwork, false], ['Artist', c.artist, c.artistVerified], ['Charity Partner', c.charity || 'N/A', c.charityVerified], ['Medium', c.medium || 'Digital', false], ['Year', c.year, false], ['Category', c.category, false]].map(([k, v, verified]) => (
               <div key={k}>
                 <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: '#9ca3af', marginBottom: 2 }}>{k}</div>
-                <div style={{ fontSize: 14, fontWeight: 500 }}>{v}</div>
+                <div style={{ fontSize: 14, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>{v}{verified && <Icon icon={Check} size="inline" style={{ color: 'var(--sage)' }} />}</div>
               </div>
             ))}
           </div>
@@ -94,7 +96,7 @@ export default function VerifyCertificatePage() {
         </div>
 
         <div style={{ textAlign: 'center', marginTop: 24 }}>
-          <Link to="/shop" className="btn btn-p">Browse More Artworks →</Link>
+          <Link to="/shop" className="btn btn-p" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>Browse More Artworks <Icon icon={ArrowRight} size="inline" /></Link>
         </div>
       </div>
     </div>

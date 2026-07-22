@@ -1,5 +1,7 @@
 import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { CheckCircle2, Leaf, Award, Globe } from 'lucide-react';
 import { SDGs } from '../data/constants';
+import Icon from '../components/ui/Icon';
 
 function SdgDot({ id }) {
   const s = SDGs.find(x => x.id === id); if (!s) return null;
@@ -23,7 +25,7 @@ export default function OrderConfirmationPage() {
       {/* Success banner */}
       <div style={{ background: 'linear-gradient(135deg,#0d2318 0%,#1B4332 60%,#177c1d22 100%)', padding: '48px 0', textAlign: 'center' }}>
         <div className="wrap">
-          <div style={{ fontSize: 56, marginBottom: 12, animation: 'pop .5s cubic-bezier(.34,1.56,.64,1)' }}>✅</div>
+          <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center', color: 'var(--sage)', animation: 'pop .5s cubic-bezier(.34,1.56,.64,1)' }}><Icon icon={CheckCircle2} size={56} /></div>
           <h1 style={{ fontFamily: 'var(--fd)', fontSize: 42, color: '#fff', fontWeight: 600, marginBottom: 8 }}>Order Confirmed!</h1>
           <p style={{ fontSize: 15, color: 'rgba(255,255,255,.6)', maxWidth: 460, margin: '0 auto' }}>
             Thank you for your purchase. Your order has been placed and you'll receive a confirmation email shortly.
@@ -47,10 +49,10 @@ export default function OrderConfirmationPage() {
                 <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 2, cursor: 'pointer', color: 'var(--txt)' }}
                   onClick={() => navigate(`/shop/${item.product?.slug}`)}>{item.product?.title}</div>
                 <div style={{ fontSize: 12, color: 'var(--muted)' }}>by {item.product?.artist?.displayName} × {item.quantity}</div>
-                {item.product?.charity?.name && <div style={{ fontSize: 11, color: 'var(--sage)', marginTop: 2 }}>🌿 Supporting: {item.product.charity.name}</div>}
+                {item.product?.charity?.name && <div style={{ fontSize: 11, color: 'var(--sage)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}><Icon icon={Leaf} size="inline" /> Supporting: {item.product.charity.name}</div>}
                 {item.product?.autoCertificate && (
                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 6, padding: '3px 10px', background: 'rgba(255,173,0,.08)', border: '1px solid rgba(255,173,0,.2)', borderRadius: 20, fontSize: 10, color: '#b37800', fontWeight: 600 }}>
-                    🏛 Certificate: {item.product.certificateId}
+                    <Icon icon={Award} size="inline" /> Certificate: {item.product.certificateId}
                   </div>
                 )}
               </div>
@@ -84,7 +86,7 @@ export default function OrderConfirmationPage() {
         {/* Impact card */}
         <div className="card" style={{ padding: 24, marginBottom: 20, background: 'rgba(23,124,29,.04)', border: '1px solid rgba(23,124,29,.15)' }}>
           <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-            <div style={{ fontSize: 36 }}>🌍</div>
+            <Icon icon={Globe} size={36} style={{ color: 'var(--accent)' }} />
             <div>
               <h3 style={{ fontFamily: 'var(--fd)', fontSize: 20, marginBottom: 4, color: 'var(--accent)' }}>Your Impact</h3>
               <p style={{ fontSize: 14, color: 'var(--txt2)', lineHeight: 1.6 }}>

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Package, ArrowRight, Award } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import api from '../utils/api';
+import Icon from '../components/ui/Icon';
 
 const STATUS_STYLES = {
   PENDING: { bg: 'rgba(255,173,0,.08)', border: 'rgba(255,173,0,.2)', color: '#b37800', label: 'Pending' },
@@ -45,10 +47,10 @@ export default function OrdersPage() {
       <div className="wrap" style={{ paddingTop: 28, maxWidth: 800 }}>
         {orders.length === 0 ? (
           <div className="empty">
-            <div style={{ fontSize: 48, marginBottom: 16, opacity: .3 }}>📦</div>
+            <div style={{ marginBottom: 16, opacity: .3, display: 'flex', justifyContent: 'center' }}><Icon icon={Package} size={48} /></div>
             <div className="empty-t">No orders yet</div>
             <p style={{ color: 'var(--muted)', marginBottom: 24 }}>Start collecting art that makes a difference</p>
-            <button className="btn btn-p btn-lg" onClick={() => navigate('/shop')}>Browse Artworks →</button>
+            <button className="btn btn-p btn-lg" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => navigate('/shop')}>Browse Artworks <Icon icon={ArrowRight} size="inline" /></button>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -91,7 +93,7 @@ export default function OrdersPage() {
                             {item.product?.autoCertificate && item.product?.certificateId && (
                               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 4, padding: '2px 8px', background: 'rgba(255,173,0,.08)', border: '1px solid rgba(255,173,0,.18)', borderRadius: 14, fontSize: 10, color: '#b37800', cursor: 'pointer' }}
                                 onClick={() => toast('Certificate download ready!', 'info')}>
-                                🏛 Download Certificate
+                                <Icon icon={Award} size="inline" /> Download Certificate
                               </div>
                             )}
                           </div>
