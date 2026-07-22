@@ -19,6 +19,7 @@ const CHARITY_NAV = [
   { id: 'funders', icon: '🤝', label: 'Funders', path: '/dashboard/funders' },
   { id: 'messages', icon: '✉️', label: 'Messages', path: '/dashboard/messages' },
   { id: 'resources', icon: '📁', label: 'Resources', path: '/dashboard/resources' },
+  { id: 'profile', icon: '👤', label: 'Profile', path: '/dashboard/charity-profile' },
 ];
 
 const ADMIN_NAV = [

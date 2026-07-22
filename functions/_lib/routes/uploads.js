@@ -1,10 +1,9 @@
 import { Hono } from 'hono';
-import { authenticate } from '../auth.js';
+import { authenticate, optionalAuth } from '../auth.js';
 import { getStorageClient, BUCKETS, WRITABLE_BUCKETS_BY_ROLE } from '../storage.js';
 import { checkRateLimit } from '../rateLimit.js';
 
 const uploads = new Hono();
-uploads.use('*', authenticate);
 
 const SIGN_LIMIT = 20;
 const SIGN_WINDOW_SECONDS = 60;
@@ -19,7 +18,7 @@ function sanitizeFilename(name) {
 // size before signing — Supabase's own bucket-level fileSizeLimit /
 // allowedMimeTypes then re-enforces size and type at the actual upload,
 // so a client that lies about either in this request still gets rejected.
-uploads.post('/sign', async (c) => {
+uploads.post('/sign', authenticate, async (c) => {
   const userId = c.get('userId');
   const userRole = c.get('userRole');
   try {
@@ -59,8 +58,11 @@ uploads.post('/sign', async (c) => {
 // Mints a short-lived signed download URL for a private-bucket object,
 // after checking the requester is actually entitled to it. `context`
 // selects which entitlement check applies — nothing is served on bucket
-// name/path alone.
-uploads.get('/download', async (c) => {
+// name/path alone. optionalAuth (not authenticate) because PUBLIC-visibility
+// charity resources must be downloadable by anonymous visitors on the
+// public charity profile page — userId/userRole are simply undefined then,
+// which every other entitlement branch below correctly treats as "no".
+uploads.get('/download', optionalAuth, async (c) => {
   const prisma = c.get('prisma');
   const userId = c.get('userId');
   const userRole = c.get('userRole');
@@ -72,34 +74,38 @@ uploads.get('/download', async (c) => {
     if (!path) return c.json({ error: 'path is required' }, 400);
 
     let entitled = userRole === 'ADMIN';
+    let expiresIn = 300;
 
     if (!entitled && bucket === 'artwork' && context === 'product-file') {
       const product = await prisma.product.findUnique({ where: { id: refId }, select: { fileUrl: true, artist: { select: { userId: true } } } });
       if (!product) return c.json({ error: 'Not found' }, 404);
-      if (product.artist.userId === userId) entitled = true;
-      if (!entitled) {
+      if (userId && product.artist.userId === userId) entitled = true;
+      if (!entitled && userId) {
         const owned = await prisma.orderItem.findFirst({ where: { productId: refId, order: { buyerId: userId } } });
         entitled = !!owned;
       }
     } else if (!entitled && bucket === 'charity-docs' && context === 'verification-doc') {
       const doc = await prisma.charityDocument.findUnique({ where: { id: refId }, select: { charity: { select: { userId: true } } } });
       if (!doc) return c.json({ error: 'Not found' }, 404);
-      entitled = doc.charity.userId === userId;
+      entitled = !!userId && doc.charity.userId === userId;
     } else if (!entitled && bucket === 'charity-docs' && context === 'charity-resource') {
       const resource = await prisma.charityResource.findUnique({ where: { id: refId }, select: { visibility: true, charity: { select: { id: true, userId: true } } } });
       if (!resource) return c.json({ error: 'Not found' }, 404);
-      if (resource.charity.userId === userId) entitled = true;
+      if (userId && resource.charity.userId === userId) entitled = true;
       else if (resource.visibility === 'PUBLIC') entitled = true;
-      else if (resource.visibility === 'FUNDERS_ONLY') {
+      else if (resource.visibility === 'FUNDERS_ONLY' && userId) {
         const funder = await prisma.funderRelationship.findUnique({ where: { userId_charityId: { userId, charityId: resource.charity.id } } });
         entitled = !!funder;
       }
+      // Resources are meant to be shared/linked, not just viewed once —
+      // give them a real window instead of the 5-minute default.
+      expiresIn = 3600;
     }
 
     if (!entitled) return c.json({ error: 'Not entitled to this file' }, 403);
 
     const supabase = getStorageClient(c.env);
-    const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 300);
+    const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, expiresIn);
     if (error) { console.error('createSignedUrl failed:', error.message); return c.json({ error: 'Failed to create download URL' }, 500); }
 
     return c.json({ signedUrl: data.signedUrl });

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useCart } from '../../context/CartContext';
 import DashboardShell from './DashboardShell';
+import Uploader from '../../components/ui/Uploader';
 import api from '../../utils/api';
 
 export default function CharityResources() {
@@ -32,6 +33,15 @@ export default function CharityResources() {
     catch (e) { toast(e.message, 'err'); }
   };
 
+  const shareResource = async (resource) => {
+    try {
+      const params = new URLSearchParams({ bucket: 'charity-docs', path: resource.fileUrl, context: 'charity-resource', refId: resource.id });
+      const { signedUrl } = await api.get(`/uploads/download?${params}`);
+      await navigator.clipboard.writeText(signedUrl);
+      toast('Link copied — valid for 1 hour', 'ok');
+    } catch (e) { toast(e.message || 'Could not create a download link', 'err'); }
+  };
+
   const resources = data?.resources || [];
 
   if (loading) return <DashboardShell title="Resources"><div className="skel" style={{ height: 200, borderRadius: 'var(--rl)' }} /></DashboardShell>;
@@ -56,8 +66,17 @@ export default function CharityResources() {
             <button className="btn btn-g btn-sm" onClick={() => setShowAdd(false)}>Cancel</button>
           </div>
           <div className="fg"><label className="fl">Title *</label><input className="fi" value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Annual Impact Report 2025" /></div>
-          <div className="fg"><label className="fl">File URL *</label><input className="fi" value={form.fileUrl} onChange={e => set('fileUrl', e.target.value)} placeholder="https://example.com/report.pdf" />
-            <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 4 }}>Upload your file to a hosting service and paste the URL here</div>
+          <div className="fg">
+            <label className="fl">File *</label>
+            <Uploader
+              bucket="charity-docs"
+              accept="application/pdf,image/jpeg,image/png"
+              maxBytes={20 * 1024 * 1024}
+              kind="file"
+              value={form.fileUrl ? { path: form.fileUrl } : null}
+              onUploaded={({ path }) => set('fileUrl', path)}
+              label="Upload the resource file"
+            />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
             <div className="fg" style={{ margin: 0 }}>
@@ -97,7 +116,7 @@ export default function CharityResources() {
                   <td style={{ fontSize: 12 }}>{new Date(r.uploadedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}</td>
                   <td>
                     <div style={{ display: 'flex', gap: 4 }}>
-                      <button className="btn btn-s btn-sm" onClick={() => toast('Download link copied!', 'info')}>Share</button>
+                      <button className="btn btn-s btn-sm" onClick={() => shareResource(r)}>Share</button>
                       <button className="btn btn-danger btn-sm" onClick={() => deleteResource(r.id)}>Delete</button>
                     </div>
                   </td>

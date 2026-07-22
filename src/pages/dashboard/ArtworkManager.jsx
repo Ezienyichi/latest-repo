@@ -22,8 +22,9 @@ export default function ArtworkManager() {
     basePrice: '', comparePrice: '', sku: '', stockQuantity: '',
     medium: '', year: new Date().getFullYear(), sdgIds: [], charityId: '',
     autoCertificate: true, featured: false, tags: '',
-    fileFormat: '', pages: '', previewUrl: '',
+    fileFormat: '', pages: '', previewUrl: '', fileUrl: '',
     images: [{ url: '', label: 'Front View' }],
+    galleryImages: [], galleryVideo: '',
   });
 
   useEffect(() => { loadProducts(); }, []);
@@ -42,6 +43,12 @@ export default function ArtworkManager() {
   });
   const removeImage = (i) => setForm(p => ({ ...p, images: p.images.filter((_, j) => j !== i) }));
 
+  const addGalleryImage = () => setForm(p => ({ ...p, galleryImages: [...p.galleryImages, { url: '', label: '' }] }));
+  const updateGalleryImage = (i, field, val) => setForm(p => {
+    const imgs = [...p.galleryImages]; imgs[i] = { ...imgs[i], [field]: val }; return { ...p, galleryImages: imgs };
+  });
+  const removeGalleryImage = (i) => setForm(p => ({ ...p, galleryImages: p.galleryImages.filter((_, j) => j !== i) }));
+
   const handleSubmit = async () => {
     if (!form.title || !form.basePrice) { toast('Title and price are required', 'err'); return; }
     try {
@@ -54,7 +61,15 @@ export default function ArtworkManager() {
         pages: form.pages ? parseInt(form.pages) : undefined,
         tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
         images: form.images.filter(img => img.url),
+        fileUrl: form.fileUrl || undefined,
+        gallery: (() => {
+          const galImages = form.galleryImages.filter(img => img.url);
+          if (!galImages.length && !form.galleryVideo) return undefined;
+          return { ...(galImages.length && { images: galImages }), ...(form.galleryVideo && { video: form.galleryVideo }) };
+        })(),
       };
+      delete data.galleryImages;
+      delete data.galleryVideo;
       if (editId) {
         await api.updateProduct(editId, data);
         toast('Artwork updated!', 'ok');
@@ -63,7 +78,7 @@ export default function ArtworkManager() {
         toast('Artwork created as draft!', 'ok');
       }
       setShowForm(false); setEditId(null); setStep(1);
-      setForm({ title: '', description: '', productType: 'SIMPLE', category: 'ARTWORK', basePrice: '', comparePrice: '', sku: '', stockQuantity: '', medium: '', year: new Date().getFullYear(), sdgIds: [], charityId: '', autoCertificate: true, featured: false, tags: '', fileFormat: '', pages: '', previewUrl: '', images: [{ url: '', label: 'Front View' }] });
+      setForm({ title: '', description: '', productType: 'SIMPLE', category: 'ARTWORK', basePrice: '', comparePrice: '', sku: '', stockQuantity: '', medium: '', year: new Date().getFullYear(), sdgIds: [], charityId: '', autoCertificate: true, featured: false, tags: '', fileFormat: '', pages: '', previewUrl: '', fileUrl: '', images: [{ url: '', label: 'Front View' }], galleryImages: [], galleryVideo: '' });
       loadProducts();
     } catch (e) { toast(e.message, 'err'); }
   };
@@ -193,12 +208,52 @@ export default function ArtworkManager() {
                 ))}
                 <button className="btn btn-s btn-sm" onClick={addImage}>+ Add Image</button>
               </div>
-              {form.category !== 'ARTWORK' && (
+
+              <div style={{ marginBottom: 16 }}>
+                <div className="fl" style={{ marginBottom: 8 }}>Gallery (optional — extra detail shots shown in the product viewer)</div>
+                {form.galleryImages.map((img, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'flex-start' }}>
+                    <div style={{ flex: 2 }}>
+                      <Uploader
+                        bucket="previews"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        maxBytes={15 * 1024 * 1024}
+                        kind="image"
+                        value={img.url ? { path: null, publicUrl: img.url } : null}
+                        onUploaded={({ publicUrl }) => updateGalleryImage(i, 'url', publicUrl)}
+                        label={img.label || `Gallery image ${i + 1}`}
+                      />
+                    </div>
+                    <input className="fi" value={img.label} onChange={e => updateGalleryImage(i, 'label', e.target.value)} placeholder="Label" style={{ flex: 1 }} />
+                    <button className="btn btn-danger btn-sm" onClick={() => removeGalleryImage(i)}>×</button>
+                  </div>
+                ))}
+                <button className="btn btn-s btn-sm" onClick={addGalleryImage}>+ Add Gallery Image</button>
+              </div>
+
+              <div className="fg">
+                <label className="fl">YouTube Video ID (optional)</label>
+                <input className="fi" value={form.galleryVideo} onChange={e => set('galleryVideo', e.target.value)} placeholder="e.g. dQw4w9WgXcQ" />
+              </div>
+
+              {form.category !== 'ARTWORK' && (<>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                   <div className="fg" style={{ margin: 0 }}><label className="fl">File Format</label><input className="fi" value={form.fileFormat} onChange={e => set('fileFormat', e.target.value)} placeholder="e.g. ePub + PDF" /></div>
                   <div className="fg" style={{ margin: 0 }}><label className="fl">Pages</label><input className="fi" type="number" value={form.pages} onChange={e => set('pages', e.target.value)} /></div>
                 </div>
-              )}
+                <div style={{ marginTop: 14 }}>
+                  <div className="fl" style={{ marginBottom: 8 }}>Downloadable File * <span style={{ fontWeight: 400, color: 'var(--muted)' }}>(what the buyer receives after purchase — private until then)</span></div>
+                  <Uploader
+                    bucket="artwork"
+                    accept="application/pdf,application/epub+zip,application/zip,audio/mpeg,audio/wav,audio/flac,video/mp4,video/quicktime,image/vnd.adobe.photoshop,application/postscript"
+                    maxBytes={50 * 1024 * 1024}
+                    kind="file"
+                    value={form.fileUrl ? { path: form.fileUrl } : null}
+                    onUploaded={({ path }) => set('fileUrl', path)}
+                    label="Upload the downloadable file"
+                  />
+                </div>
+              </>)}
             </>)}
 
             {step === 3 && (<>

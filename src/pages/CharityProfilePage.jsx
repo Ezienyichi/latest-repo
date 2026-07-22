@@ -29,6 +29,14 @@ export default function CharityProfilePage() {
   const resources = charity.resources || [];
   const partners = charity.partnerships?.map(p => p.artist) || [];
 
+  const downloadResource = async (resource) => {
+    try {
+      const params = new URLSearchParams({ bucket: 'charity-docs', path: resource.fileUrl, context: 'charity-resource', refId: resource.id });
+      const { signedUrl } = await api.get(`/uploads/download?${params}`);
+      window.open(signedUrl, '_blank');
+    } catch (e) { toast(e.message || 'Could not download this resource', 'err'); }
+  };
+
   const becomeFunder = async () => {
     if (!user) { toast('Sign in to become a funder', 'err'); return; }
     try {
@@ -119,7 +127,7 @@ export default function CharityProfilePage() {
                       <td style={{ fontWeight: 500 }}>{r.title}</td>
                       <td><span className="badge b-blue" style={{ fontSize: 10 }}>{r.fileType?.toUpperCase()}</span></td>
                       <td><span className={`badge ${r.visibility === 'PUBLIC' ? 'b-green' : 'b-gold'}`} style={{ fontSize: 10 }}>{r.visibility?.toLowerCase()}</span></td>
-                      <td><button className="btn btn-s btn-sm" onClick={() => toast('Download started!', 'info')}>Download</button></td>
+                      <td><button className="btn btn-s btn-sm" onClick={() => downloadResource(r)}>Download</button></td>
                     </tr>
                   ))}
                 </tbody>

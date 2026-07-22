@@ -141,16 +141,17 @@ dashboard.get('/charity', authenticate, requireRole('CHARITY'), async (c) => {
   try {
     const profile = await prisma.charityProfile.findUnique({ where: { userId: c.get('userId') } });
     if (!profile) return c.json({ error: 'No charity profile' }, 404);
-    const [messages, resources, partnerships, templates] = await Promise.all([
+    const [messages, resources, partnerships, templates, documents] = await Promise.all([
       prisma.charityMessage.findMany({ where: { charityId: profile.id }, orderBy: { sentAt: 'desc' }, take: 20 }),
       prisma.charityResource.findMany({ where: { charityId: profile.id }, orderBy: { uploadedAt: 'desc' } }),
       prisma.artistCharityPartnership.findMany({ where: { charityId: profile.id }, include: { artist: { select: { displayName: true, avatarUrl: true, id: true, totalSold: true } } } }),
       prisma.messageTemplate.findMany({ where: { charityId: profile.id }, orderBy: { createdAt: 'desc' } }),
+      prisma.charityDocument.findMany({ where: { charityId: profile.id }, orderBy: { uploadedAt: 'desc' } }),
     ]);
     return c.json({
       profile,
       stats: { funderCount: profile.funderCount, raised: Number(profile.raised), target: Number(profile.target), messagesSent: messages.length, resourceCount: resources.length, partnerCount: partnerships.length },
-      messages, resources, partnerships, templates,
+      messages, resources, partnerships, templates, documents,
     });
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
 });
@@ -217,6 +218,33 @@ dashboard.delete('/charity/resources/:id', authenticate, requireRole('CHARITY'),
   const prisma = c.get('prisma');
   try {
     await prisma.charityResource.delete({ where: { id: c.req.param('id') } });
+    return c.json({ message: 'Deleted' });
+  } catch (e) { return c.json({ error: 'Delete failed' }, 500); }
+});
+
+dashboard.post('/charity/documents', authenticate, requireRole('CHARITY'), async (c) => {
+  const prisma = c.get('prisma');
+  try {
+    const profile = await prisma.charityProfile.findUnique({ where: { userId: c.get('userId') } });
+    if (!profile) return c.json({ error: 'No profile' }, 404);
+    const { label, storagePath } = await c.req.json();
+    if (!label || !storagePath) return c.json({ error: 'Label and storagePath required' }, 400);
+    const doc = await prisma.charityDocument.create({ data: { charityId: profile.id, label, storagePath } });
+    return c.json(doc, 201);
+  } catch (e) { return c.json({ error: 'Create failed' }, 500); }
+});
+
+// Only while still PENDING — once an admin has reviewed it, the record is
+// the audit trail and shouldn't disappear out from under that review.
+dashboard.delete('/charity/documents/:id', authenticate, requireRole('CHARITY'), async (c) => {
+  const prisma = c.get('prisma');
+  try {
+    const profile = await prisma.charityProfile.findUnique({ where: { userId: c.get('userId') } });
+    if (!profile) return c.json({ error: 'No profile' }, 404);
+    const doc = await prisma.charityDocument.findUnique({ where: { id: c.req.param('id') } });
+    if (!doc || doc.charityId !== profile.id) return c.json({ error: 'Not found' }, 404);
+    if (doc.reviewStatus !== 'PENDING') return c.json({ error: 'Cannot delete a reviewed document' }, 400);
+    await prisma.charityDocument.delete({ where: { id: doc.id } });
     return c.json({ message: 'Deleted' });
   } catch (e) { return c.json({ error: 'Delete failed' }, 500); }
 });

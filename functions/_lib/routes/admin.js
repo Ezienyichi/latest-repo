@@ -94,13 +94,31 @@ admin.post('/verify-charity/:id', async (c) => {
 admin.get('/moderation', async (c) => {
   const prisma = c.get('prisma');
   try {
-    const [pendingArtists, pendingCharities, draftProducts] = await Promise.all([
+    const [pendingArtists, pendingCharities, draftProducts, pendingDocuments] = await Promise.all([
       prisma.artistProfile.findMany({ where: { verified: false }, include: { user: { select: { email: true, firstName: true, lastName: true } } } }),
       prisma.charityProfile.findMany({ where: { verified: false }, include: { user: { select: { email: true } } } }),
       prisma.product.findMany({ where: { status: 'DRAFT' }, include: { artist: { select: { displayName: true } } }, take: 20 }),
+      prisma.charityDocument.findMany({ where: { reviewStatus: 'PENDING' }, include: { charity: { select: { name: true } } }, orderBy: { uploadedAt: 'asc' } }),
     ]);
-    return c.json({ pendingArtists, pendingCharities, draftProducts });
+    return c.json({ pendingArtists, pendingCharities, draftProducts, pendingDocuments });
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
+});
+
+admin.patch('/charity-documents/:id/review', async (c) => {
+  const prisma = c.get('prisma');
+  try {
+    const id = c.req.param('id');
+    const { status, note } = await c.req.json();
+    if (!['APPROVED', 'REJECTED'].includes(status)) return c.json({ error: 'status must be APPROVED or REJECTED' }, 400);
+    const before = await prisma.charityDocument.findUnique({ where: { id }, select: { reviewStatus: true, reviewedBy: true, reviewedAt: true, reviewNote: true } });
+    if (!before) return c.json({ error: 'Not found' }, 404);
+    const doc = await prisma.charityDocument.update({
+      where: { id },
+      data: { reviewStatus: status, reviewedBy: c.get('userId'), reviewedAt: new Date(), reviewNote: note || null },
+    });
+    await writeAuditLog(prisma, { adminId: c.get('userId'), action: 'charity_document.review', targetType: 'CharityDocument', targetId: id, before, after: { reviewStatus: doc.reviewStatus, reviewedBy: doc.reviewedBy, reviewNote: doc.reviewNote } });
+    return c.json(doc);
+  } catch (e) { return c.json({ error: 'Update failed' }, 500); }
 });
 
 admin.patch('/products/:id/moderate', async (c) => {

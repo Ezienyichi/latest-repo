@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useCart } from '../../context/CartContext';
 import { SDGs } from '../../data/constants';
 import DashboardShell from './DashboardShell';
+import Uploader from '../../components/ui/Uploader';
 import api from '../../utils/api';
 
 export default function ArtistProfileEditor() {
@@ -67,7 +68,18 @@ export default function ArtistProfileEditor() {
         {tab === 'basic' && (<>
           <div className="fg"><label className="fl">Display Name</label><input className="fi" value={form.displayName} onChange={e => set('displayName', e.target.value)} /></div>
           <div className="fg"><label className="fl">Location</label><input className="fi" value={form.location} onChange={e => set('location', e.target.value)} placeholder="e.g. Lagos, Nigeria · London, UK" /></div>
-          <div className="fg"><label className="fl">Avatar URL</label><input className="fi" value={form.avatarUrl} onChange={e => set('avatarUrl', e.target.value)} placeholder="https://..." /></div>
+          <div className="fg">
+            <label className="fl">Avatar</label>
+            <Uploader
+              bucket="avatars"
+              accept="image/jpeg,image/png,image/webp"
+              maxBytes={5 * 1024 * 1024}
+              kind="image"
+              value={form.avatarUrl ? { path: null, publicUrl: form.avatarUrl } : null}
+              onUploaded={({ publicUrl }) => set('avatarUrl', publicUrl)}
+              label="Upload a profile photo"
+            />
+          </div>
           <div className="fg">
             <label className="fl">SDG Focus</label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>

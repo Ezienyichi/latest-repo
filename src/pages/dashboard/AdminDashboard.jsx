@@ -50,6 +50,12 @@ export default function AdminDashboard() {
     catch (e) { toast(e.message, 'err'); }
   };
 
+  const reviewDocument = async (id, status) => {
+    const note = status === 'REJECTED' ? prompt('Optional note for the charity (why it was rejected):') || '' : '';
+    try { await api.patch(`/admin/charity-documents/${id}/review`, { status, note }); toast(`Document ${status.toLowerCase()}`, 'ok'); api.get('/admin/moderation').then(setModeration); }
+    catch (e) { toast(e.message, 'err'); }
+  };
+
   if (loading) return <DashboardShell title="Admin Panel"><div className="g4">{[1,2,3,4].map(i => <div key={i} className="skel" style={{ height: 110, borderRadius: 'var(--rl)' }} />)}</div></DashboardShell>;
 
   const s = stats?.stats || {};
@@ -162,6 +168,31 @@ export default function AdminDashboard() {
               </tbody>
             </table>
           ) : <div style={{ textAlign: 'center', padding: 20, color: 'var(--muted)' }}>No draft products</div>}
+        </div>
+
+        {/* Pending Charity Documents */}
+        <div className="card" style={{ padding: 22, marginTop: 20 }}>
+          <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 14 }}>Pending Verification Documents ({moderation?.pendingDocuments?.length || 0})</h3>
+          {moderation?.pendingDocuments?.length > 0 ? (
+            <table className="tbl">
+              <thead><tr><th>Charity</th><th>Label</th><th>Uploaded</th><th>Action</th></tr></thead>
+              <tbody>
+                {moderation.pendingDocuments.map(d => (
+                  <tr key={d.id}>
+                    <td style={{ fontWeight: 500 }}>{d.charity?.name}</td>
+                    <td style={{ fontSize: 12 }}>{d.label}</td>
+                    <td style={{ fontSize: 12 }}>{new Date(d.uploadedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</td>
+                    <td>
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        <button className="btn btn-p btn-sm" onClick={() => reviewDocument(d.id, 'APPROVED')}>Approve</button>
+                        <button className="btn btn-danger btn-sm" onClick={() => reviewDocument(d.id, 'REJECTED')}>Reject</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : <div style={{ textAlign: 'center', padding: 20, color: 'var(--muted)' }}>No pending documents</div>}
         </div>
       </>)}
 
