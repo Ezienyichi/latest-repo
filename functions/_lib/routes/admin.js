@@ -33,6 +33,9 @@ const SETTING_VALIDATORS = {
   theory_if: async (value) => (typeof value === 'string' && value.trim()) ? null : 'Must be a non-empty string',
   theory_and_if: async (value) => (typeof value === 'string' && value.trim()) ? null : 'Must be a non-empty string',
   theory_then: async (value) => (typeof value === 'string' && value.trim()) ? null : 'Must be a non-empty string',
+  // null is valid here — it's how a logo gets unset to fall back to the
+  // text wordmark, not just how it gets set.
+  site_logo_url: async (value) => (value === null || (typeof value === 'string' && /^https?:\/\//.test(value))) ? null : 'Must be a valid URL or null',
 };
 
 admin.get('/users', async (c) => {

@@ -4,6 +4,7 @@ import { AlertTriangle, Lock, ShoppingBag, Palette, Leaf } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import Icon from '../components/ui/Icon';
+import Wordmark from '../components/ui/Wordmark';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -49,7 +50,7 @@ export default function LoginPage() {
       <div style={{ width: '100%', maxWidth: 440, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 'var(--rl)', padding: '40px 36px', boxShadow: 'var(--shl)' }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <Link to="/" style={{ textDecoration: 'none' }}>
-            <div style={{ fontFamily: 'var(--fd)', fontSize: 28, fontWeight: 700, color: 'var(--accent)', marginBottom: 4 }}>Change Art Gallery</div>
+            <Wordmark style={{ fontFamily: 'var(--fd)', fontSize: 28, fontWeight: 700, color: 'var(--accent)', marginBottom: 4, display: 'block' }} />
           </Link>
           <p style={{ fontSize: 14, color: 'var(--muted)' }}>Sign in to your account</p>
         </div>

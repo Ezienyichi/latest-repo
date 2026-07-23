@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { SDGs } from '../../data/constants';
+import Wordmark from '../ui/Wordmark';
 
 export default function Footer() {
   const navigate = useNavigate();
@@ -14,8 +15,7 @@ export default function Footer() {
       <div className="wrap">
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 48, marginBottom: 48 }}>
           <div>
-            <div style={{ fontFamily: 'var(--fd)', fontSize: 20, color: 'var(--mint)', marginBottom: 4, fontWeight: 700 }}>Change Art Gallery</div>
-            <div style={{ fontSize: 10, color: 'var(--gold)', marginBottom: 12, fontWeight: 500, letterSpacing: '.5px' }}>by Fast Tackle Africa</div>
+            <Wordmark style={{ fontFamily: 'var(--fd)', fontSize: 20, color: 'var(--mint)', marginBottom: 4, fontWeight: 700, display: 'block' }} />
             <p style={{ fontSize: 13, color: 'var(--footer-txt)', lineHeight: 1.75, maxWidth: 260 }}>
               Where extraordinary art funds real-world change. Every purchase carries a premium certificate of authenticity and supports a verified SDG project.
             </p>
@@ -39,7 +39,7 @@ export default function Footer() {
           ))}
         </div>
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: 22, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 12, color: 'var(--footer-txt)' }}>© 2026 Fast Tackle Africa. All rights reserved.</span>
+          <span style={{ fontSize: 12, color: 'var(--footer-txt)' }}>© 2026 FastTackle Africa. All rights reserved.</span>
           <span style={{ fontSize: 12, color: 'var(--footer-txt)' }}>Powered by Art. Driven by Purpose.</span>
         </div>
       </div>

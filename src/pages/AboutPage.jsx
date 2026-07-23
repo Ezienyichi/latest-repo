@@ -23,7 +23,7 @@ export default function AboutPage() {
         <div className="wrap">
           <div className="breadcrumbs"><Link to="/">Home</Link><span className="sep">›</span><span className="current">About</span></div>
           <div className="lbl" style={{ marginBottom: 8 }}>Our Mission</div>
-          <h1 className="display" style={{ fontSize: 48 }}>About Change Art Gallery</h1>
+          <h1 className="display" style={{ fontSize: 48 }}>About {theory?.site_name || 'FastTackle Africa'}</h1>
           <p style={{ fontSize: 14, color: 'var(--muted)', marginTop: 8, maxWidth: 560 }}>
             Where creativity becomes a sustainable engine for measurable social change.
           </p>

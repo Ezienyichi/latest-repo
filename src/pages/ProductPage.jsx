@@ -281,7 +281,7 @@ export default function ProductPage() {
 
             {/* Social share */}
             <div style={{ marginBottom: 22 }}>
-              <SocialShare title={`${product.title} by ${product.artist?.displayName} — Change Art Gallery`} />
+              <SocialShare title={`${product.title} by ${product.artist?.displayName} — FastTackle Africa`} />
             </div>
 
             {/* Charity impact card */}

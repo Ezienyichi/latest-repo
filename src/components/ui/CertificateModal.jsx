@@ -1,4 +1,5 @@
 import { SDGs } from '../../data/constants';
+import Wordmark from './Wordmark';
 
 export default function CertificateModal({ product, onClose }) {
   if (!product) return null;
@@ -25,8 +26,7 @@ export default function CertificateModal({ product, onClose }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
               <div>
                 <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase', color: '#b37800', marginBottom: 4 }}>Issued By</div>
-                <div style={{ fontFamily: 'var(--fd)', fontSize: 18, fontWeight: 700, color: '#1B4332' }}>Change Art Gallery</div>
-                <div style={{ fontSize: 9, color: '#9ca3af', letterSpacing: 1 }}>by Fast Tackle Africa</div>
+                <Wordmark style={{ fontFamily: 'var(--fd)', fontSize: 18, fontWeight: 700, color: '#1B4332', display: 'block' }} />
               </div>
               <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'linear-gradient(135deg,#177c1d,#1B4332)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: 'var(--fd)', fontSize: 18, fontWeight: 700 }}>CAG</div>
             </div>
@@ -68,7 +68,7 @@ export default function CertificateModal({ product, onClose }) {
               <div>
                 <div style={{ fontFamily: 'var(--fm)', fontSize: 11, color: '#6b7280', letterSpacing: 1 }}>Certificate ID</div>
                 <div style={{ fontFamily: 'var(--fm)', fontSize: 13, color: '#1B4332', fontWeight: 500 }}>{product.certificateId || 'CAG-PREVIEW'}</div>
-                <div style={{ fontSize: 10, color: '#9ca3af', marginTop: 4 }}>Issued by Change Art Gallery Platform</div>
+                <div style={{ fontSize: 10, color: '#9ca3af', marginTop: 4 }}>Issued by <Wordmark style={{ fontSize: 10, color: '#9ca3af' }} /> Platform</div>
               </div>
               {/* QR code placeholder */}
               <div style={{ width: 56, height: 56, background: '#f3f4f6', borderRadius: 6, border: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

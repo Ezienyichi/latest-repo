@@ -4,6 +4,7 @@ import { useCart } from './context/CartContext';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import Toasts from './components/ui/Toasts';
+import Wordmark from './components/ui/Wordmark';
 import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
 import ShopPage from './pages/ShopPage';
@@ -44,7 +45,7 @@ export default function App() {
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--base)' }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ fontFamily: 'var(--fd)', fontSize: 32, color: 'var(--accent)', marginBottom: 8 }}>Change Art Gallery</div>
+        <Wordmark style={{ fontFamily: 'var(--fd)', fontSize: 32, color: 'var(--accent)', marginBottom: 8, display: 'block' }} />
         <div style={{ color: 'var(--muted)', fontSize: 14 }}>Loading...</div>
       </div>
     </div>

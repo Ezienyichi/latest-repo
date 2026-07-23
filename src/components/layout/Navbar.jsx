@@ -6,6 +6,7 @@ import { useCart } from '../../context/CartContext';
 import { useTheme } from '../../context/ThemeContext';
 import { DIGITAL_CATS } from '../../data/constants';
 import Icon from '../ui/Icon';
+import Wordmark from '../ui/Wordmark';
 
 function ThemeToggle() {
   const { dark, toggle } = useTheme();
@@ -55,8 +56,7 @@ export default function Navbar() {
     <>
       <nav className="cag-nav">
         <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }} onClick={() => navigate('/')}>
-          <div style={{ fontFamily: 'var(--fd)', fontSize: 20, fontWeight: 700, color: 'var(--accent)' }}>Change Art Gallery</div>
-          <div className="hide-mobile" style={{ fontSize: 9, color: 'var(--gold)', fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase' }}>by Fast Tackle Africa</div>
+          <Wordmark style={{ fontFamily: 'var(--fd)', fontSize: 20, fontWeight: 700, color: 'var(--accent)' }} />
         </div>
 
         <div className="hide-mobile" style={{ display: 'flex', gap: 1 }}>

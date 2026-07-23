@@ -1,45 +1,37 @@
-# Change Art Gallery — Deploy-Ready for Netlify
+# FastTackle Africa
 
 > Where Art Funds Change — A multi-sided marketplace connecting artists, charities, and buyers around the UN's 17 SDGs.
 
-## One-Click Netlify Deploy
+## Stack
+- **Frontend**: React 18 + Vite, served as a Cloudflare Pages static site
+- **Backend**: Hono, running as Cloudflare Pages Functions (`functions/`)
+- **Database**: Supabase Postgres, accessed via Prisma ORM over a Cloudflare Hyperdrive binding
+- **Storage**: Supabase Storage (signed upload/download URLs)
 
-### 1. Set Up Database
-Create a free PostgreSQL database at [Supabase](https://supabase.com), [Neon](https://neon.tech), or [Railway](https://railway.app). Copy the connection string.
+## Deployment
 
-### 2. Deploy to Netlify
-1. Push this folder to a **GitHub repo**
-2. Go to [Netlify](https://app.netlify.com) → "Add new site" → "Import an existing project"
-3. Connect your GitHub repo
-4. Build settings should auto-detect from `netlify.toml`:
-   - **Build command**: `npm install && npx prisma generate && npm run build`
-   - **Publish directory**: `dist`
-   - **Functions directory**: `netlify/functions`
-5. Add **Environment Variables** in Netlify dashboard:
+### 1. Configure environment
+Three separate places need the same credentials (DB connection strings, JWT secret, Supabase URL/keys):
+- `.env` — used by Prisma CLI (`db push`, `seed.js`) when run locally
+- `.dev.vars` — used by `wrangler pages dev` for local Functions development
+- **Cloudflare secrets** — used in production, set via `wrangler pages secret put <NAME> --project-name=fasttackle`
 
-| Variable | Value |
-|----------|-------|
-| `DATABASE_URL` | `postgresql://user:pass@host:5432/dbname` |
-| `JWT_SECRET` | Any long random string |
-| `JWT_EXPIRES_IN` | `7d` |
-| `STRIPE_SECRET_KEY` | `sk_test_...` (optional) |
-| `VITE_STRIPE_PK` | `pk_test_...` (optional) |
+See `.env.example` for the full variable list. The Hyperdrive binding itself (`DATABASE_URL` in production) is configured in `wrangler.toml`, not as a secret.
 
-6. Click **Deploy**
-
-### 3. Seed Demo Data
-After first deploy, run the seed script via Netlify CLI or connect to your database directly:
-
+### 2. Push schema + seed data
 ```bash
-# Local
 npm install
-npx prisma db push
-node prisma/seed.js
+npm run db:push        # prisma db push — declarative schema sync, no migration files
+node prisma/seed.js    # demo data (artists, charities, products, admin account)
 ```
 
-Or use Supabase SQL editor to verify tables were created.
+### 3. Build and deploy
+```bash
+npm run build
+wrangler pages deploy dist --project-name=fasttackle
+```
 
-### 4. Demo Accounts (after seeding)
+### Demo Accounts (after seeding)
 
 | Role | Email | Password |
 |------|-------|----------|
@@ -151,8 +143,8 @@ change-art-gallery/
 
 ## Tech Stack
 - **Frontend**: React 18 + Vite + React Router
-- **Backend**: Express (as Netlify Functions)
-- **Database**: PostgreSQL via Prisma ORM
+- **Backend**: Hono, on Cloudflare Pages Functions
+- **Database**: Supabase Postgres via Prisma ORM + Cloudflare Hyperdrive
 - **Auth**: JWT with bcrypt
 - **Payments**: Stripe (optional — demo mode works without)
-- **Deploy**: Netlify (static site + serverless functions)
+- **Deploy**: Cloudflare Pages (static site + Functions)

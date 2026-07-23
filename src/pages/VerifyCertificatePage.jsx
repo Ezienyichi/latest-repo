@@ -4,6 +4,7 @@ import { XCircle, CheckCircle2, Check, ArrowRight } from 'lucide-react';
 import { SDGs } from '../data/constants';
 import api from '../utils/api';
 import Icon from '../components/ui/Icon';
+import Wordmark from '../components/ui/Wordmark';
 
 function SdgDot({ id }) {
   const s = SDGs.find(x => x.id === id); if (!s) return null;
@@ -42,7 +43,7 @@ export default function VerifyCertificatePage() {
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center', color: 'var(--sage)', animation: 'pop .5s cubic-bezier(.34,1.56,.64,1)' }}><Icon icon={CheckCircle2} size={64} /></div>
           <h1 className="display" style={{ fontSize: 36, marginBottom: 6 }}>Certificate Verified</h1>
-          <p style={{ fontSize: 14, color: 'var(--muted)' }}>This is an authentic certificate issued by Change Art Gallery</p>
+          <p style={{ fontSize: 14, color: 'var(--muted)' }}>This is an authentic certificate issued by <Wordmark style={{ fontWeight: 600 }} /></p>
         </div>
 
         {/* Certificate display */}
@@ -52,8 +53,7 @@ export default function VerifyCertificatePage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32 }}>
             <div>
               <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase', color: '#b37800', marginBottom: 4 }}>Issued By</div>
-              <div style={{ fontFamily: 'var(--fd)', fontSize: 18, fontWeight: 700 }}>Change Art Gallery</div>
-              <div style={{ fontSize: 9, color: '#9ca3af', letterSpacing: 1 }}>by Fast Tackle Africa</div>
+              <Wordmark style={{ fontFamily: 'var(--fd)', fontSize: 18, fontWeight: 700, display: 'block' }} />
             </div>
             <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'linear-gradient(135deg,#177c1d,#1B4332)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: 'var(--fd)', fontSize: 18, fontWeight: 700 }}>CAG</div>
           </div>

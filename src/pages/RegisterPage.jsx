@@ -4,6 +4,7 @@ import { ShoppingBag, Palette, Leaf, AlertTriangle, ArrowRight } from 'lucide-re
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import Icon from '../components/ui/Icon';
+import Wordmark from '../components/ui/Wordmark';
 
 const ROLES = [
   { id: 'BUYER', label: 'Buyer / Funder', icon: ShoppingBag, desc: 'Browse and purchase art. Support charities through your purchases.' },
@@ -54,7 +55,7 @@ export default function RegisterPage() {
       <div style={{ width: '100%', maxWidth: 520, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 'var(--rl)', padding: '40px 36px', boxShadow: 'var(--shl)' }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <Link to="/" style={{ textDecoration: 'none' }}>
-            <div style={{ fontFamily: 'var(--fd)', fontSize: 28, fontWeight: 700, color: 'var(--accent)', marginBottom: 4 }}>Change Art Gallery</div>
+            <Wordmark style={{ fontFamily: 'var(--fd)', fontSize: 28, fontWeight: 700, color: 'var(--accent)', marginBottom: 4, display: 'block' }} />
           </Link>
           <p style={{ fontSize: 14, color: 'var(--muted)' }}>Create your account</p>
         </div>

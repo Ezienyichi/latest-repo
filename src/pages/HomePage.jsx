@@ -76,7 +76,7 @@ export default function HomePage() {
   const sub = () => {
     if (!email.includes('@')) { toast('Enter a valid email', 'err'); return; }
     setSubbed(true);
-    toast('Welcome to the Change Art Gallery community!', 'ok');
+    toast(`Welcome to the ${theory?.site_name || 'FastTackle Africa'} community!`, 'ok');
   };
 
   return (

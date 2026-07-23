@@ -24,7 +24,7 @@ certificates.get('/verify/:certId', async (c) => {
         year: product.year,
         sdgIds: product.sdgIds,
         category: product.category,
-        issuedBy: 'Change Art Gallery — Fast Tackle Africa',
+        issuedBy: 'FastTackle Africa',
       },
     });
   } catch (e) { return c.json({ valid: false, error: 'Failed' }, 500); }
