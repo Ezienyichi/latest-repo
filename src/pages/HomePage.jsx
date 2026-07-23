@@ -13,48 +13,6 @@ function SdgDot({ id, sm }) {
   return <span className="sdg" title={`SDG ${id}: ${s.n}`} style={{ background: s.c, color: '#fff', width: sz, height: sz, fontSize: sm ? 9 : 10, borderRadius: 5 }}>{id}</span>;
 }
 
-// Placeholder pool for the intro gallery band — every URL below is a
-// standard (non-Unsplash+) images.unsplash.com CDN link, free for
-// commercial use under the Unsplash License, and was verified to return
-// HTTP 200 before being added here. Swap any of these for real assets by
-// replacing the `url` value — see the PR/task notes for the full list.
-const GALLERY_PLACEHOLDERS = [
-  { url: 'https://images.unsplash.com/photo-1747889268735-31192c2a6df4?w=800&q=80', label: 'Community Outreach', cat: 'Charity Project' },
-  { url: 'https://images.unsplash.com/photo-1630068846062-3ffe78aa5049?w=800&q=80', label: 'Community Impact', cat: 'Charity Project' },
-  { url: 'https://images.unsplash.com/photo-1541367777708-7905fe3296c0?w=800&q=80', label: 'Oil on Canvas', cat: 'Painting' },
-  { url: 'https://images.unsplash.com/photo-1549490349-8643362247b5?w=800&q=80', label: 'Mixed Media', cat: 'Painting' },
-  { url: 'https://images.unsplash.com/photo-1578321272176-b7bbc0679853?w=800&q=80', label: 'Classical Painting', cat: 'Painting' },
-  { url: 'https://images.unsplash.com/photo-1580136579312-94651dfd596d?w=800&q=80', label: 'Oil Painting', cat: 'Painting' },
-  { url: 'https://images.unsplash.com/photo-1574717025058-2f8737d2e2b7?w=800&q=80', label: 'Motion Loop', cat: 'Animation' },
-  { url: 'https://images.unsplash.com/photo-1616400619175-5beda3a17896?w=800&q=80', label: 'Creative Workspace', cat: 'Animation' },
-  { url: 'https://images.unsplash.com/photo-1639170952854-16636715af61?w=800&q=80', label: 'Vector Design', cat: 'Digital Product' },
-  { url: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=800&q=80', label: 'Studio Session', cat: 'Digital Product' },
-  { url: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=800&q=80', label: 'Open Pages', cat: 'Digital Product' },
-  { url: 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=800&q=80', label: 'Icon Set', cat: 'Digital Product' },
-  { url: 'https://images.unsplash.com/photo-1764085793265-10cc657a363e?w=800&q=80', label: 'Generative Design', cat: 'Digital Product' },
-  { url: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=800&q=80', label: 'Live Performance', cat: 'Digital Product' },
-  { url: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?w=800&q=80', label: 'Creative Suite', cat: 'Digital Product' },
-  { url: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=800&q=80', label: 'Recording Session', cat: 'Digital Product' },
-  { url: 'https://images.unsplash.com/photo-1605106702734-205df224ecce?w=800&q=80', label: 'Digital Print', cat: 'Digital Product' },
-];
-
-// Real featured products first, placeholders filling the gaps — alternating
-// so the band reads as one mixed set rather than "real block, filler block".
-function buildGalleryItems(realProducts, total = 14) {
-  const real = realProducts.map(p => ({
-    url: p.images?.[0]?.url, label: p.title, cat: p.category ? p.category.charAt(0) + p.category.slice(1).toLowerCase() : 'Product', slug: p.slug,
-  })).filter(i => i.url);
-  const out = [];
-  let ri = 0, pi = 0;
-  for (let i = 0; i < total; i++) {
-    const wantReal = i % 2 === 0;
-    if (wantReal && ri < real.length) out.push(real[ri++]);
-    else if (pi < GALLERY_PLACEHOLDERS.length) out.push(GALLERY_PLACEHOLDERS[pi++]);
-    else if (ri < real.length) out.push(real[ri++]);
-  }
-  return out;
-}
-
 export default function HomePage() {
   const navigate = useNavigate();
   const { toast } = useCart();
@@ -67,11 +25,6 @@ export default function HomePage() {
     api.getProducts({ featured: 'true', limit: 16 }).then(r => setFeatured(r.items || [])).catch(() => {});
     api.getPublicSettings().then(setTheory).catch(() => {});
   }, []);
-
-  // Hero uses featured[0], Featured Artworks uses featured[0..4) — the
-  // gallery band draws from what's left so the same product image doesn't
-  // repeat across sections.
-  const galleryItems = buildGalleryItems(featured.slice(4));
 
   const sub = () => {
     if (!email.includes('@')) { toast('Enter a valid email', 'err'); return; }
@@ -150,60 +103,30 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ INTRO GALLERY ═══ */}
+      {/* ═══ GLIMPSE + THEORY OF CHANGE ═══ */}
       <section className="section" style={{ background: 'var(--base)' }}>
-        <div className="wrap">
-          <div style={{ textAlign: 'center', marginBottom: 44 }}>
-            <div className="lbl" style={{ marginBottom: 10 }}>A Glimpse Inside</div>
-            <h2 className="display" style={{ fontSize: 44 }}>Art, Impact & Everything Between</h2>
-            <p style={{ fontSize: 14, color: 'var(--txt2)', maxWidth: 560, margin: '14px auto 0', lineHeight: 1.7 }}>
-              Paintings, animation, digital products, and the charity projects they fund — one platform, one certificate of authenticity at a time.
-            </p>
+        <div className="wrap glimpse-grid">
+          <div className="glimpse-photos">
+            <img className="glimpse-photo-main" loading="lazy"
+              src="https://images.unsplash.com/photo-1536064479547-7ee40b74b807?w=700&h=900&fit=crop&q=80"
+              alt="A community healthcare charity project" />
+            <img className="glimpse-photo-accent" loading="lazy"
+              src="https://images.unsplash.com/photo-1611414779790-abb3e1ec462e?w=520&h=640&fit=crop&q=80"
+              alt="An African artist at work on a canvas" />
           </div>
-          <div className="intro-gallery">
-            {galleryItems.map((item, i) => (
-              <div key={i} className={`intro-gallery-item${item.slug ? ' clickable' : ''}`}
-                onClick={() => item.slug && navigate(`/shop/${item.slug}`)}>
-                <img src={item.url} alt={item.label} loading="lazy" style={{ aspectRatio: i % 5 === 0 ? '3/4' : i % 3 === 0 ? '1/1' : '4/5', objectFit: 'cover' }} />
-                <div className="intro-gallery-overlay">
-                  <div>
-                    <div style={{ fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: 2 }}>{item.cat}</div>
-                    <div style={{ fontSize: 13, color: '#fff', fontWeight: 500 }}>{item.label}</div>
-                  </div>
-                </div>
+          <div className="glimpse-copy">
+            <div className="lbl" style={{ marginBottom: 10 }}>Theory of Change</div>
+            <h2 className="display" style={{ fontSize: 40, marginBottom: 22 }}>How Change Compounds</h2>
+            {theory && (
+              <div className="theory-copy">
+                <p><span className="theory-kicker">If</span>{theory.theory_if}</p>
+                <p><span className="theory-kicker">And if</span>{theory.theory_and_if}</p>
+                <p><span className="theory-kicker">Then</span>{theory.theory_then}</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
-
-      {/* ═══ THEORY OF CHANGE ═══ */}
-      {theory && (
-        <section style={{ background: 'linear-gradient(135deg,#0d2318 0%,#1B4332 50%,#0d2318 100%)', padding: '90px 0' }}>
-          <div className="wrap">
-            <div style={{ textAlign: 'center', marginBottom: 52 }}>
-              <div className="lbl" style={{ marginBottom: 10, color: 'var(--gold)' }}>Theory of Change</div>
-              <h2 className="display" style={{ fontSize: 44, color: '#fff' }}>How Change Compounds</h2>
-            </div>
-            <div className="theory-flow">
-              <div className="theory-card">
-                <div className="theory-tag">If</div>
-                <p className="theory-text">{theory.theory_if}</p>
-              </div>
-              <div className="theory-connector"><Icon icon={ArrowRight} size={26} /></div>
-              <div className="theory-card">
-                <div className="theory-tag">And If</div>
-                <p className="theory-text">{theory.theory_and_if}</p>
-              </div>
-              <div className="theory-connector"><Icon icon={ArrowRight} size={26} /></div>
-              <div className="theory-card then">
-                <div className="theory-tag">Then</div>
-                <p className="theory-text">{theory.theory_then}</p>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* ═══ WHAT WE PROVIDE ═══ */}
       <section className="section" style={{ background: 'var(--panel)' }}>

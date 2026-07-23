@@ -431,16 +431,17 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
 .team-name{font-family:var(--fd);font-size:17px;font-weight:600;margin-bottom:3px}
 .team-role{font-size:12px;color:var(--muted)}
 
-/* ═══ INTRO GALLERY BAND (homepage) ═══ */
-.intro-gallery{column-count:4;column-gap:14px}
-@media(max-width:1024px){.intro-gallery{column-count:3}}
-@media(max-width:640px){.intro-gallery{column-count:2;column-gap:10px}}
-.intro-gallery-item{break-inside:avoid;margin-bottom:14px;border-radius:var(--r);overflow:hidden;position:relative;background:var(--glass)}
-.intro-gallery-item.clickable{cursor:pointer}
-.intro-gallery-item img{width:100%;display:block;transition:transform .45s var(--ease)}
-.intro-gallery-item.clickable:hover img{transform:scale(1.05)}
-.intro-gallery-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.78) 0%,transparent 50%);opacity:0;transition:opacity .25s;display:flex;align-items:flex-end;padding:12px}
-.intro-gallery-item:hover .intro-gallery-overlay{opacity:1}
+/* ═══ GLIMPSE + THEORY OF CHANGE (homepage, below hero) ═══ */
+.glimpse-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+@media(max-width:900px){.glimpse-grid{grid-template-columns:1fr;gap:52px}}
+.glimpse-photos{position:relative;max-width:460px}
+@media(max-width:900px){.glimpse-photos{margin:0 auto}}
+.glimpse-photo-main{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:var(--rl);box-shadow:var(--shl);display:block}
+.glimpse-photo-accent{position:absolute;bottom:-36px;right:-36px;width:48%;aspect-ratio:4/5;object-fit:cover;border-radius:var(--r);box-shadow:var(--shl);border:6px solid var(--base)}
+@media(max-width:900px){.glimpse-photo-accent{display:none}}
+.theory-copy p{font-size:14px;line-height:1.85;color:var(--txt2);margin-bottom:16px}
+.theory-copy p:last-child{margin-bottom:0}
+.theory-kicker{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-right:8px}
 
 /* ═══ GALLERY / LIGHTBOX ═══ */
 .gallery-main{position:relative;border-radius:var(--rl);overflow:hidden;background:var(--glass);border:1px solid var(--border);cursor:zoom-in}
