@@ -103,27 +103,38 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ GLIMPSE + THEORY OF CHANGE ═══ */}
-      <section className="section" style={{ background: 'var(--base)' }}>
-        <div className="wrap glimpse-grid">
-          <div className="glimpse-photos">
-            <img className="glimpse-photo-main" loading="lazy"
-              src="https://images.unsplash.com/photo-1536064479547-7ee40b74b807?w=700&h=900&fit=crop&q=80"
-              alt="A community healthcare charity project" />
-            <img className="glimpse-photo-accent" loading="lazy"
-              src="https://images.unsplash.com/photo-1611414779790-abb3e1ec462e?w=520&h=640&fit=crop&q=80"
-              alt="An African artist at work on a canvas" />
-          </div>
-          <div className="glimpse-copy">
-            <div className="lbl" style={{ marginBottom: 10 }}>Theory of Change</div>
-            <h2 className="display" style={{ fontSize: 40, marginBottom: 22 }}>How Change Compounds</h2>
-            {theory && (
-              <div className="theory-copy">
-                <p><span className="theory-kicker">If</span>{theory.theory_if}</p>
-                <p><span className="theory-kicker">And if</span>{theory.theory_and_if}</p>
-                <p><span className="theory-kicker">Then</span>{theory.theory_then}</p>
-              </div>
-            )}
+      {/* ═══ THEORY OF CHANGE — editorial two-column ═══ */}
+      <section className="toc2">
+        <img className="toc2-watermark" src="https://images.unsplash.com/photo-1630068846062-3ffe78aa5049?w=900&q=60" alt="" aria-hidden="true" loading="lazy" />
+        <div className="toc2-wrap">
+          <div className="toc2-grid">
+            <div className="toc2-photos">
+              <img className="toc2-photo-main" loading="lazy"
+                src="https://images.unsplash.com/photo-1536064479547-7ee40b74b807?w=700&h=780&fit=crop&q=80"
+                alt="A community healthcare charity project" />
+              <img className="toc2-photo-accent" loading="lazy"
+                src="https://images.unsplash.com/photo-1611414779790-abb3e1ec462e?w=460&h=490&fit=crop&q=80"
+                alt="An African artist at work on a canvas" />
+            </div>
+            <div className="toc2-copy">
+              <div className="toc2-kicker">Theory of Change</div>
+              <h2 className="toc2-heading">How Change Compounds</h2>
+              {theory && (
+                <>
+                  <p className="toc2-para">{theory.theory_if}</p>
+                  <div className="toc2-highlight">
+                    <img className="toc2-highlight-thumb" loading="lazy"
+                      src="https://images.unsplash.com/photo-1769117695165-6ecb44ff1150?w=340&h=180&fit=crop&q=80"
+                      alt="Buyers and partners engaging with creative work" />
+                    <div className="toc2-highlight-text">
+                      <p className="toc2-clamp2">{theory.theory_and_if}</p>
+                      <span className="toc2-link" onClick={() => navigate('/about')}>Learn more</span>
+                    </div>
+                  </div>
+                  <p className="toc2-para toc2-para-second">{theory.theory_then}</p>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </section>
