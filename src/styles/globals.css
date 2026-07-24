@@ -1,13 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-/* ── LIGHT MODE (default) ──────────────────────────────────── */
+/* ── DESIGN TOKENS (light-only) ────────────────────────────── */
 :root{
   --forest:#177c1d;--green:#1e9626;--mint:#22a829;--sage:#2dba35;--pale:#a8edac;
   --gold:#ffad00;--amber:#ffc233;--goldl:#fff3cc;
-  --dark:#1a1e1a;--base:#f3f4f7;--panel:#ffffff;--card:#ffffff;--hover:#f7f8fa;
+  --dark:#1a1e1a;--base:#ffffff;--panel:#ffffff;--card:#ffffff;--hover:#f7f8fa;
   --muted:#6b7280;--subtle:#9ca3af;
-  --txt:#111827;--txt2:#374151;--txt3:#6b7280;
+  --txt:#111111;--txt2:#262626;--txt3:#6b7280;
   --border:rgba(0,0,0,.09);--borderl:rgba(0,0,0,.14);
   --glass:rgba(0,0,0,.03);--glassh:rgba(0,0,0,.06);
   --nav-bg:rgba(255,255,255,.94);--nav-border:rgba(0,0,0,.08);
@@ -20,22 +20,9 @@
   --fm:'JetBrains Mono',monospace;
   --ease:cubic-bezier(.4,0,.2,1);
   --accent:#177c1d;--accent2:#ffad00;
-}
-
-/* ── DARK MODE ─────────────────────────────────────────────── */
-[data-theme="dark"]{
-  --logo-filter: brightness(0) invert(1);
-  --forest:#2dba35;--green:#22a829;--mint:#2dba35;--sage:#74C69D;--pale:#a8edac;
-  --gold:#ffad00;--amber:#ffc233;--goldl:#3a2e00;
-  --dark:#0d1117;--base:#0d1117;--panel:#161b22;--card:#1c2128;--hover:#21262d;
-  --muted:#8b949e;--subtle:#6e7681;
-  --txt:#e6edf3;--txt2:#c9d1d9;--txt3:#8b949e;
-  --border:rgba(255,255,255,.08);--borderl:rgba(255,255,255,.14);
-  --glass:rgba(255,255,255,.04);--glassh:rgba(255,255,255,.08);
-  --nav-bg:rgba(13,17,23,.96);--nav-border:rgba(255,255,255,.08);
-  --footer-bg:#0d1117;--footer-txt:rgba(255,255,255,.45);
-  --sh:0 2px 16px rgba(0,0,0,.4);--shl:0 8px 40px rgba(0,0,0,.55);
-  --accent:#2dba35;--accent2:#ffad00;
+  --btn-primary-grad:linear-gradient(180deg,#7cce6b,#d8ffd0);
+  --btn-primary-grad-hover:linear-gradient(180deg,#d8ffd0,#7cce6b);
+  --btn-primary-txt:var(--txt);
 }
 
 html{scroll-behavior:smooth}
@@ -103,8 +90,8 @@ body{font-family:var(--fb);background:var(--base);color:var(--txt);overflow-x:hi
 /* Buttons */
 .btn{border:none;cursor:pointer;font-family:var(--fb);font-weight:500;display:inline-flex;align-items:center;gap:7px;transition:all .2s var(--ease);outline:none;white-space:nowrap;text-decoration:none}
 .btn:focus-visible{box-shadow:0 0 0 2px var(--mint)}
-.btn-p{background:var(--mint);color:#fff;padding:11px 22px;border-radius:var(--r);font-size:14px}
-.btn-p:hover{background:var(--green);transform:translateY(-1px);box-shadow:0 6px 20px rgba(23,124,29,.3)}
+.btn-p{background:var(--btn-primary-grad);color:var(--btn-primary-txt);padding:11px 22px;border-radius:var(--r);font-size:14px;font-weight:600}
+.btn-p:hover{background:var(--btn-primary-grad-hover);transform:translateY(-1px);box-shadow:0 6px 20px rgba(124,206,107,.35)}
 .btn-s{background:var(--glass);border:1px solid var(--borderl);color:var(--txt);padding:10px 20px;border-radius:var(--r);font-size:14px}
 .btn-s:hover{background:var(--glassh);border-color:var(--borderl)}
 .btn-g{background:transparent;color:var(--txt2);padding:9px 14px;border-radius:var(--r);font-size:14px}
@@ -310,11 +297,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .stripe-field:focus{border-color:var(--mint);box-shadow:0 0 0 3px rgba(23,124,29,.1);outline:none}
 .stripe-loading{background:linear-gradient(90deg,rgba(23,124,29,.08) 25%,rgba(23,124,29,.2) 50%,rgba(23,124,29,.08) 75%);background-size:200% 100%;animation:stripeLoad 1.4s infinite;border-radius:var(--r);height:46px}
 
-/* ── THEME TOGGLE BUTTON ───────────────────────────────────── */
-.theme-toggle{width:42px;height:24px;border-radius:12px;border:1.5px solid var(--border);background:var(--glass);cursor:pointer;position:relative;transition:all .25s;display:flex;align-items:center;padding:2px;overflow:hidden}
-.theme-toggle .knob{width:18px;height:18px;border-radius:50%;background:var(--gold);transition:all .28s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;justify-content:center;font-size:10px;box-shadow:0 1px 4px rgba(0,0,0,.2)}
-[data-theme="dark"] .theme-toggle .knob{transform:translateX(18px)}
-
 /* ── HERO VIDEO BACKGROUND ───────────────────────────────── */
 .hero-video-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;pointer-events:none}
 .hero-overlay{position:absolute;inset:0;z-index:1;pointer-events:none}
@@ -459,6 +441,41 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
 .toc2-clamp2{font-family:var(--fb);font-size:15px;line-height:1.6;color:var(--txt2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .toc2-link{display:inline-block;margin-top:6px;font-family:var(--fb);font-size:13px;font-weight:600;color:var(--accent);text-decoration:underline;cursor:pointer}
 @media(max-width:640px){.toc2-highlight{flex-direction:column;gap:14px}.toc2-highlight-thumb{width:100%;height:160px}}
+
+/* ═══ PRODUCT GALLERY (homepage, category-grouped) ═══ */
+.gallery-row{margin-bottom:60px}
+.gallery-row:last-child{margin-bottom:0}
+.gallery-row-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:26px;gap:16px}
+.gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+@media(max-width:1024px){.gallery-grid{grid-template-columns:repeat(2,1fr)}}
+/* Mobile: horizontal scroll reads better than stacking 4+ cards per row —
+   keeps each category feeling like a single browsable row, matching the
+   desktop layout's intent, instead of doubling page length. */
+@media(max-width:640px){
+  .gallery-grid{display:flex;overflow-x:auto;gap:14px;scroll-snap-type:x mandatory;padding-bottom:10px;-webkit-overflow-scrolling:touch}
+  .gallery-grid::-webkit-scrollbar{height:4px}
+  .gallery-card{flex:0 0 68%;scroll-snap-align:start}
+}
+.gallery-card{cursor:pointer;transition:transform .2s var(--ease)}
+.gallery-card:hover{transform:translateY(-3px)}
+.gallery-card-img-wrap{position:relative;aspect-ratio:4/5;border-radius:var(--r);overflow:hidden;background:var(--glass)}
+.gallery-card-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s var(--ease)}
+.gallery-card:hover .gallery-card-img-wrap img{transform:scale(1.04)}
+/* Auto-frame treatment: mat border + lifted shadow, for categories that
+   read as "art on a wall" (paintings, graphic prints). No prior "auto-frame"
+   component existed in this codebase — this is a new, minimal treatment
+   built to match that description; flag it if you had something else in mind. */
+.gallery-card-framed .gallery-card-img-wrap{padding:14px;background:linear-gradient(145deg,#fff,#f0f0f0);box-shadow:0 10px 24px rgba(0,0,0,.12);border-radius:6px}
+.gallery-card-framed .gallery-card-img-wrap img{border:1px solid rgba(0,0,0,.08);border-radius:2px}
+.gallery-card-body{padding-top:14px}
+.gallery-card-title{font-family:var(--fd);font-size:17px;font-weight:600;margin-bottom:3px;color:var(--txt)}
+.gallery-card-artist{font-size:12px;color:var(--muted);margin-bottom:10px}
+.gallery-card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.gallery-card-price{font-family:var(--fd);font-size:17px;font-weight:700;color:var(--accent)}
+.gallery-card-charity{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);cursor:pointer;transition:color .15s}
+.gallery-card-charity:hover{color:var(--accent)}
+.gallery-card-charity-static{cursor:default}
+.gallery-card-charity-static:hover{color:var(--muted)}
 
 /* ═══ GALLERY / LIGHTBOX ═══ */
 .gallery-main{position:relative;border-radius:var(--rl);overflow:hidden;background:var(--glass);border:1px solid var(--border);cursor:zoom-in}
@@ -684,7 +701,6 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--mint);outline-offse
 /* High contrast mode support */
 @media(prefers-contrast:high){
   :root{--border:rgba(0,0,0,.3);--borderl:rgba(0,0,0,.5);--muted:#374151;--txt:#000}
-  [data-theme="dark"]{--border:rgba(255,255,255,.3);--borderl:rgba(255,255,255,.5);--muted:#d1d5db;--txt:#fff}
 }
 
 /* Touch targets */

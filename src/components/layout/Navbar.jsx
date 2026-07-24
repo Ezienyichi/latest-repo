@@ -1,17 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Moon, Sun, Palette, Image as ImageIcon, Monitor, Flame, Leaf, Wallet, Award, Home, Package, ShoppingCart, User } from 'lucide-react';
+import { Palette, Image as ImageIcon, Monitor, Flame, Leaf, Wallet, Award, Home, Package, ShoppingCart, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
-import { useTheme } from '../../context/ThemeContext';
 import { DIGITAL_CATS } from '../../data/constants';
 import Icon from '../ui/Icon';
 import Wordmark from '../ui/Wordmark';
-
-function ThemeToggle() {
-  const { dark, toggle } = useTheme();
-  return <button className="theme-toggle" onClick={toggle} title={dark ? 'Light mode' : 'Dark mode'}><div className="knob"><Icon icon={dark ? Moon : Sun} size="inline" /></div></button>;
-}
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -86,7 +80,6 @@ export default function Navbar() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          <ThemeToggle />
           <div style={{ position: 'relative' }}>
             <button className="btn btn-g btn-icon" style={{ color: 'var(--muted)', width: 36, height: 36 }} onClick={() => setNfOpen(o => !o)}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>

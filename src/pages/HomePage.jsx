@@ -1,16 +1,107 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Palette, Leaf, ShoppingBag, Check } from 'lucide-react';
+import { ArrowRight, Palette, Leaf, ShoppingBag, Check, ImageOff } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { SDGs } from '../data/constants';
 import api from '../utils/api';
 import Icon from '../components/ui/Icon';
+import CharityLogo from '../components/ui/CharityLogo';
 
 function SdgDot({ id, sm }) {
   const s = SDGs.find(x => x.id === id);
   if (!s) return null;
   const sz = sm ? 22 : 26;
   return <span className="sdg" title={`SDG ${id}: ${s.n}`} style={{ background: s.c, color: '#fff', width: sz, height: sz, fontSize: sm ? 9 : 10, borderRadius: 5 }}>{id}</span>;
+}
+
+// Placeholder pool for the homepage gallery rows — used only to fill out a
+// row when real ACTIVE products don't cover it yet. Every image below is a
+// standard (non-Unsplash+) images.unsplash.com CDN link, free for commercial
+// use under the Unsplash License, downloaded and visually inspected before
+// being added here. Charity names match real seeded CharityProfile rows;
+// artist names are intentionally fictional placeholders, not reused real
+// seeded artists, so nothing here misattributes a real person's work.
+const PAINTING_PLACEHOLDERS = [
+  { title: 'Crimson Bloom', artist: 'Imani Osei', price: 780, charityName: 'WaterAid UK', category: 'ARTWORK', img: 'https://images.unsplash.com/photo-1563882687284-b4381efc07f5?w=600&h=750&fit=crop&q=80' },
+  { title: 'Golden Hour Study', artist: 'Malik Toure', price: 640, charityName: 'CAMFED', category: 'ARTWORK', img: 'https://images.unsplash.com/flagged/photo-1563882687293-71c93ae4d7dc?w=600&h=750&fit=crop&q=80' },
+  { title: 'Coastal Fragments', artist: 'Naledi Khumalo', price: 920, charityName: 'Greenpeace Africa', category: 'ARTWORK', img: 'https://images.unsplash.com/photo-1704786574827-f4dfa47ad4f4?w=600&h=750&fit=crop&q=80' },
+  { title: 'Ember & Indigo', artist: 'Thabo Nkosi', price: 850, charityName: 'Oxfam', category: 'ARTWORK', img: 'https://images.unsplash.com/photo-1541367777708-7905fe3296c0?w=600&h=750&fit=crop&q=80' },
+];
+const DIGITAL_PLACEHOLDERS = [
+  { title: 'The Long Way Home', artist: 'Amina Bello', price: 18, charityName: 'CAMFED', category: 'EBOOK', img: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=600&h=750&fit=crop&q=80' },
+  { title: 'Midnight Sessions', artist: 'Kwame Boateng', price: 12, charityName: 'Oxfam', category: 'MUSIC', img: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=600&h=750&fit=crop&q=80' },
+  { title: 'Prism Set Vol. 2', artist: 'Zainab Hassan', price: 35, charityName: 'WaterAid UK', category: 'GRAPHIC', img: 'https://images.unsplash.com/photo-1639170952854-16636715af61?w=600&h=750&fit=crop&q=80' },
+  { title: 'Kinetic Bloom', artist: 'Sipho Dlamini', price: 45, charityName: 'Greenpeace Africa', category: 'ANIMATION', img: 'https://images.unsplash.com/photo-1574717025058-2f8737d2e2b7?w=600&h=750&fit=crop&q=80' },
+];
+const ROW_TARGET = 4;
+
+// Framed treatment (mat border + lifted shadow) for categories that read as
+// "art on a wall" — paintings and graphic prints. Digital categories that
+// are inherently flat media (ebook covers, music art) stay unframed.
+const FRAMED_CATEGORIES = ['ARTWORK', 'GRAPHIC'];
+
+function GalleryCard({ item, onClick, onCharityClick }) {
+  const framed = FRAMED_CATEGORIES.includes(item.category);
+  return (
+    <div className={`gallery-card${framed ? ' gallery-card-framed' : ''}`} onClick={onClick}>
+      <div className="gallery-card-img-wrap">
+        <img src={item.img} alt={item.title} loading="lazy" />
+      </div>
+      <div className="gallery-card-body">
+        <h3 className="gallery-card-title">{item.title}</h3>
+        <p className="gallery-card-artist">by {item.artist}</p>
+        <div className="gallery-card-foot">
+          <span className="gallery-card-price">£{Number(item.price).toLocaleString()}</span>
+          {item.charityId ? (
+            <span className="gallery-card-charity" onClick={e => { e.stopPropagation(); onCharityClick(item.charityId); }}>
+              <CharityLogo logo={item.charityLogo} size={14} /> {item.charityName}
+            </span>
+          ) : (
+            <span className="gallery-card-charity gallery-card-charity-static">
+              <CharityLogo logo={null} size={14} /> {item.charityName}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GalleryRow({ label, heading, real, placeholders, browsePath, onOpen, onCharityClick }) {
+  const merged = [
+    ...real.map(p => ({
+      id: p.id, slug: p.slug, title: p.title, artist: p.artist?.displayName || 'Unknown Artist',
+      price: p.basePrice, category: p.category, img: p.images?.[0]?.url,
+      charityId: p.charity?.id, charityName: p.charity?.name || 'Unaffiliated', charityLogo: p.charity?.logo,
+    })).filter(p => p.img),
+    ...placeholders,
+  ].slice(0, ROW_TARGET);
+
+  return (
+    <div className="gallery-row">
+      <div className="gallery-row-head">
+        <div>
+          <div className="lbl" style={{ marginBottom: 8 }}>{label}</div>
+          <h3 className="display" style={{ fontSize: 30 }}>{heading}</h3>
+        </div>
+        <button className="btn btn-s" onClick={() => onOpen(browsePath)}>View All <Icon icon={ArrowRight} size="inline" /></button>
+      </div>
+      {merged.length === 0 ? (
+        <div className="empty" style={{ padding: '48px 24px' }}>
+          <div className="empty-ico"><Icon icon={ImageOff} size={40} /></div>
+          <div className="empty-t" style={{ fontSize: 20 }}>Nothing here yet</div>
+          <p style={{ color: 'var(--muted)', fontSize: 13 }}>Check back soon for new {label.toLowerCase()}.</p>
+        </div>
+      ) : (
+        <div className="gallery-grid">
+          {merged.map((item, i) => (
+            <GalleryCard key={item.slug || `ph-${i}`} item={item} onCharityClick={onCharityClick}
+              onClick={() => onOpen(item.slug ? `/shop/${item.slug}` : browsePath)} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function HomePage() {
@@ -20,11 +111,17 @@ export default function HomePage() {
   const [subbed, setSubbed] = useState(false);
   const [featured, setFeatured] = useState([]);
   const [theory, setTheory] = useState(null);
+  const [paintings, setPaintings] = useState([]);
+  const [digitalWorks, setDigitalWorks] = useState([]);
 
   useEffect(() => {
     api.getProducts({ featured: 'true', limit: 16 }).then(r => setFeatured(r.items || [])).catch(() => {});
     api.getPublicSettings().then(setTheory).catch(() => {});
+    api.getProducts({ category: 'ARTWORK', limit: ROW_TARGET, sort: 'newest' }).then(r => setPaintings(r.items || [])).catch(() => {});
+    api.getProducts({ limit: 24, sort: 'newest' }).then(r => setDigitalWorks((r.items || []).filter(p => p.category !== 'ARTWORK'))).catch(() => {});
   }, []);
+
+  const openCharity = id => navigate(`/charities/${id}`);
 
   const sub = () => {
     if (!email.includes('@')) { toast('Enter a valid email', 'err'); return; }
@@ -136,6 +233,16 @@ export default function HomePage() {
               )}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ═══ PRODUCT GALLERY ═══ */}
+      <section className="section" style={{ background: 'var(--base)' }}>
+        <div className="wrap">
+          <GalleryRow label="Paintings" heading="Original Works" real={paintings} placeholders={PAINTING_PLACEHOLDERS}
+            browsePath="/shop" onOpen={navigate} onCharityClick={openCharity} />
+          <GalleryRow label="Digital Works" heading="Downloadable Creations" real={digitalWorks} placeholders={DIGITAL_PLACEHOLDERS}
+            browsePath="/digitals" onOpen={navigate} onCharityClick={openCharity} />
         </div>
       </section>
 
