@@ -485,30 +485,33 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
 .gallery-subcat-tab:hover{background:var(--glassh)}
 .gallery-subcat-tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
 
-/* Carousel shell — manual hand-scroll only, no autoplay. Mouse: click-drag
-   (see CarouselTrack's pointer handlers). Touch/pen: native swipe, left
-   untouched. Always-visible thin scrollbar + arrow buttons as a second and
-   third way in, per spec ("visible scrollbar OR arrow controls" — built
-   both). scroll-snap-align on each card snaps to card edges after any of
-   drag, swipe, wheel, or arrow-button scrolling settles. */
-.carousel{position:relative;display:flex;align-items:center;gap:10px}
-.carousel-track{display:flex;gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;padding-bottom:14px;-webkit-overflow-scrolling:touch;scrollbar-width:thin;flex:1;min-width:0;cursor:grab}
-.carousel-track.dragging{cursor:grabbing;scroll-snap-type:none;scroll-behavior:auto}
-.carousel-track::-webkit-scrollbar{height:6px}
-.carousel-track::-webkit-scrollbar-track{background:var(--glass);border-radius:3px}
-.carousel-track::-webkit-scrollbar-thumb{background:var(--borderl);border-radius:3px}
-.carousel-track::-webkit-scrollbar-thumb:hover{background:var(--muted)}
-.carousel-arrow{flex-shrink:0;width:40px;height:40px;border-radius:50%;background:var(--card);border:1px solid var(--border);color:var(--txt);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s var(--ease);box-shadow:var(--sh)}
-.carousel-arrow:hover{background:var(--hover);transform:scale(1.06)}
-.carousel-arrow-hidden{opacity:0;pointer-events:none}
-@media(max-width:640px){.carousel-arrow{display:none}}
+/* Full-bleed auto-scrolling carousel track. Breaks out of the centered
+   .wrap using the standard viewport-width breakout (margin: calc(50% -
+   50vw)); padding-left/right is computed to land exactly where .wrap's own
+   content starts (max(48px, …) matches .wrap's centering math above the
+   1280px breakpoint, the media query below matches .wrap's own mobile
+   padding switch), so cards align under the heading instead of running
+   further out to the true viewport edge than the heading does.
+   No visible scrollbar — scrolling here is driven by auto-scroll + drag/
+   swipe, not a UI control, so a scrollbar would be visual noise. */
+.gallery-fullbleed{
+  width:100vw;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);
+  padding-left:max(48px,calc((100vw - 1280px)/2 + 48px));padding-right:max(48px,calc((100vw - 1280px)/2 + 48px));
+  display:flex;gap:18px;overflow-x:auto;overflow-y:hidden;
+  scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;
+  cursor:grab;
+}
+.gallery-fullbleed::-webkit-scrollbar{display:none}
+.gallery-fullbleed.dragging{cursor:grabbing}
+@media(max-width:768px){.gallery-fullbleed{padding-left:18px;padding-right:18px}}
 
 /* Card width: ~5-6 fit in the visible track on desktop with the next one
    peeking in at the edge, per spec. Mobile shows ~1.6 per screen — a clear
    swipeable row, not a stacked list. */
-.gallery-card{cursor:pointer;transition:transform .2s var(--ease);flex:0 0 clamp(160px,15vw,200px);scroll-snap-align:start;-webkit-user-select:none;user-select:none}
+.gallery-card{cursor:pointer;transition:transform .2s var(--ease);flex:0 0 clamp(160px,15vw,200px);-webkit-user-select:none;user-select:none}
 @media(max-width:640px){.gallery-card{flex-basis:62%}}
 .gallery-card:hover{transform:translateY(-3px)}
+.gallery-card:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .gallery-card-img-wrap{position:relative;aspect-ratio:4/5;border-radius:var(--r);overflow:hidden;background:var(--glass)}
 .gallery-card-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s var(--ease)}
 .gallery-card:hover .gallery-card-img-wrap img{transform:scale(1.04)}

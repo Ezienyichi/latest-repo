@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Palette, Leaf, ShoppingBag, Check, ImageOff, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, Palette, Leaf, ShoppingBag, Check, ImageOff } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { SDGs, FRAMED_CATEGORIES } from '../data/constants';
 import api from '../utils/api';
@@ -66,7 +66,8 @@ const ROW_TARGET = 6;
 function GalleryCard({ item, onClick, onCharityClick }) {
   const framed = FRAMED_CATEGORIES.includes(item.category);
   return (
-    <div className="gallery-card" onClick={onClick}>
+    <div className="gallery-card" onClick={onClick} tabIndex={0} role="button"
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}>
       <div className={`gallery-card-img-wrap${framed ? ' pf-framed' : ''}`}>
         <img src={item.img} alt={item.title} loading="lazy" draggable={false} />
       </div>
@@ -90,69 +91,106 @@ function GalleryCard({ item, onClick, onCharityClick }) {
   );
 }
 
-// Manual, user-driven horizontal carousel: click-drag with the mouse, native
-// swipe/momentum on touch (untouched — we only intercept mouse pointers so
-// touch scrolling stays 100% native), a visible thin scrollbar, and arrow
-// buttons that step by ~85% of the viewport. No autoplay anywhere.
-function CarouselTrack({ children, itemCount }) {
-  const trackRef = useRef(null);
-  const drag = useRef({ active: false, startX: 0, startScroll: 0, moved: false });
-  const [canLeft, setCanLeft] = useState(false);
-  const [canRight, setCanRight] = useState(false);
+// Continuous, right-to-left auto-scrolling carousel. The card list is
+// rendered twice back-to-back; auto-scroll increments scrollLeft every
+// frame and wraps by subtracting exactly one copy's width the instant it
+// crosses that boundary — since both copies are pixel-identical, that jump
+// is invisible, producing an endless loop with no visible seam.
+//
+// Manual drag/swipe uses the SAME scrollLeft the auto-scroll drives, so
+// there's no mode-switch or position hand-off: dragging simply pauses the
+// per-frame increment, and it resumes ~2s after release from wherever the
+// user left it. Hover and keyboard focus pause immediately (no delay) and
+// resume immediately when they end. prefers-reduced-motion skips the
+// animation loop entirely, leaving a plain manually-scrollable row.
+const AUTOSCROLL_PX_PER_SEC = 40;
 
-  const updateArrows = useCallback(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    setCanLeft(el.scrollLeft > 4);
-    setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
+function CarouselTrack({ items, itemKey, renderItem }) {
+  const trackRef = useRef(null);
+  const state = useRef({
+    setWidth: 0, dragging: false, startX: 0, startScroll: 0, moved: false,
+    hoverPaused: false, focusPaused: false, resumeAt: 0, reduced: false,
+  });
+
+  useEffect(() => {
+    state.current.reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }, []);
 
   useEffect(() => {
-    updateArrows();
     const el = trackRef.current;
     if (!el) return;
+    // Measure the real "repeat distance" (first card of copy two minus first
+    // card of copy one) rather than scrollWidth/2 — scrollWidth also
+    // includes the track's own outer padding (counted once, not per-copy),
+    // which inflates scrollWidth/2 past the true repeat width. On wide
+    // viewports that inflated value can exceed the browser's native max
+    // scrollLeft (scrollWidth - clientWidth), so the wrap condition
+    // (scrollLeft >= setWidth) can never fire — the loop silently stalls
+    // pinned at the native ceiling instead of wrapping.
+    const measure = () => {
+      const n = items.length;
+      const kids = el.children;
+      state.current.setWidth = (n > 0 && kids.length >= 2 * n) ? kids[n].offsetLeft - kids[0].offsetLeft : el.scrollWidth / 2;
+    };
+    measure();
     el.scrollLeft = 0;
-    el.addEventListener('scroll', updateArrows, { passive: true });
-    window.addEventListener('resize', updateArrows);
-    return () => { el.removeEventListener('scroll', updateArrows); window.removeEventListener('resize', updateArrows); };
-  }, [itemCount, updateArrows]);
+    window.addEventListener('resize', measure);
+    if (state.current.reduced) return () => window.removeEventListener('resize', measure);
+
+    let raf, last = performance.now();
+    const tick = now => {
+      const dt = (now - last) / 1000;
+      last = now;
+      const s = state.current;
+      if (!s.dragging && !s.hoverPaused && !s.focusPaused && now >= s.resumeAt && s.setWidth > 0) {
+        el.scrollLeft += AUTOSCROLL_PX_PER_SEC * dt;
+        if (el.scrollLeft >= s.setWidth) el.scrollLeft -= s.setWidth;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', measure); };
+  }, [items.length]);
 
   const onPointerDown = e => {
     if (e.pointerType !== 'mouse') return; // touch/pen keep native swipe scrolling
     const el = trackRef.current;
-    drag.current = { active: true, startX: e.clientX, startScroll: el.scrollLeft, moved: false };
+    const s = state.current;
+    s.dragging = true; s.moved = false; s.startX = e.clientX; s.startScroll = el.scrollLeft;
     el.setPointerCapture(e.pointerId);
     el.classList.add('dragging');
   };
   const onPointerMove = e => {
-    if (!drag.current.active) return;
+    const s = state.current;
+    if (!s.dragging) return;
     const el = trackRef.current;
-    const dx = e.clientX - drag.current.startX;
-    if (Math.abs(dx) > 5) drag.current.moved = true;
-    el.scrollLeft = drag.current.startScroll - dx;
+    const dx = e.clientX - s.startX;
+    if (Math.abs(dx) > 5) s.moved = true;
+    let next = s.startScroll - dx;
+    if (s.setWidth > 0) next = ((next % s.setWidth) + s.setWidth) % s.setWidth;
+    el.scrollLeft = next;
   };
   const endDrag = () => {
-    if (!drag.current.active) return;
-    drag.current.active = false;
+    const s = state.current;
+    if (!s.dragging) return;
+    s.dragging = false;
+    s.resumeAt = performance.now() + 2000; // resume auto-scroll ~2s after release
     trackRef.current?.classList.remove('dragging');
   };
   const onClickCapture = e => {
-    if (drag.current.moved) { e.stopPropagation(); e.preventDefault(); drag.current.moved = false; }
+    if (state.current.moved) { e.stopPropagation(); e.preventDefault(); state.current.moved = false; }
   };
-  const scroll = dir => trackRef.current?.scrollBy({ left: dir * trackRef.current.clientWidth * 0.85, behavior: 'smooth' });
 
+  const doubled = [...items, ...items];
   return (
-    <div className="carousel">
-      <button className={`carousel-arrow carousel-arrow-l${canLeft ? '' : ' carousel-arrow-hidden'}`} onClick={() => scroll(-1)} aria-label="Scroll left" tabIndex={canLeft ? 0 : -1}>
-        <Icon icon={ChevronLeft} />
-      </button>
-      <div className="carousel-track" ref={trackRef} onPointerDown={onPointerDown} onPointerMove={onPointerMove}
-        onPointerUp={endDrag} onPointerLeave={endDrag} onClickCapture={onClickCapture}>
-        {children}
-      </div>
-      <button className={`carousel-arrow carousel-arrow-r${canRight ? '' : ' carousel-arrow-hidden'}`} onClick={() => scroll(1)} aria-label="Scroll right" tabIndex={canRight ? 0 : -1}>
-        <Icon icon={ChevronRight} />
-      </button>
+    <div className="gallery-fullbleed" ref={trackRef}
+      onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endDrag} onPointerLeave={endDrag}
+      onClickCapture={onClickCapture}
+      onMouseEnter={() => { state.current.hoverPaused = true; }}
+      onMouseLeave={() => { state.current.hoverPaused = false; }}
+      onFocus={e => { if (e.target.matches(':focus-visible')) state.current.focusPaused = true; }}
+      onBlur={() => { state.current.focusPaused = false; }}>
+      {doubled.map((item, i) => renderItem(item, i))}
     </div>
   );
 }
@@ -174,33 +212,36 @@ function GalleryRow({ label, heading, real, placeholders, subcats, browsePath, o
 
   return (
     <div className="gallery-row">
-      <div className="gallery-row-head">
-        <div>
-          <div className="lbl" style={{ marginBottom: 8 }}>{label}</div>
-          <h3 className="display" style={{ fontSize: 30 }}>{heading}</h3>
+      <div className="wrap">
+        <div className="gallery-row-head">
+          <div>
+            <div className="lbl" style={{ marginBottom: 8 }}>{label}</div>
+            <h3 className="display" style={{ fontSize: 30 }}>{heading}</h3>
+          </div>
+          <button className="btn btn-s" onClick={() => onOpen(browsePath)}>View All <Icon icon={ArrowRight} size="inline" /></button>
         </div>
-        <button className="btn btn-s" onClick={() => onOpen(browsePath)}>View All <Icon icon={ArrowRight} size="inline" /></button>
-      </div>
-      <div className="gallery-subcats">
-        {subcats.map(s => (
-          <button key={s.id} className={`gallery-subcat-tab${activeSubcat === s.id ? ' active' : ''}`} onClick={() => setActiveSubcat(s.id)}>
-            {s.label}
-          </button>
-        ))}
+        <div className="gallery-subcats">
+          {subcats.map(s => (
+            <button key={s.id} className={`gallery-subcat-tab${activeSubcat === s.id ? ' active' : ''}`} onClick={() => setActiveSubcat(s.id)}>
+              {s.label}
+            </button>
+          ))}
+        </div>
       </div>
       {merged.length === 0 ? (
-        <div className="empty" style={{ padding: '48px 24px' }}>
-          <div className="empty-ico"><Icon icon={ImageOff} size={40} /></div>
-          <div className="empty-t" style={{ fontSize: 20 }}>Nothing here yet</div>
-          <p style={{ color: 'var(--muted)', fontSize: 13 }}>Check back soon for new {label.toLowerCase()}.</p>
+        <div className="wrap">
+          <div className="empty" style={{ padding: '48px 24px' }}>
+            <div className="empty-ico"><Icon icon={ImageOff} size={40} /></div>
+            <div className="empty-t" style={{ fontSize: 20 }}>Nothing here yet</div>
+            <p style={{ color: 'var(--muted)', fontSize: 13 }}>Check back soon for new {label.toLowerCase()}.</p>
+          </div>
         </div>
       ) : (
-        <CarouselTrack itemCount={merged.length}>
-          {merged.map((item, i) => (
-            <GalleryCard key={item.slug || `ph-${i}`} item={item} onCharityClick={onCharityClick}
+        <CarouselTrack items={merged}
+          renderItem={(item, i) => (
+            <GalleryCard key={`${item.slug || 'ph-' + (i % merged.length)}-${i < merged.length ? 'a' : 'b'}`} item={item} onCharityClick={onCharityClick}
               onClick={() => onOpen(item.slug ? `/shop/${item.slug}` : browsePath)} />
-          ))}
-        </CarouselTrack>
+          )} />
       )}
     </div>
   );
@@ -340,14 +381,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ PRODUCT GALLERY ═══ */}
+      {/* ═══ PRODUCT GALLERY — full-bleed carousels, heading stays in .wrap ═══ */}
       <section className="section" style={{ background: 'var(--base)' }}>
-        <div className="wrap">
-          <GalleryRow label="Originals" heading="Original Works" real={paintings} placeholders={PAINTING_PLACEHOLDERS}
-            subcats={ORIGINALS_SUBCATS} browsePath="/shop" onOpen={navigate} onCharityClick={openCharity} />
-          <GalleryRow label="Creative Digital Works" heading="Downloadable Creations" real={digitalWorks} placeholders={DIGITAL_PLACEHOLDERS}
-            subcats={DIGITAL_SUBCATS} browsePath="/digitals" onOpen={navigate} onCharityClick={openCharity} />
-        </div>
+        <GalleryRow label="Originals" heading="Original Works" real={paintings} placeholders={PAINTING_PLACEHOLDERS}
+          subcats={ORIGINALS_SUBCATS} browsePath="/shop" onOpen={navigate} onCharityClick={openCharity} />
+        <GalleryRow label="Creative Digital Works" heading="Downloadable Creations" real={digitalWorks} placeholders={DIGITAL_PLACEHOLDERS}
+          subcats={DIGITAL_SUBCATS} browsePath="/digitals" onOpen={navigate} onCharityClick={openCharity} />
       </section>
 
       {/* ═══ WHAT WE PROVIDE ═══ */}
