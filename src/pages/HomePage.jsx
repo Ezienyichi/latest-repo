@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Palette, Leaf, ShoppingBag, Check, ImageOff } from 'lucide-react';
+import { ArrowRight, Palette, Leaf, ShoppingBag, Check, ImageOff, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { SDGs } from '../data/constants';
+import { SDGs, FRAMED_CATEGORIES } from '../data/constants';
 import api from '../utils/api';
 import Icon from '../components/ui/Icon';
 import CharityLogo from '../components/ui/CharityLogo';
+import TrustBadges from '../components/ui/TrustBadges';
 
 function SdgDot({ id, sm }) {
   const s = SDGs.find(x => x.id === id);
@@ -14,38 +15,60 @@ function SdgDot({ id, sm }) {
   return <span className="sdg" title={`SDG ${id}: ${s.n}`} style={{ background: s.c, color: '#fff', width: sz, height: sz, fontSize: sm ? 9 : 10, borderRadius: 5 }}>{id}</span>;
 }
 
-// Placeholder pool for the homepage gallery rows — used only to fill out a
-// row when real ACTIVE products don't cover it yet. Every image below is a
-// standard (non-Unsplash+) images.unsplash.com CDN link, free for commercial
-// use under the Unsplash License, downloaded and visually inspected before
-// being added here. Charity names match real seeded CharityProfile rows;
-// artist names are intentionally fictional placeholders, not reused real
-// seeded artists, so nothing here misattributes a real person's work.
+// Placeholder pool for the homepage gallery carousels — used only to fill a
+// row out to ROW_TARGET when real ACTIVE products don't cover it yet. Every
+// image below is a standard (non-Unsplash+) images.unsplash.com CDN link,
+// free for commercial use under the Unsplash License, downloaded and
+// visually inspected before being added here. Charity names match real
+// seeded CharityProfile rows; artist names are intentionally fictional
+// placeholders, not reused real seeded artists, so nothing here
+// misattributes a real person's work.
+//
+// `subcat` drives the filter tabs: for Originals it mirrors the real
+// `medium` field (lowercased) so real ARTWORK products bucket correctly if
+// an artist has tagged medium as abstract/oil/acrylic; for Digital Works it
+// mirrors the real `category` enum, except 'DIGITAL_ART' which has no
+// schema equivalent — that tab is placeholder-only until/unless a real
+// category is added for it.
+const ORIGINALS_SUBCATS = [
+  { id: 'all', label: 'All' },
+  { id: 'abstract', label: 'Abstract' },
+  { id: 'oil', label: 'Oil' },
+  { id: 'acrylic', label: 'Acrylic' },
+];
+const DIGITAL_SUBCATS = [
+  { id: 'all', label: 'All' },
+  { id: 'EBOOK', label: 'Ebooks' },
+  { id: 'MUSIC', label: 'Music' },
+  { id: 'GRAPHIC', label: 'Graphics' },
+  { id: 'ANIMATION', label: 'Animation' },
+  { id: 'DIGITAL_ART', label: 'Digital Art' },
+];
 const PAINTING_PLACEHOLDERS = [
-  { title: 'Crimson Bloom', artist: 'Imani Osei', price: 780, charityName: 'WaterAid UK', category: 'ARTWORK', img: 'https://images.unsplash.com/photo-1563882687284-b4381efc07f5?w=600&h=750&fit=crop&q=80' },
-  { title: 'Golden Hour Study', artist: 'Malik Toure', price: 640, charityName: 'CAMFED', category: 'ARTWORK', img: 'https://images.unsplash.com/flagged/photo-1563882687293-71c93ae4d7dc?w=600&h=750&fit=crop&q=80' },
-  { title: 'Coastal Fragments', artist: 'Naledi Khumalo', price: 920, charityName: 'Greenpeace Africa', category: 'ARTWORK', img: 'https://images.unsplash.com/photo-1704786574827-f4dfa47ad4f4?w=600&h=750&fit=crop&q=80' },
-  { title: 'Ember & Indigo', artist: 'Thabo Nkosi', price: 850, charityName: 'Oxfam', category: 'ARTWORK', img: 'https://images.unsplash.com/photo-1541367777708-7905fe3296c0?w=600&h=750&fit=crop&q=80' },
+  { title: 'Crimson Bloom', artist: 'Imani Osei', price: 780, charityName: 'WaterAid UK', category: 'ARTWORK', subcat: 'abstract', img: 'https://images.unsplash.com/photo-1563882687284-b4381efc07f5?w=600&h=750&fit=crop&q=80' },
+  { title: 'Golden Hour Study', artist: 'Malik Toure', price: 640, charityName: 'CAMFED', category: 'ARTWORK', subcat: 'acrylic', img: 'https://images.unsplash.com/flagged/photo-1563882687293-71c93ae4d7dc?w=600&h=750&fit=crop&q=80' },
+  { title: 'Coastal Fragments', artist: 'Naledi Khumalo', price: 920, charityName: 'Greenpeace Africa', category: 'ARTWORK', subcat: 'acrylic', img: 'https://images.unsplash.com/photo-1704786574827-f4dfa47ad4f4?w=600&h=750&fit=crop&q=80' },
+  { title: 'Ember & Indigo', artist: 'Thabo Nkosi', price: 850, charityName: 'Oxfam', category: 'ARTWORK', subcat: 'abstract', img: 'https://images.unsplash.com/photo-1541367777708-7905fe3296c0?w=600&h=750&fit=crop&q=80' },
+  { title: 'The Little Pond', artist: 'Selam Girma', price: 1100, charityName: 'WaterAid UK', category: 'ARTWORK', subcat: 'oil', img: 'https://images.unsplash.com/photo-1688588426729-dc4f7bdb8fbe?w=600&h=750&fit=crop&q=80' },
+  { title: 'The River at Dusk', artist: 'Boipelo Seape', price: 980, charityName: 'CAMFED', category: 'ARTWORK', subcat: 'oil', img: 'https://images.unsplash.com/photo-1578926375605-eaf7559b1458?w=600&h=750&fit=crop&q=80' },
 ];
 const DIGITAL_PLACEHOLDERS = [
-  { title: 'The Long Way Home', artist: 'Amina Bello', price: 18, charityName: 'CAMFED', category: 'EBOOK', img: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=600&h=750&fit=crop&q=80' },
-  { title: 'Midnight Sessions', artist: 'Kwame Boateng', price: 12, charityName: 'Oxfam', category: 'MUSIC', img: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=600&h=750&fit=crop&q=80' },
-  { title: 'Prism Set Vol. 2', artist: 'Zainab Hassan', price: 35, charityName: 'WaterAid UK', category: 'GRAPHIC', img: 'https://images.unsplash.com/photo-1639170952854-16636715af61?w=600&h=750&fit=crop&q=80' },
-  { title: 'Kinetic Bloom', artist: 'Sipho Dlamini', price: 45, charityName: 'Greenpeace Africa', category: 'ANIMATION', img: 'https://images.unsplash.com/photo-1574717025058-2f8737d2e2b7?w=600&h=750&fit=crop&q=80' },
+  { title: 'The Long Way Home', artist: 'Amina Bello', price: 18, charityName: 'CAMFED', category: 'EBOOK', subcat: 'EBOOK', img: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=600&h=750&fit=crop&q=80' },
+  { title: 'Midnight Sessions', artist: 'Kwame Boateng', price: 12, charityName: 'Oxfam', category: 'MUSIC', subcat: 'MUSIC', img: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=600&h=750&fit=crop&q=80' },
+  { title: 'Prism Set Vol. 2', artist: 'Zainab Hassan', price: 35, charityName: 'WaterAid UK', category: 'GRAPHIC', subcat: 'GRAPHIC', img: 'https://images.unsplash.com/photo-1639170952854-16636715af61?w=600&h=750&fit=crop&q=80' },
+  { title: 'Kinetic Bloom', artist: 'Sipho Dlamini', price: 45, charityName: 'Greenpeace Africa', category: 'ANIMATION', subcat: 'ANIMATION', img: 'https://images.unsplash.com/photo-1574717025058-2f8737d2e2b7?w=600&h=750&fit=crop&q=80' },
+  { title: 'Chromatic Drift', artist: 'Tumi Radebe', price: 28, charityName: 'CAMFED', category: 'DIGITAL_ART', subcat: 'DIGITAL_ART', img: 'https://images.unsplash.com/photo-1748363565614-7fea470379f4?w=600&h=750&fit=crop&q=80' },
+  { title: 'Still Frame', artist: 'Nomvula Dube', price: 22, charityName: 'Oxfam', category: 'DIGITAL_ART', subcat: 'DIGITAL_ART', img: 'https://images.unsplash.com/photo-1736147066581-95fa303553a0?w=600&h=750&fit=crop&q=80' },
 ];
-const ROW_TARGET = 4;
+const ROW_TARGET = 6;
 
-// Framed treatment (mat border + lifted shadow) for categories that read as
-// "art on a wall" — paintings and graphic prints. Digital categories that
-// are inherently flat media (ebook covers, music art) stay unframed.
-const FRAMED_CATEGORIES = ['ARTWORK', 'GRAPHIC'];
 
 function GalleryCard({ item, onClick, onCharityClick }) {
   const framed = FRAMED_CATEGORIES.includes(item.category);
   return (
-    <div className={`gallery-card${framed ? ' gallery-card-framed' : ''}`} onClick={onClick}>
-      <div className="gallery-card-img-wrap">
-        <img src={item.img} alt={item.title} loading="lazy" />
+    <div className="gallery-card" onClick={onClick}>
+      <div className={`gallery-card-img-wrap${framed ? ' pf-framed' : ''}`}>
+        <img src={item.img} alt={item.title} loading="lazy" draggable={false} />
       </div>
       <div className="gallery-card-body">
         <h3 className="gallery-card-title">{item.title}</h3>
@@ -67,15 +90,87 @@ function GalleryCard({ item, onClick, onCharityClick }) {
   );
 }
 
-function GalleryRow({ label, heading, real, placeholders, browsePath, onOpen, onCharityClick }) {
-  const merged = [
-    ...real.map(p => ({
-      id: p.id, slug: p.slug, title: p.title, artist: p.artist?.displayName || 'Unknown Artist',
-      price: p.basePrice, category: p.category, img: p.images?.[0]?.url,
-      charityId: p.charity?.id, charityName: p.charity?.name || 'Unaffiliated', charityLogo: p.charity?.logo,
-    })).filter(p => p.img),
-    ...placeholders,
-  ].slice(0, ROW_TARGET);
+// Manual, user-driven horizontal carousel: click-drag with the mouse, native
+// swipe/momentum on touch (untouched — we only intercept mouse pointers so
+// touch scrolling stays 100% native), a visible thin scrollbar, and arrow
+// buttons that step by ~85% of the viewport. No autoplay anywhere.
+function CarouselTrack({ children, itemCount }) {
+  const trackRef = useRef(null);
+  const drag = useRef({ active: false, startX: 0, startScroll: 0, moved: false });
+  const [canLeft, setCanLeft] = useState(false);
+  const [canRight, setCanRight] = useState(false);
+
+  const updateArrows = useCallback(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    setCanLeft(el.scrollLeft > 4);
+    setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
+  }, []);
+
+  useEffect(() => {
+    updateArrows();
+    const el = trackRef.current;
+    if (!el) return;
+    el.scrollLeft = 0;
+    el.addEventListener('scroll', updateArrows, { passive: true });
+    window.addEventListener('resize', updateArrows);
+    return () => { el.removeEventListener('scroll', updateArrows); window.removeEventListener('resize', updateArrows); };
+  }, [itemCount, updateArrows]);
+
+  const onPointerDown = e => {
+    if (e.pointerType !== 'mouse') return; // touch/pen keep native swipe scrolling
+    const el = trackRef.current;
+    drag.current = { active: true, startX: e.clientX, startScroll: el.scrollLeft, moved: false };
+    el.setPointerCapture(e.pointerId);
+    el.classList.add('dragging');
+  };
+  const onPointerMove = e => {
+    if (!drag.current.active) return;
+    const el = trackRef.current;
+    const dx = e.clientX - drag.current.startX;
+    if (Math.abs(dx) > 5) drag.current.moved = true;
+    el.scrollLeft = drag.current.startScroll - dx;
+  };
+  const endDrag = () => {
+    if (!drag.current.active) return;
+    drag.current.active = false;
+    trackRef.current?.classList.remove('dragging');
+  };
+  const onClickCapture = e => {
+    if (drag.current.moved) { e.stopPropagation(); e.preventDefault(); drag.current.moved = false; }
+  };
+  const scroll = dir => trackRef.current?.scrollBy({ left: dir * trackRef.current.clientWidth * 0.85, behavior: 'smooth' });
+
+  return (
+    <div className="carousel">
+      <button className={`carousel-arrow carousel-arrow-l${canLeft ? '' : ' carousel-arrow-hidden'}`} onClick={() => scroll(-1)} aria-label="Scroll left" tabIndex={canLeft ? 0 : -1}>
+        <Icon icon={ChevronLeft} />
+      </button>
+      <div className="carousel-track" ref={trackRef} onPointerDown={onPointerDown} onPointerMove={onPointerMove}
+        onPointerUp={endDrag} onPointerLeave={endDrag} onClickCapture={onClickCapture}>
+        {children}
+      </div>
+      <button className={`carousel-arrow carousel-arrow-r${canRight ? '' : ' carousel-arrow-hidden'}`} onClick={() => scroll(1)} aria-label="Scroll right" tabIndex={canRight ? 0 : -1}>
+        <Icon icon={ChevronRight} />
+      </button>
+    </div>
+  );
+}
+
+function GalleryRow({ label, heading, real, placeholders, subcats, browsePath, onOpen, onCharityClick }) {
+  const [activeSubcat, setActiveSubcat] = useState('all');
+  const isDigitalRow = subcats === DIGITAL_SUBCATS;
+
+  const realMapped = real.map(p => ({
+    id: p.id, slug: p.slug, title: p.title, artist: p.artist?.displayName || 'Unknown Artist',
+    price: p.basePrice, category: p.category, img: p.images?.[0]?.url,
+    subcat: isDigitalRow ? p.category : (p.medium || '').toLowerCase(),
+    charityId: p.charity?.id, charityName: p.charity?.name || 'Unaffiliated', charityLogo: p.charity?.logo,
+  })).filter(p => p.img);
+
+  const merged = [...realMapped, ...placeholders]
+    .filter(item => activeSubcat === 'all' || item.subcat === activeSubcat)
+    .slice(0, ROW_TARGET);
 
   return (
     <div className="gallery-row">
@@ -86,6 +181,13 @@ function GalleryRow({ label, heading, real, placeholders, browsePath, onOpen, on
         </div>
         <button className="btn btn-s" onClick={() => onOpen(browsePath)}>View All <Icon icon={ArrowRight} size="inline" /></button>
       </div>
+      <div className="gallery-subcats">
+        {subcats.map(s => (
+          <button key={s.id} className={`gallery-subcat-tab${activeSubcat === s.id ? ' active' : ''}`} onClick={() => setActiveSubcat(s.id)}>
+            {s.label}
+          </button>
+        ))}
+      </div>
       {merged.length === 0 ? (
         <div className="empty" style={{ padding: '48px 24px' }}>
           <div className="empty-ico"><Icon icon={ImageOff} size={40} /></div>
@@ -93,12 +195,12 @@ function GalleryRow({ label, heading, real, placeholders, browsePath, onOpen, on
           <p style={{ color: 'var(--muted)', fontSize: 13 }}>Check back soon for new {label.toLowerCase()}.</p>
         </div>
       ) : (
-        <div className="gallery-grid">
+        <CarouselTrack itemCount={merged.length}>
           {merged.map((item, i) => (
             <GalleryCard key={item.slug || `ph-${i}`} item={item} onCharityClick={onCharityClick}
               onClick={() => onOpen(item.slug ? `/shop/${item.slug}` : browsePath)} />
           ))}
-        </div>
+        </CarouselTrack>
       )}
     </div>
   );
@@ -117,8 +219,10 @@ export default function HomePage() {
   useEffect(() => {
     api.getProducts({ featured: 'true', limit: 16 }).then(r => setFeatured(r.items || [])).catch(() => {});
     api.getPublicSettings().then(setTheory).catch(() => {});
-    api.getProducts({ category: 'ARTWORK', limit: ROW_TARGET, sort: 'newest' }).then(r => setPaintings(r.items || [])).catch(() => {});
-    api.getProducts({ limit: 24, sort: 'newest' }).then(r => setDigitalWorks((r.items || []).filter(p => p.category !== 'ARTWORK'))).catch(() => {});
+    // Fetch a larger batch than ROW_TARGET since sub-category tabs filter
+    // client-side from this same set rather than re-fetching per tab.
+    api.getProducts({ category: 'ARTWORK', limit: 24, sort: 'newest' }).then(r => setPaintings(r.items || [])).catch(() => {});
+    api.getProducts({ limit: 48, sort: 'newest' }).then(r => setDigitalWorks((r.items || []).filter(p => p.category !== 'ARTWORK'))).catch(() => {});
   }, []);
 
   const openCharity = id => navigate(`/charities/${id}`);
@@ -239,10 +343,10 @@ export default function HomePage() {
       {/* ═══ PRODUCT GALLERY ═══ */}
       <section className="section" style={{ background: 'var(--base)' }}>
         <div className="wrap">
-          <GalleryRow label="Paintings" heading="Original Works" real={paintings} placeholders={PAINTING_PLACEHOLDERS}
-            browsePath="/shop" onOpen={navigate} onCharityClick={openCharity} />
-          <GalleryRow label="Digital Works" heading="Downloadable Creations" real={digitalWorks} placeholders={DIGITAL_PLACEHOLDERS}
-            browsePath="/digitals" onOpen={navigate} onCharityClick={openCharity} />
+          <GalleryRow label="Originals" heading="Original Works" real={paintings} placeholders={PAINTING_PLACEHOLDERS}
+            subcats={ORIGINALS_SUBCATS} browsePath="/shop" onOpen={navigate} onCharityClick={openCharity} />
+          <GalleryRow label="Creative Digital Works" heading="Downloadable Creations" real={digitalWorks} placeholders={DIGITAL_PLACEHOLDERS}
+            subcats={DIGITAL_SUBCATS} browsePath="/digitals" onOpen={navigate} onCharityClick={openCharity} />
         </div>
       </section>
 
@@ -315,10 +419,10 @@ export default function HomePage() {
               {featured.slice(0, 4).map(aw => (
                 <div key={aw.id} className="card card-h" style={{ padding: 0, overflow: 'hidden', cursor: 'pointer' }}
                   onClick={() => navigate(`/shop/${aw.slug}`)}>
-                  <div style={{ aspectRatio: '3/4', position: 'relative', overflow: 'hidden' }}>
+                  <div className={`product-card-img${FRAMED_CATEGORIES.includes(aw.category) ? ' pf-framed' : ''}`}>
                     {aw.images?.[0]?.url ? (
-                      <img src={aw.images[0].url} alt={aw.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform .4s' }}
-                        onMouseEnter={e => e.target.style.transform = 'scale(1.04)'}
+                      <img src={aw.images[0].url} alt={aw.title} loading="lazy" style={{ transition: 'transform .4s' }}
+                        onMouseEnter={e => { if (!FRAMED_CATEGORIES.includes(aw.category)) e.target.style.transform = 'scale(1.04)'; }}
                         onMouseLeave={e => e.target.style.transform = 'scale(1)'} />
                     ) : (
                       <div style={{ width: '100%', height: '100%', background: 'linear-gradient(145deg,#1B4332,#2D6A4F)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: .3 }}>
@@ -392,6 +496,8 @@ export default function HomePage() {
           )}
         </div>
       </section>
+
+      <TrustBadges />
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Star, Globe, Palette, ZoomIn, Award, ArrowRight, Check, Heart, Download, Info } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { SDGs, DIGITAL_CATS } from '../data/constants';
+import { SDGs, DIGITAL_CATS, FRAMED_CATEGORIES } from '../data/constants';
 import Icon from '../components/ui/Icon';
 import ProductAddons from '../components/ui/ProductAddons';
 import CertificateModal from '../components/ui/CertificateModal';
@@ -14,6 +14,7 @@ import GraphicPreview from '../components/ui/GraphicPreview';
 import AnimationPreview from '../components/ui/AnimationPreview';
 import IncludesList from '../components/ui/IncludesList';
 import CharityLogo from '../components/ui/CharityLogo';
+import TrustBadges from '../components/ui/TrustBadges';
 import api from '../utils/api';
 
 function SdgDot({ id, sm }) {
@@ -79,6 +80,7 @@ export default function ProductPage() {
   const avgRating = reviews.length ? (reviews.reduce((a, r) => a + r.rating, 0) / reviews.length).toFixed(1) : null;
   const cat = DIGITAL_CATS.find(c => c.id === product.category);
   const isDigital = product.category !== 'ARTWORK';
+  const isFramed = FRAMED_CATEGORIES.includes(product.category);
 
   const handleAddToCart = () => {
     // Check required addons
@@ -98,9 +100,11 @@ export default function ProductPage() {
     } catch (e) { toast(e.message, 'err'); }
   };
 
-  // Hover zoom handler
+  // Hover zoom handler — skipped for framed (contain+matte) categories,
+  // since scaling a whole-image-visible contained artwork would push it
+  // past its own matte, the one thing this frame must never do.
   const handleImgMouseMove = (e) => {
-    if (isVideoActive) return;
+    if (isVideoActive || isFramed) return;
     const rect = imgRef.current?.getBoundingClientRect();
     if (!rect) return;
     const x = ((e.clientX - rect.left) / rect.width) * 100;
@@ -109,8 +113,8 @@ export default function ProductPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--base)', paddingBottom: 80 }}>
-      <div className="wrap" style={{ paddingTop: 28 }}>
+    <div style={{ minHeight: '100vh', background: 'var(--base)' }}>
+      <div className="wrap" style={{ paddingTop: 28, paddingBottom: 56 }}>
         <div className="breadcrumbs">
           <Link to="/">Home</Link><span className="sep">›</span>
           <Link to={isDigital ? '/digitals' : '/shop'}>{isDigital ? 'Digital Store' : 'Shop'}</Link><span className="sep">›</span>
@@ -127,7 +131,7 @@ export default function ProductPage() {
                   {images.map((img, i) => {
                     const isImpact = img.label?.startsWith('Project Impact');
                     return (
-                      <div key={i} className={`gallery-thumb${activeImg === i ? ' active' : ''}`}
+                      <div key={i} className={`gallery-thumb${activeImg === i ? ' active' : ''}${isFramed ? ' pf-contain' : ''}`}
                         onClick={() => { setActiveImg(i); setZoomPos(null); }} title={img.label}>
                         <img src={img.url?.replace('w=1200', 'w=120').replace('w=700', 'w=120')} alt={img.label} loading="lazy" />
                         {isImpact && <div style={{ position: 'absolute', inset: 0, background: 'rgba(23,124,29,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon icon={Globe} size="inline" /></div>}
@@ -149,8 +153,8 @@ export default function ProductPage() {
 
               {/* Main image / video */}
               <div style={{ flex: 1 }}>
-                <div ref={imgRef} className="gallery-main"
-                  style={{ aspectRatio: product.category === 'ANIMATION' ? '16/9' : '3/2', cursor: isVideoActive ? 'default' : 'zoom-in', overflow: 'hidden', position: 'relative' }}
+                <div ref={imgRef} className={`gallery-main${isFramed && !isVideoActive ? ' pf-framed' : ''}`}
+                  style={{ aspectRatio: '3/2', cursor: isVideoActive ? 'default' : 'zoom-in', overflow: 'hidden', position: 'relative' }}
                   onClick={() => !isVideoActive && images[activeImg] && setLightbox(true)}
                   onMouseMove={handleImgMouseMove}
                   onMouseLeave={() => setZoomPos(null)}>
@@ -160,7 +164,7 @@ export default function ProductPage() {
                       allow="autoplay; encrypted-media" allowFullScreen style={{ width: '100%', height: '100%', border: 'none' }} title="Video" />
                   ) : images[activeImg] ? (
                     <img key={activeImg} src={images[activeImg].url} alt={product.title}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', animation: 'carouselSlide .3s ease',
+                      style={{ width: '100%', height: '100%', objectFit: isFramed ? 'contain' : 'cover', display: 'block', animation: 'carouselSlide .3s ease',
                         ...(zoomPos ? { transform: 'scale(1.8)', transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`, transition: 'transform .1s ease' } : { transition: 'transform .3s ease' })
                       }} />
                   ) : (
@@ -170,8 +174,8 @@ export default function ProductPage() {
                   {/* Category badge */}
                   {cat && !isVideoActive && <div style={{ position: 'absolute', top: 10, left: 10, background: `${cat.color}dd`, color: '#fff', fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', padding: '3px 10px', borderRadius: 20, zIndex: 3, display: 'flex', alignItems: 'center', gap: 4 }}><Icon icon={cat.icon} size="inline" /> {cat.label}</div>}
 
-                  {/* Zoom hint */}
-                  {!isVideoActive && !zoomPos && <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,.45)', color: 'rgba(255,255,255,.8)', fontSize: 10, padding: '3px 9px', borderRadius: 20, pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: 4 }}><Icon icon={ZoomIn} size="inline" /> Hover to zoom · Click for lightbox</div>}
+                  {/* Zoom hint — framed (contain, no crop) categories skip hover-zoom, so the hint just points at the lightbox */}
+                  {!isVideoActive && !zoomPos && <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,.45)', color: 'rgba(255,255,255,.8)', fontSize: 10, padding: '3px 9px', borderRadius: 20, pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: 4 }}><Icon icon={ZoomIn} size="inline" /> {isFramed ? 'Click for lightbox' : 'Hover to zoom · Click for lightbox'}</div>}
 
                   {/* Counter */}
                   {totalSlides > 1 && <div style={{ position: 'absolute', bottom: 10, right: 10, background: 'rgba(0,0,0,.52)', color: '#fff', fontSize: 11, fontFamily: 'var(--fm)', padding: '3px 9px', borderRadius: 20, pointerEvents: 'none' }}>{isVideoActive ? '▶ Video' : `${activeImg + 1} / ${images.length}`}</div>}
@@ -400,7 +404,7 @@ export default function ProductPage() {
             <div className="g4" style={{ gap: 16 }}>
               {upsells.map(p => (
                 <div key={p.id} className="product-card" onClick={() => navigate(`/shop/${p.slug}`)}>
-                  <div className="product-card-img" style={{ aspectRatio: '1' }}>
+                  <div className={`product-card-img${FRAMED_CATEGORIES.includes(p.category) ? ' pf-framed' : ''}`}>
                     {p.images?.[0]?.url ? <img src={p.images[0].url} alt={p.title} loading="lazy" /> : <div style={{ width: '100%', height: '100%', background: '#1B4332' }} />}
                   </div>
                   <div className="product-card-body">
@@ -414,6 +418,8 @@ export default function ProductPage() {
           </div>
         )}
       </div>
+
+      <TrustBadges isDigital={isDigital} />
 
       {/* Lightbox */}
       {lightbox && images.length > 0 && (

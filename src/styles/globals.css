@@ -376,9 +376,41 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
 
 .product-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;transition:all .22s var(--ease);cursor:pointer}
 .product-card:hover{transform:translateY(-3px);box-shadow:var(--sh);border-color:var(--borderl)}
-.product-card-img{aspect-ratio:3/4;position:relative;overflow:hidden}
-.product-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .45s var(--ease)}
+.product-card-img{aspect-ratio:3/4;position:relative;overflow:hidden;background:var(--glass)}
+.product-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .45s var(--ease);display:block}
 .product-card:hover .product-card-img img{transform:scale(1.04)}
+
+/* ═══ PRODUCT IMAGE FRAMES — shared sitewide (card thumbnail, carousel card,
+   product detail main, and any other fixed-frame product image container).
+   The frame's own aspect-ratio + box-sizing:border-box govern its OUTER
+   footprint; these modifiers only change what happens INSIDE that footprint,
+   so the frame itself never resizes based on what image is dropped in it.
+
+   .pf-framed — full auto-frame treatment (mat + border + shadow) for
+   ARTWORK/GRAPHIC in display contexts (grids, carousels, product detail).
+   object-fit:contain shows the whole image with no cropping; the padding
+   becomes the mat, and any leftover gap inside (when the image's own
+   aspect ratio differs from the frame's) is filled by the same white
+   background, so mat-border and fit-gap read as one continuous matte.
+
+   .pf-contain — the no-crop fit alone, without the decorative mat/border,
+   for small utility thumbnails (cart, checkout, orders, admin tables)
+   where a picture-frame effect would look cluttered at icon scale. */
+/* !important throughout this pair: these are override modifiers layered on
+   top of many different base container classes (.gallery-main,
+   .product-card-img, .gallery-card-img-wrap, plain inline-styled divs...).
+   Without !important, a same-specificity base rule declared later in this
+   file (e.g. .gallery-main's own background/border-radius) would silently
+   win the cascade tie and erase the matte — exactly the kind of drift this
+   task exists to prevent. Some also override hardcoded inline
+   object-fit:cover, which nothing but !important can beat. */
+.pf-framed{padding:14px!important;background:linear-gradient(145deg,#fff,#f0f0f0)!important;box-shadow:0 10px 24px rgba(0,0,0,.12)!important;border-radius:6px!important}
+.pf-contain{background:#fff!important}
+.pf-framed img,.pf-contain img{object-fit:contain!important;background:#fff!important}
+.pf-framed img{border:1px solid rgba(0,0,0,.08)!important;border-radius:2px!important}
+/* A hover zoom on a contained (mattes-showing) image would visually push it
+   past its own matte — the one thing this frame system must never do. */
+.pf-framed img,.pf-contain img{transform:none!important}
 .product-card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.82) 0%,transparent 55%);opacity:0;transition:opacity .22s;display:flex;align-items:flex-end;padding:14px}
 .product-card:hover .product-card-overlay{opacity:1}
 .product-card-body{padding:14px}
@@ -442,31 +474,48 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
 .toc2-link{display:inline-block;margin-top:6px;font-family:var(--fb);font-size:13px;font-weight:600;color:var(--accent);text-decoration:underline;cursor:pointer}
 @media(max-width:640px){.toc2-highlight{flex-direction:column;gap:14px}.toc2-highlight-thumb{width:100%;height:160px}}
 
-/* ═══ PRODUCT GALLERY (homepage, category-grouped) ═══ */
-.gallery-row{margin-bottom:60px}
+/* ═══ PRODUCT GALLERY (homepage, category carousels) ═══ */
+.gallery-row{margin-bottom:56px}
 .gallery-row:last-child{margin-bottom:0}
-.gallery-row-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:26px;gap:16px}
-.gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
-@media(max-width:1024px){.gallery-grid{grid-template-columns:repeat(2,1fr)}}
-/* Mobile: horizontal scroll reads better than stacking 4+ cards per row —
-   keeps each category feeling like a single browsable row, matching the
-   desktop layout's intent, instead of doubling page length. */
-@media(max-width:640px){
-  .gallery-grid{display:flex;overflow-x:auto;gap:14px;scroll-snap-type:x mandatory;padding-bottom:10px;-webkit-overflow-scrolling:touch}
-  .gallery-grid::-webkit-scrollbar{height:4px}
-  .gallery-card{flex:0 0 68%;scroll-snap-align:start}
-}
-.gallery-card{cursor:pointer;transition:transform .2s var(--ease)}
+.gallery-row-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;gap:16px}
+
+/* Sub-category filter tabs (Abstract/Oil/Acrylic, Ebooks/Music/Graphics/…) */
+.gallery-subcats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.gallery-subcat-tab{background:var(--glass);border:1px solid var(--border);color:var(--txt2);font-family:var(--fb);font-size:13px;font-weight:500;padding:7px 16px;border-radius:20px;cursor:pointer;transition:all .15s var(--ease)}
+.gallery-subcat-tab:hover{background:var(--glassh)}
+.gallery-subcat-tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* Carousel shell — manual hand-scroll only, no autoplay. Mouse: click-drag
+   (see CarouselTrack's pointer handlers). Touch/pen: native swipe, left
+   untouched. Always-visible thin scrollbar + arrow buttons as a second and
+   third way in, per spec ("visible scrollbar OR arrow controls" — built
+   both). scroll-snap-align on each card snaps to card edges after any of
+   drag, swipe, wheel, or arrow-button scrolling settles. */
+.carousel{position:relative;display:flex;align-items:center;gap:10px}
+.carousel-track{display:flex;gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;padding-bottom:14px;-webkit-overflow-scrolling:touch;scrollbar-width:thin;flex:1;min-width:0;cursor:grab}
+.carousel-track.dragging{cursor:grabbing;scroll-snap-type:none;scroll-behavior:auto}
+.carousel-track::-webkit-scrollbar{height:6px}
+.carousel-track::-webkit-scrollbar-track{background:var(--glass);border-radius:3px}
+.carousel-track::-webkit-scrollbar-thumb{background:var(--borderl);border-radius:3px}
+.carousel-track::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+.carousel-arrow{flex-shrink:0;width:40px;height:40px;border-radius:50%;background:var(--card);border:1px solid var(--border);color:var(--txt);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s var(--ease);box-shadow:var(--sh)}
+.carousel-arrow:hover{background:var(--hover);transform:scale(1.06)}
+.carousel-arrow-hidden{opacity:0;pointer-events:none}
+@media(max-width:640px){.carousel-arrow{display:none}}
+
+/* Card width: ~5-6 fit in the visible track on desktop with the next one
+   peeking in at the edge, per spec. Mobile shows ~1.6 per screen — a clear
+   swipeable row, not a stacked list. */
+.gallery-card{cursor:pointer;transition:transform .2s var(--ease);flex:0 0 clamp(160px,15vw,200px);scroll-snap-align:start;-webkit-user-select:none;user-select:none}
+@media(max-width:640px){.gallery-card{flex-basis:62%}}
 .gallery-card:hover{transform:translateY(-3px)}
 .gallery-card-img-wrap{position:relative;aspect-ratio:4/5;border-radius:var(--r);overflow:hidden;background:var(--glass)}
 .gallery-card-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s var(--ease)}
 .gallery-card:hover .gallery-card-img-wrap img{transform:scale(1.04)}
-/* Auto-frame treatment: mat border + lifted shadow, for categories that
-   read as "art on a wall" (paintings, graphic prints). No prior "auto-frame"
-   component existed in this codebase — this is a new, minimal treatment
-   built to match that description; flag it if you had something else in mind. */
-.gallery-card-framed .gallery-card-img-wrap{padding:14px;background:linear-gradient(145deg,#fff,#f0f0f0);box-shadow:0 10px 24px rgba(0,0,0,.12);border-radius:6px}
-.gallery-card-framed .gallery-card-img-wrap img{border:1px solid rgba(0,0,0,.08);border-radius:2px}
+/* Auto-frame (mat + border): see the shared .pf-framed rule above — applied
+   directly to this element via a conditional class, not a descendant
+   selector, so the same modifier works identically on every fixed-frame
+   product image container sitewide, not just this one. */
 .gallery-card-body{padding-top:14px}
 .gallery-card-title{font-family:var(--fd);font-size:17px;font-weight:600;margin-bottom:3px;color:var(--txt)}
 .gallery-card-artist{font-size:12px;color:var(--muted);margin-bottom:10px}
@@ -476,6 +525,16 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
 .gallery-card-charity:hover{color:var(--accent)}
 .gallery-card-charity-static{cursor:default}
 .gallery-card-charity-static:hover{color:var(--muted)}
+
+/* ═══ TRUST BADGE STRIPE (homepage + product detail, just before footer) ═══ */
+.trust-stripe{background:var(--panel);padding:48px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.trust-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:32px}
+@media(max-width:900px){.trust-grid{grid-template-columns:repeat(2,1fr);gap:28px}}
+@media(max-width:560px){.trust-grid{grid-template-columns:1fr;gap:22px}}
+.trust-badge{display:flex;gap:14px;align-items:flex-start}
+.trust-badge-icon{width:48px;height:48px;border-radius:50%;background:var(--glass);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.trust-badge-label{font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--txt);margin-bottom:4px}
+.trust-badge-text{font-size:13px;color:var(--muted);line-height:1.5}
 
 /* ═══ GALLERY / LIGHTBOX ═══ */
 .gallery-main{position:relative;border-radius:var(--rl);overflow:hidden;background:var(--glass);border:1px solid var(--border);cursor:zoom-in}

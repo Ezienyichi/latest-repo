@@ -30,3 +30,10 @@ export const DIGITAL_CATS = [
 export function getSdg(id) {
   return SDGs.find(s => s.id === id);
 }
+
+// Categories whose images get the auto-frame treatment (mat + border,
+// object-fit:contain — no cropping) everywhere a product image renders.
+// Everything else uses object-fit:cover within the same fixed frame.
+// Single source of truth — every component that renders a product image
+// should import this rather than redeclaring its own copy.
+export const FRAMED_CATEGORIES = ['ARTWORK', 'GRAPHIC'];

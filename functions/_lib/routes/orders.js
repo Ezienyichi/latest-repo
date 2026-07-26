@@ -92,7 +92,7 @@ orders.post('/', optionalAuth, async (c) => {
       include: {
         items: {
           include: {
-            product: { select: { title: true, images: true, slug: true, artist: { select: { displayName: true } }, charity: { select: { name: true } }, autoCertificate: true, certificateId: true } },
+            product: { select: { title: true, images: true, slug: true, category: true, artist: { select: { displayName: true } }, charity: { select: { name: true } }, autoCertificate: true, certificateId: true } },
             variation: true,
           },
         },
@@ -108,7 +108,7 @@ orders.post('/', optionalAuth, async (c) => {
       include: {
         items: {
           include: {
-            product: { select: { title: true, images: true, slug: true, artist: { select: { displayName: true } }, charity: { select: { name: true } }, autoCertificate: true, certificateId: true } },
+            product: { select: { title: true, images: true, slug: true, category: true, artist: { select: { displayName: true } }, charity: { select: { name: true } }, autoCertificate: true, certificateId: true } },
             variation: true,
           },
         },
@@ -143,7 +143,7 @@ orders.get('/', authenticate, async (c) => {
   try {
     const list = await prisma.order.findMany({
       where: { buyerId: c.get('userId') },
-      include: { items: { include: { product: { select: { title: true, images: true, slug: true, artist: { select: { displayName: true } }, charity: { select: { name: true } }, autoCertificate: true, certificateId: true } } } } },
+      include: { items: { include: { product: { select: { title: true, images: true, slug: true, category: true, artist: { select: { displayName: true } }, charity: { select: { name: true } }, autoCertificate: true, certificateId: true } } } } },
       orderBy: { createdAt: 'desc' },
     });
     return c.json(list);
@@ -155,7 +155,7 @@ orders.get('/:id', authenticate, async (c) => {
   try {
     const order = await prisma.order.findFirst({
       where: { id: c.req.param('id'), buyerId: c.get('userId') },
-      include: { items: { include: { product: { select: { title: true, images: true, slug: true, medium: true, year: true, artist: { select: { displayName: true } }, charity: { select: { name: true, logo: true } }, autoCertificate: true, certificateId: true } }, variation: true } } },
+      include: { items: { include: { product: { select: { title: true, images: true, slug: true, category: true, medium: true, year: true, artist: { select: { displayName: true } }, charity: { select: { name: true, logo: true } }, autoCertificate: true, certificateId: true } }, variation: true } } },
     });
     if (!order) return c.json({ error: 'Order not found' }, 404);
     return c.json(order);

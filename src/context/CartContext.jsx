@@ -29,7 +29,7 @@ export function CartProvider({ children }) {
       id, productId: product.id, title: product.title,
       artist: product.artist?.displayName || '', price, qty,
       variation, addons, charityName: product.charity?.name || '',
-      image: product.images?.[0]?.url || '', slug: product.slug,
+      image: product.images?.[0]?.url || '', slug: product.slug, category: product.category,
     }]);
     toast(`Added "${product.title}" to cart`);
   }, [toast]);

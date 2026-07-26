@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Award, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { FRAMED_CATEGORIES } from '../data/constants';
 import api from '../utils/api';
 import Icon from '../components/ui/Icon';
 
@@ -39,7 +40,7 @@ export default function MyCertificatesPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {certs.map(c => (
               <div key={c.certificateId} className="card" style={{ padding: 22, display: 'flex', gap: 18, alignItems: 'center' }}>
-                <div style={{ width: 72, height: 72, borderRadius: 10, overflow: 'hidden', flexShrink: 0, border: '2px solid var(--gold)', background: 'var(--glass)' }}>
+                <div className={FRAMED_CATEGORIES.includes(c.category) ? 'pf-contain' : ''} style={{ width: 72, height: 72, borderRadius: 10, overflow: 'hidden', flexShrink: 0, border: '2px solid var(--gold)', background: 'var(--glass)' }}>
                   {c.image ? <img src={c.image.replace('w=1200', 'w=140')} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: '#1B4332' }} />}
                 </div>
                 <div style={{ flex: 1 }}>

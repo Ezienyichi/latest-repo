@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Package, ArrowRight, Award } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { FRAMED_CATEGORIES } from '../data/constants';
 import api from '../utils/api';
 import Icon from '../components/ui/Icon';
 
@@ -83,7 +84,7 @@ export default function OrdersPage() {
                     <div style={{ padding: '0 22px 20px', borderTop: '1px solid var(--border)', animation: 'fadeUp .2s ease' }}>
                       {order.items?.map((item, i) => (
                         <div key={i} style={{ display: 'flex', gap: 12, padding: '12px 0', borderBottom: i < order.items.length - 1 ? '1px solid var(--border)' : 'none' }}>
-                          <div style={{ width: 56, height: 56, borderRadius: 6, overflow: 'hidden', flexShrink: 0, cursor: 'pointer', background: 'var(--glass)' }}
+                          <div className={FRAMED_CATEGORIES.includes(item.product?.category) ? 'pf-contain' : ''} style={{ width: 56, height: 56, borderRadius: 6, overflow: 'hidden', flexShrink: 0, cursor: 'pointer', background: 'var(--glass)' }}
                             onClick={() => item.product?.slug && navigate(`/shop/${item.product.slug}`)}>
                             {item.product?.images?.[0]?.url ? <img src={item.product.images[0].url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: '#1B4332' }} />}
                           </div>

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Package, Heart, Star } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { SDGs, DIGITAL_CATS } from '../data/constants';
+import { SDGs, DIGITAL_CATS, FRAMED_CATEGORIES } from '../data/constants';
 import api from '../utils/api';
 import Icon from '../components/ui/Icon';
 
@@ -104,13 +104,13 @@ export default function DigitalsPage() {
               const cat = DIGITAL_CATS.find(c => c.id === p.category);
               return (
                 <div key={p.id} className="product-card" onClick={() => navigate(`/shop/${p.slug}`)}>
-                  <div style={{ aspectRatio: '1', position: 'relative', overflow: 'hidden' }}>
+                  <div className={`product-card-img${FRAMED_CATEGORIES.includes(p.category) ? ' pf-framed' : ''}`}>
                     {p.images?.[0]?.url ? (
                       <>
-                        <img src={p.images[0].url} alt={p.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform .4s' }}
-                          onMouseEnter={e => e.target.style.transform = 'scale(1.05)'}
+                        <img src={p.images[0].url} alt={p.title} loading="lazy" style={{ transition: 'transform .4s' }}
+                          onMouseEnter={e => { if (!FRAMED_CATEGORIES.includes(p.category)) e.target.style.transform = 'scale(1.05)'; }}
                           onMouseLeave={e => e.target.style.transform = 'scale(1)'} />
-                        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top,${cat?.bg || '#111'}dd,transparent 55%)` }} />
+                        {!FRAMED_CATEGORIES.includes(p.category) && <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top,${cat?.bg || '#111'}dd,transparent 55%)` }} />}
                       </>
                     ) : (
                       <div style={{ width: '100%', height: '100%', background: `linear-gradient(145deg,${cat?.bg || '#1B4332'},${cat?.color || '#2D6A4F'}44)`, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: .3 }}>

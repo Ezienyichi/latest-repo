@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Check } from 'lucide-react';
-import { SDGs } from '../data/constants';
+import { SDGs, FRAMED_CATEGORIES } from '../data/constants';
 import { useCart } from '../context/CartContext';
 import api from '../utils/api';
 import Icon from '../components/ui/Icon';
@@ -70,7 +70,7 @@ export default function ArtistProfilePage() {
           <div className="product-grid" style={{ paddingBottom: 60 }}>
             {products.length === 0 ? <div className="empty"><div className="empty-t">No artworks yet</div></div> : products.map(p => (
               <div key={p.id} className="product-card" onClick={() => navigate(`/shop/${p.slug}`)}>
-                <div className="product-card-img">
+                <div className={`product-card-img${FRAMED_CATEGORIES.includes(p.category) ? ' pf-framed' : ''}`}>
                   {p.images?.[0]?.url ? <img src={p.images[0].url} alt={p.title} loading="lazy" /> : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(145deg,#1B4332,#2D6A4F)' }} />}
                 </div>
                 <div className="product-card-body">
