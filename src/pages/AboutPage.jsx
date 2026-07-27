@@ -1,132 +1,82 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { User, Eye, AlertTriangle, Lightbulb } from 'lucide-react';
 import CountUp from '../components/ui/CountUp';
 import Icon from '../components/ui/Icon';
 import api from '../utils/api';
 
+const PILLARS = [
+  { key: 'vision', label: 'Vision', icon: Eye },
+  { key: 'problem', label: 'Problem', icon: AlertTriangle },
+  { key: 'solution', label: 'Solution', icon: Lightbulb },
+];
+
 export default function AboutPage() {
+  const navigate = useNavigate();
   const [content, setContent] = useState(null);
-  const [theory, setTheory] = useState(null);
   const [team, setTeam] = useState([]);
 
   useEffect(() => {
     api.getPageContent('about').then(r => setContent(r.body)).catch(() => {});
-    api.getPublicSettings().then(setTheory).catch(() => {});
     api.getTeam().then(setTeam).catch(() => {});
   }, []);
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--base)' }}>
-      {/* Header */}
-      <div style={{ padding: '48px 48px 28px', borderBottom: '1px solid var(--border)' }}>
-        <div className="wrap">
-          <div className="breadcrumbs"><Link to="/">Home</Link><span className="sep">›</span><span className="current">About</span></div>
-          <div className="lbl" style={{ marginBottom: 8 }}>Our Mission</div>
-          <h1 className="display" style={{ fontSize: 48 }}>About {theory?.site_name || 'FastTackle Africa'}</h1>
-          <p style={{ fontSize: 14, color: 'var(--muted)', marginTop: 8, maxWidth: 560 }}>
-            Where creativity becomes a sustainable engine for measurable social change.
-          </p>
+      {/* ═══ HERO BANNER ═══ */}
+      <section className="about-hero">
+        <img className="about-hero-img" src={content?.heroImage} alt="" loading="eager" />
+        <div className="about-hero-scrim" />
+        <div className="about-hero-content">
+          <h1>{content?.heroHeading || 'About FastTackle Africa'}</h1>
         </div>
-      </div>
+      </section>
 
-      {/* Vision / Problem / Solution */}
+      {/* ═══ THEORY OF CHANGE ═══ */}
+      {content && (
+        <section className="section" style={{ background: 'var(--panel)' }}>
+          <div className="wrap about-theory-grid">
+            <div>
+              <div className="about-theory-kicker">{content.theoryKicker}</div>
+              <h2 className="about-theory-heading">{content.theoryHeading}</h2>
+              <p className="about-theory-para">{content.theoryText}</p>
+              <button className="btn btn-p btn-lg" onClick={() => navigate('/shop')}>{content.theoryCta}</button>
+            </div>
+            <div className="about-theory-media">
+              <img src={content.theoryImage} alt="" loading="lazy" />
+              <div className="about-stat-band">
+                {content.stats?.map(s => (
+                  <div key={s.label} className="about-stat-item">
+                    <div className="about-stat-val">
+                      <CountUp end={s.end} decimals={s.decimals || 0} prefix={s.prefix || ''} suffix={s.suffix || ''} />
+                    </div>
+                    <div className="about-stat-lbl2">{s.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══ VISION / PROBLEM / SOLUTION ═══ */}
       {content && (
         <section className="section" style={{ background: 'var(--base)' }}>
           <div className="wrap">
             <div className="g3" style={{ gap: 24 }}>
-              <div className="about-card">
-                <div className="about-card-tag">Vision</div>
-                <p className="about-card-text">{content.vision}</p>
-              </div>
-              <div className="about-card">
-                <div className="about-card-tag">Problem</div>
-                <p className="about-card-text">{content.problem}</p>
-              </div>
-              <div className="about-card">
-                <div className="about-card-tag">Solution</div>
-                <p className="about-card-text">{content.solution}</p>
-              </div>
+              {PILLARS.map(p => (
+                <div key={p.key} className="about-pillar">
+                  <div className="about-pillar-icon"><Icon icon={p.icon} size={26} /></div>
+                  <h3>{p.label}</h3>
+                  <p>{content[p.key]}</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>
       )}
 
-      {/* Theory of Change — same three-beat treatment, same SiteSetting keys, as the homepage */}
-      {theory && (
-        <section style={{ background: 'linear-gradient(135deg,#0d2318 0%,#1B4332 50%,#0d2318 100%)', padding: '90px 0' }}>
-          <div className="wrap">
-            <div style={{ textAlign: 'center', marginBottom: 52 }}>
-              <div className="lbl" style={{ marginBottom: 10, color: 'var(--gold)' }}>Theory of Change</div>
-              <h2 className="display" style={{ fontSize: 44, color: '#fff' }}>How Change Compounds</h2>
-            </div>
-            <div className="theory-flow">
-              <div className="theory-card">
-                <div className="theory-tag">If</div>
-                <p className="theory-text">{theory.theory_if}</p>
-              </div>
-              <div className="theory-connector">→</div>
-              <div className="theory-card">
-                <div className="theory-tag">And If</div>
-                <p className="theory-text">{theory.theory_and_if}</p>
-              </div>
-              <div className="theory-connector">→</div>
-              <div className="theory-card then">
-                <div className="theory-tag">Then</div>
-                <p className="theory-text">{theory.theory_then}</p>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Outcomes */}
-      {content && (
-        <section className="section" style={{ background: 'var(--panel)' }}>
-          <div className="wrap">
-            <div style={{ textAlign: 'center', marginBottom: 44 }}>
-              <div className="lbl" style={{ marginBottom: 10 }}>Outcomes</div>
-              <h2 className="display" style={{ fontSize: 44 }}>What Success Looks Like</h2>
-            </div>
-            <div className="g2" style={{ gap: 24 }}>
-              <div className="about-card">
-                <div className="about-card-tag">Short-Term</div>
-                <p className="about-card-text">{content.outcomesShortTerm}</p>
-              </div>
-              <div className="about-card">
-                <div className="about-card-tag" style={{ color: 'var(--gold)' }}>Long-Term</div>
-                <p className="about-card-text">{content.outcomesLongTerm}</p>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Stats — scroll-triggered count-up */}
-      <section className="section" style={{ background: 'var(--base)' }}>
-        <div className="wrap">
-          <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <div className="lbl" style={{ marginBottom: 10 }}>The Opportunity</div>
-            <h2 className="display" style={{ fontSize: 44 }}>Why This Matters, At Scale</h2>
-          </div>
-          <div className="about-stats">
-            <div>
-              <div className="about-stat-val"><CountUp end={59} prefix="$" suffix="B" /></div>
-              <div className="about-stat-lbl">Total size of Africa's creative economy (TAM)</div>
-            </div>
-            <div>
-              <div className="about-stat-val"><CountUp end={5.6} decimals={1} prefix="$" suffix="B" /></div>
-              <div className="about-stat-lbl">Global art market potential, reflecting rising recognition of African creatives</div>
-            </div>
-            <div>
-              <div className="about-stat-val"><CountUp end={200} prefix="$" suffix="B" /></div>
-              <div className="about-stat-lbl">Potential contribution of Africa's creative industries to global creative-goods exports (up to 10%) by 2030, with improved investment and market access</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Meet the Team */}
+      {/* ═══ MEET THE TEAM ═══ */}
       {team.length > 0 && (
         <section className="section" style={{ background: 'var(--panel)' }}>
           <div className="wrap">
