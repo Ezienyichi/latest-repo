@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Palette, Leaf, ShoppingBag, Check, ImageOff } from 'lucide-react';
+import { ArrowRight, Palette, Check, ImageOff, Eye, AlertTriangle, Lightbulb } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { SDGs, FRAMED_CATEGORIES } from '../data/constants';
 import api from '../utils/api';
@@ -59,6 +59,12 @@ const DIGITAL_PLACEHOLDERS = [
   { title: 'Still Frame', artist: 'Nomvula Dube', price: 22, charityName: 'Oxfam', category: 'DIGITAL_ART', subcat: 'DIGITAL_ART', img: 'https://images.unsplash.com/photo-1736147066581-95fa303553a0?w=600&h=750&fit=crop&q=80' },
 ];
 const ROW_TARGET = 6;
+
+const PILLARS = [
+  { key: 'vision', label: 'Vision', icon: Eye },
+  { key: 'problem', label: 'Problem', icon: AlertTriangle },
+  { key: 'solution', label: 'Solution', icon: Lightbulb },
+];
 
 
 function GalleryCard({ item, onClick, onCharityClick }) {
@@ -306,6 +312,7 @@ export default function HomePage() {
   const [subbed, setSubbed] = useState(false);
   const [featured, setFeatured] = useState([]);
   const [theory, setTheory] = useState(null);
+  const [content, setContent] = useState(null);
   const [paintings, setPaintings] = useState([]);
   const [digitalWorks, setDigitalWorks] = useState([]);
   const [latest, setLatest] = useState([]);
@@ -315,6 +322,7 @@ export default function HomePage() {
   useEffect(() => {
     api.getProducts({ featured: 'true', limit: 16 }).then(r => setFeatured(r.items || [])).catch(() => {});
     api.getPublicSettings().then(setTheory).catch(() => {});
+    api.getPageContent('homepage').then(r => setContent(r.body)).catch(() => {});
     // Fetch a larger batch than ROW_TARGET since sub-category tabs filter
     // client-side from this same set rather than re-fetching per tab.
     api.getProducts({ category: 'ARTWORK', limit: 24, sort: 'newest' }).then(r => setPaintings(r.items || [])).catch(() => {});
@@ -372,9 +380,6 @@ export default function HomePage() {
               <button className="btn btn-p btn-lg" style={{ fontSize: 15, padding: '15px 32px', boxShadow: '0 8px 32px rgba(23,124,29,.4)', display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => navigate('/shop')}>
                 Explore Artworks <Icon icon={ArrowRight} size="inline" />
               </button>
-              <button className="btn btn-s btn-lg" style={{ fontSize: 15, padding: '15px 32px', background: 'rgba(255,255,255,.08)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,.2)', color: '#fff' }} onClick={() => navigate('/register')}>
-                Partner With Us
-              </button>
             </div>
             <div className="hero-stats">
               {[['2,847', 'Artworks Sold'], ['£184k', 'Funds Raised'], ['63', 'Charities Supported']].map(([v, l]) => (
@@ -407,6 +412,12 @@ export default function HomePage() {
             </div>
           )}
         </div>
+      </section>
+
+      {/* ═══ TOP SELLERS — first content section after the hero ═══ */}
+      <section className="section" style={{ background: 'var(--base)' }}>
+        <SimpleCarouselRow label="Top Sellers" heading="Most Loved" real={topSellers} placeholders={TOPSELLER_PLACEHOLDERS}
+          browsePath="/shop" onOpen={navigate} onCharityClick={openCharity} />
       </section>
 
       {/* ═══ THEORY OF CHANGE — editorial two-column ═══ */}
@@ -445,68 +456,54 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ PRODUCT GALLERY — full-bleed carousels, heading stays in .wrap ═══ */}
+      {/* ═══ PRODUCT GALLERY (PART 1) — full-bleed carousels, heading stays in .wrap ═══ */}
       <section className="section" style={{ background: 'var(--base)' }}>
         <GalleryRow label="Originals" heading="Original Works" real={paintings} placeholders={PAINTING_PLACEHOLDERS}
           subcats={ORIGINALS_SUBCATS} browsePath="/shop" onOpen={navigate} onCharityClick={openCharity} />
         <GalleryRow label="Creative Digital Works" heading="Downloadable Creations" real={digitalWorks} placeholders={DIGITAL_PLACEHOLDERS}
           subcats={DIGITAL_SUBCATS} browsePath="/digitals" onOpen={navigate} onCharityClick={openCharity} />
-        <SimpleCarouselRow label="Latest Collections" heading="Just Added" real={latest} placeholders={LATEST_PLACEHOLDERS}
-          browsePath="/shop?sort=newest" onOpen={navigate} onCharityClick={openCharity} />
-        <SimpleCarouselRow label="Top Sellers" heading="Most Loved" real={topSellers} placeholders={TOPSELLER_PLACEHOLDERS}
-          browsePath="/shop" onOpen={navigate} onCharityClick={openCharity} />
-        <SimpleCarouselRow label="Originals Only" heading="One-of-a-Kind Pieces" real={originals} placeholders={PAINTING_PLACEHOLDERS}
-          browsePath="/shop" onOpen={navigate} onCharityClick={openCharity} />
       </section>
 
-      {/* ═══ WHAT WE PROVIDE ═══ */}
+      {/* ═══ HOW IT WORKS ═══ */}
       <section className="section" style={{ background: 'var(--panel)' }}>
         <div className="wrap">
           <div style={{ textAlign: 'center', marginBottom: 56 }}>
-            <div className="lbl" style={{ marginBottom: 10 }}>What We Provide</div>
-            <h2 className="display" style={{ fontSize: 46 }}>Value For Every Participant</h2>
+            <div className="lbl" style={{ marginBottom: 10 }}>How It Works</div>
+            <h2 className="display" style={{ fontSize: 46 }}>{content?.howItWorksHeading || 'From Creativity to Community Impact'}</h2>
           </div>
-          <div className="g3" style={{ gap: 24 }}>
-            {[
-              { ico: Palette, t: 'For Artists & Creatives', cta: 'Start Selling', items: ['Value-driven buyers & collectors who care about impact', 'Increases the visibility and value of your creative works', 'Automatic Certificate of Authenticity generation', 'Direct connection to verified SDG charity projects', 'Full artist studio with portfolio, exhibitions & awards', 'Analytics dashboard — views, conversion, demographics'] },
-              { ico: Leaf, t: 'For Charities & Non-Profits', cta: 'Apply as Charity', items: ['High possibility to receive capital campaigns & major gifts', 'Recurrent donation streams from art sales', 'Publicity and brand awareness through creative partnerships', 'Funder management — messaging, templates, resources', 'Daily appreciation reminders for donor engagement', 'SDG Impact Reports — auto-generated quarterly'] },
-              { ico: ShoppingBag, t: 'For Buyers & Funders', cta: 'Browse Art', items: ['Every purchase supports a verified charitable cause', 'Premium Certificate of Authenticity with QR verification', 'Connect directly to the artists and their stories', 'Transparent impact — see exactly where your money goes', 'Support SDG-aligned projects with each transaction', 'Access to exclusive digital products and limited editions'] },
-            ].map(s => (
-              <div key={s.t} className="card" style={{ padding: 32, textAlign: 'center' }}>
-                <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center', color: 'var(--accent)' }}><Icon icon={s.ico} size={44} /></div>
-                <h3 style={{ fontFamily: 'var(--fd)', fontSize: 24, fontWeight: 600, marginBottom: 16 }}>{s.t}</h3>
-                <div style={{ textAlign: 'left', marginBottom: 22 }}>
-                  {s.items.map((item, i) => (
-                    <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, fontSize: 13, color: 'var(--txt2)', lineHeight: 1.6 }}>
-                      <span style={{ color: 'var(--accent)', flexShrink: 0, marginTop: 2 }}><Icon icon={Check} size="inline" /></span>
-                      <span>{item}</span>
-                    </div>
-                  ))}
-                </div>
-                <button className="btn btn-gold" onClick={() => navigate('/register')}>{s.cta}</button>
+          <div className="g4" style={{ gap: 28 }}>
+            {(content?.howItWorks || []).map(s => (
+              <div key={s.n} style={{ textAlign: 'center' }}>
+                <div style={{ fontFamily: 'var(--fm)', fontSize: 44, color: 'var(--accent)', fontWeight: 700, opacity: .2, marginBottom: -10 }}>{s.n}</div>
+                <h3 style={{ fontFamily: 'var(--fd)', fontSize: 22, fontWeight: 600, marginBottom: 10 }}>{s.t}</h3>
+                <p style={{ fontSize: 13.5, color: 'var(--txt2)', lineHeight: 1.7 }}>{s.d}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══ HOW IT WORKS ═══ */}
+      {/* ═══ PRODUCT GALLERY (PART 2) — full-bleed carousels, heading stays in .wrap ═══ */}
       <section className="section" style={{ background: 'var(--base)' }}>
+        <SimpleCarouselRow label="Latest Collections" heading="Just Added" real={latest} placeholders={LATEST_PLACEHOLDERS}
+          browsePath="/shop?sort=newest" onOpen={navigate} onCharityClick={openCharity} />
+        <SimpleCarouselRow label="Originals Only" heading="One-of-a-Kind Pieces" real={originals} placeholders={PAINTING_PLACEHOLDERS}
+          browsePath="/shop" onOpen={navigate} onCharityClick={openCharity} />
+      </section>
+
+      {/* ═══ WHAT WE PROVIDE — Vision / Problem / Solution ═══ */}
+      <section className="section" style={{ background: 'var(--panel)' }}>
         <div className="wrap">
           <div style={{ textAlign: 'center', marginBottom: 56 }}>
-            <div className="lbl" style={{ marginBottom: 10 }}>How It Works</div>
-            <h2 className="display" style={{ fontSize: 46 }}>Three Steps to Impact</h2>
+            <div className="lbl" style={{ marginBottom: 10 }}>What We Provide</div>
+            <h2 className="display" style={{ fontSize: 46 }}>Creativity, Commerce, Community Impact</h2>
           </div>
-          <div className="g3" style={{ gap: 36 }}>
-            {[
-              { n: '01', t: 'Artist Creates', d: 'Artists and creatives list their original artwork and digital products, each linked to a verified SDG-aligned charity.' },
-              { n: '02', t: 'Buyer Purchases', d: 'Art lovers browse, purchase, and receive a premium Certificate of Authenticity with every order.' },
-              { n: '03', t: 'Charity Benefits', d: '10% of every sale goes directly to the partnered charity. Funders receive updates and impact reports.' },
-            ].map(s => (
-              <div key={s.n} style={{ textAlign: 'center' }}>
-                <div style={{ fontFamily: 'var(--fm)', fontSize: 52, color: 'var(--accent)', fontWeight: 700, opacity: .2, marginBottom: -12 }}>{s.n}</div>
-                <h3 style={{ fontFamily: 'var(--fd)', fontSize: 26, fontWeight: 600, marginBottom: 10 }}>{s.t}</h3>
-                <p style={{ fontSize: 14, color: 'var(--txt2)', lineHeight: 1.75 }}>{s.d}</p>
+          <div className="g3" style={{ gap: 24 }}>
+            {PILLARS.map(p => (
+              <div key={p.key} className="about-pillar">
+                <div className="about-pillar-icon"><Icon icon={p.icon} size={26} /></div>
+                <h3>{p.label}</h3>
+                <p>{content?.[p.key]}</p>
               </div>
             ))}
           </div>
@@ -589,17 +586,21 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ NEWSLETTER ═══ */}
-      <section className="section" style={{ background: 'var(--panel)' }}>
-        <div className="wrap" style={{ textAlign: 'center', maxWidth: 560, margin: '0 auto' }}>
-          <div className="lbl" style={{ marginBottom: 12 }}>Stay Connected</div>
-          <h2 className="display" style={{ fontSize: 46, marginBottom: 16 }}>Join the Movement</h2>
-          <p style={{ fontSize: 15, color: 'var(--txt2)', lineHeight: 1.8, marginBottom: 32 }}>Sign up for curated art drops, impact stories, and early access to new collections.</p>
+      {/* ═══ NEWSLETTER — artwork-on-an-easel background, dark scrim for legibility ═══ */}
+      <section className="section newsletter-section">
+        <img className="newsletter-bg-img" loading="lazy" aria-hidden="true" alt=""
+          src="https://images.pexels.com/photos/10322821/pexels-photo-10322821.jpeg?auto=compress&cs=tinysrgb&w=1920" />
+        <div className="newsletter-scrim" />
+        <div className="wrap" style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 560, margin: '0 auto' }}>
+          <div className="lbl" style={{ marginBottom: 12, color: 'var(--accent2)' }}>Stay Connected</div>
+          <h2 className="display" style={{ fontSize: 46, marginBottom: 16, color: '#fff' }}>Join the Movement</h2>
+          <p style={{ fontSize: 15, color: 'rgba(255,255,255,.82)', lineHeight: 1.8, marginBottom: 32 }}>Sign up for curated art drops, impact stories, and early access to new collections.</p>
           {subbed ? (
             <div className="alert alert-ok" style={{ justifyContent: 'center', fontSize: 15 }}><Icon icon={Check} size="inline" /> You're in! Welcome to the community.</div>
           ) : (
             <div style={{ display: 'flex', gap: 10, maxWidth: 440, margin: '0 auto' }}>
-              <input className="fi" placeholder="your@email.com" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && sub()} style={{ flex: 1 }} />
+              <input className="fi fi-dark" placeholder="your@email.com" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && sub()}
+                style={{ flex: 1, background: 'rgba(255,255,255,.1)', border: '1px solid rgba(255,255,255,.28)', color: '#fff' }} />
               <button className="btn btn-gold" onClick={sub}>Subscribe</button>
             </div>
           )}

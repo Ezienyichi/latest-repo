@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { AlertTriangle, Lock, ShoppingBag, Palette, Leaf } from 'lucide-react';
+import { AlertTriangle, Lock, ShoppingBag } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import Icon from '../components/ui/Icon';
@@ -82,8 +82,6 @@ export default function LoginPage() {
             {[
               ['Admin', 'admin@changeartgallery.com', 'Admin123!', Lock],
               ['Buyer', 'buyer@demo.com', 'Buyer123!', ShoppingBag],
-              ['Artist', 'amara@demo.com', 'Artist123!', Palette],
-              ['Charity', 'wateraid@demo.com', 'Charity123!', Leaf],
             ].map(([label, em, pw, ico]) => (
               <button key={label} className="btn btn-s btn-sm" style={{ justifyContent: 'center', fontSize: 11, display: 'inline-flex', alignItems: 'center', gap: 5 }}
                 onClick={() => demoLogin(em, pw, label)} disabled={loading}>

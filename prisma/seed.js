@@ -54,6 +54,32 @@ async function main() {
     },
   });
 
+  // ── HOMEPAGE BODY (admin-editable) ──
+  // "How It Works" and the "What We Provide" Vision/Problem/Solution copy
+  // both live under this one slug since they're both homepage-only content,
+  // distinct from the About page's own (differently-worded) vision/
+  // problem/solution fields under the 'about' slug above.
+  await prisma.pageContent.upsert({
+    where: { slug: 'homepage' },
+    update: {},
+    create: {
+      slug: 'homepage',
+      title: 'Homepage',
+      body: {
+        howItWorksHeading: 'From Creativity to Community Impact',
+        howItWorks: [
+          { n: '01', t: 'We Curate', d: 'We curate original work from selected artists and pair each piece with a verified fundraising project.' },
+          { n: '02', t: 'You Choose', d: 'You either buy an artwork or donate directly to a cause.' },
+          { n: '03', t: 'We Fund', d: 'A set share of every purchase or donation funds SDG-aligned community projects.' },
+          { n: '04', t: 'We Track', d: 'Impact is tracked transparently.' },
+        ],
+        vision: 'Turn creativity into lasting social change — channelling the work of talented artists into funding for high-impact, SDG-aligned community projects across Africa and beyond.',
+        problem: "Creatives rarely see their work translate into lasting social impact, while charities and community initiatives face chronic, unpredictable funding gaps. Donation-only fundraising is hard to sustain. What's missing is a model that links creative work, commerce, and measurable community impact.",
+        solution: 'FastTackle Africa curates original work from carefully selected artists and pairs each piece with a verified fundraising project. Whether you buy an artwork or donate directly to a cause, a set share of every contribution funds SDG-aligned community projects — with transparent impact tracking, project verification, and full financial accountability.',
+      },
+    },
+  });
+
   // ── TEAM MEMBERS (About page — admin-editable once CRUD is built) ──
   const team = [
     { name: 'Simone Achterberg', role: 'Founder & CEO', photoPath: 'https://images.unsplash.com/photo-1758518729459-235dcaadc611?w=400&q=80&fit=crop&crop=faces', sortOrder: 0 },

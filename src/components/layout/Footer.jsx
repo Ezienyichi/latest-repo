@@ -6,14 +6,13 @@ export default function Footer() {
   const navigate = useNavigate();
   const sections = [
     ['Platform', [['Discover Art', '/shop'], ['Digital Store', '/digitals'], ['Browse Artists', '/artists'], ['Charities', '/charities'], ['About Us', '/about']]],
-    ['Create', [['Sell Your Art', '/register'], ['Partner a Charity', '/register'], ['Artist Studio', '/dashboard']]],
     ['Support', [['Privacy Policy', '/'], ['Contact Us', '/'], ['Documentation', '/']]],
   ];
 
   return (
     <footer style={{ background: 'var(--footer-bg)', borderTop: '1px solid var(--border)', padding: '56px 0 32px' }}>
       <div className="wrap">
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 48, marginBottom: 48 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 48, marginBottom: 48 }}>
           <div>
             <Wordmark style={{ fontFamily: 'var(--fd)', fontSize: 20, color: 'var(--mint)', marginBottom: 4, fontWeight: 700, display: 'block' }} />
             <p style={{ fontSize: 13, color: 'var(--footer-txt)', lineHeight: 1.75, maxWidth: 260 }}>

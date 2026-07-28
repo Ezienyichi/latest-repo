@@ -20,9 +20,6 @@
   --fm:'JetBrains Mono',monospace;
   --ease:cubic-bezier(.4,0,.2,1);
   --accent:#177c1d;--accent2:#ffad00;
-  --btn-primary-grad:linear-gradient(180deg,#7cce6b,#d8ffd0);
-  --btn-primary-grad-hover:linear-gradient(180deg,#d8ffd0,#7cce6b);
-  --btn-primary-txt:var(--txt);
 }
 
 html{scroll-behavior:smooth}
@@ -90,8 +87,8 @@ body{font-family:var(--fb);background:var(--base);color:var(--txt);overflow-x:hi
 /* Buttons */
 .btn{border:none;cursor:pointer;font-family:var(--fb);font-weight:500;display:inline-flex;align-items:center;gap:7px;transition:all .2s var(--ease);outline:none;white-space:nowrap;text-decoration:none}
 .btn:focus-visible{box-shadow:0 0 0 2px var(--mint)}
-.btn-p{background:var(--btn-primary-grad);color:var(--btn-primary-txt);padding:11px 22px;border-radius:var(--r);font-size:14px;font-weight:600}
-.btn-p:hover{background:var(--btn-primary-grad-hover);transform:translateY(-1px);box-shadow:0 6px 20px rgba(124,206,107,.35)}
+.btn-p{background:transparent;color:var(--accent);border:1.5px solid var(--accent);padding:11px 22px;border-radius:var(--r);font-size:14px;font-weight:600}
+.btn-p:hover{background:var(--accent);color:#fff;transform:translateY(-1px);box-shadow:0 6px 20px rgba(23,124,29,.28)}
 .btn-s{background:var(--glass);border:1px solid var(--borderl);color:var(--txt);padding:10px 20px;border-radius:var(--r);font-size:14px}
 .btn-s:hover{background:var(--glassh);border-color:var(--borderl)}
 .btn-g{background:transparent;color:var(--txt2);padding:9px 14px;border-radius:var(--r);font-size:14px}
@@ -124,6 +121,7 @@ body{font-family:var(--fb);background:var(--base);color:var(--txt);overflow-x:hi
 .fi{width:100%;background:var(--glass);border:1px solid var(--border);border-radius:var(--r);padding:11px 14px;font-family:var(--fb);font-size:14px;color:var(--txt);outline:none;transition:all .18s}
 .fi:focus{border-color:var(--mint);background:var(--glassh);box-shadow:0 0 0 3px rgba(23,124,29,.1)}
 .fi::placeholder{color:var(--muted)}
+.fi-dark::placeholder{color:rgba(255,255,255,.55)}
 .fsel{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7'%3E%3Cpath fill='%236b7280' d='M0 0l5.5 7L11 0z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px}
 .fta{resize:vertical;min-height:96px}
 
@@ -422,6 +420,10 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
 .about-hero-content{position:relative;z-index:1;padding:0 24px;text-align:center}
 .about-hero-content h1{font-family:var(--fd);font-size:clamp(30px,5.4vw,60px);font-weight:700;color:#fff;line-height:1.1;text-shadow:0 2px 24px rgba(0,0,0,.35)}
 
+.newsletter-section{position:relative;overflow:hidden}
+.newsletter-bg-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.newsletter-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,8,8,.74),rgba(8,8,8,.84))}
+
 .about-theory-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
 @media(max-width:900px){.about-theory-grid{grid-template-columns:1fr;gap:40px}}
 .about-theory-kicker{font-family:var(--fb);font-size:13px;font-weight:600;letter-spacing:6px;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
@@ -451,8 +453,8 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
 @media(max-width:900px){.team-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:480px){.team-grid{grid-template-columns:1fr;max-width:220px;margin:0 auto}}
 .team-card{text-align:center}
-.team-photo{width:120px;height:120px;border-radius:50%;object-fit:cover;margin:0 auto 16px;border:3px solid var(--border);display:block}
-.team-photo-fallback{width:120px;height:120px;border-radius:50%;margin:0 auto 16px;background:var(--glass);display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.team-photo{width:176px;height:176px;border-radius:50%;object-fit:cover;margin:0 auto 16px;border:3px solid var(--border);display:block}
+.team-photo-fallback{width:176px;height:176px;border-radius:50%;margin:0 auto 16px;background:var(--glass);display:flex;align-items:center;justify-content:center;color:var(--muted)}
 .team-name{font-family:var(--fd);font-size:17px;font-weight:600;margin-bottom:3px}
 .team-role{font-size:12px;color:var(--muted)}
 
