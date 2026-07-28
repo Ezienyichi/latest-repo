@@ -254,10 +254,6 @@ async function main() {
 
   // Digital products
   const digitals = [
-    { artistIdx: 5, charityIdx: 2, title: 'The Salt Road', slug: 'the-salt-road', category: 'EBOOK', basePrice: 14.99, productType: 'DOWNLOADABLE', year: 2025, sdgIds: [4, 10], autoCertificate: true, certificateId: 'AFC-2025-EB01', featured: true, fileFormat: 'ePub + PDF', pages: 284, tags: ['fiction', 'Africa', 'education'],
-      description: 'A coming-of-age novel following three girls across three generations of a Lagos family. Shortlisted for the Baileys Women\'s Prize.',
-      images: [{ url: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=700&q=85', label: 'Book Cover' }],
-      gallery: { video: '4Y3JiNBv9C0', images: [{ url: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=700&q=85', label: 'Book Cover' }, { url: 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=700&q=85', label: 'Project Impact — CAMFED' }] } },
     { artistIdx: 6, charityIdx: 0, title: 'Volta Sessions', slug: 'volta-sessions', category: 'MUSIC', basePrice: 12.99, productType: 'DOWNLOADABLE', year: 2024, sdgIds: [11, 3], autoCertificate: true, certificateId: 'AFC-2024-MU01', featured: true, fileFormat: 'FLAC + MP3', tags: ['Afroelectronica', 'ambient', 'Ghana'],
       description: 'Recorded on the banks of the Volta River. Blends Afroelectronica, jazz and ambient field recordings. 20% of sales go to WaterAid.',
       images: [{ url: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=700&q=85', label: 'Studio' }],
@@ -265,13 +261,6 @@ async function main() {
     { artistIdx: 7, charityIdx: 1, title: 'Adinkra Symbols Vector Pack', slug: 'adinkra-symbols-vector-pack', category: 'GRAPHIC', basePrice: 29.99, productType: 'DOWNLOADABLE', year: 2025, sdgIds: [9, 4], autoCertificate: true, certificateId: 'AFC-2025-GR01', featured: true, fileFormat: 'SVG + AI + PNG', tags: ['vectors', 'Adinkra', 'African'],
       description: '64 hand-redrawn Adinkra symbols. SVG, Illustrator and hi-res PNG. Includes cultural context booklet.',
       images: [{ url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=700&q=85', label: 'Vector Design' }] },
-    { artistIdx: 8, charityIdx: 3, title: 'Before the Rains', slug: 'before-the-rains', category: 'ANIMATION', basePrice: 6.99, productType: 'DOWNLOADABLE', year: 2026, sdgIds: [16, 10], autoCertificate: true, certificateId: 'AFC-2026-AN01', featured: true, fileFormat: 'MP4 4K + HD', tags: ['short film', 'animation', 'Sudan'],
-      description: 'Sundance 2026 Best Animated Short. A fourteen-minute hand-animated film following a Sudanese girl through displacement.',
-      images: [{ url: 'https://images.unsplash.com/photo-1536240478700-b869ad10e128?w=700&q=85', label: 'Film Still' }],
-      gallery: { video: 'XvDzLzdXbPg', images: [{ url: 'https://images.unsplash.com/photo-1536240478700-b869ad10e128?w=700&q=85', label: 'Film Still' }] } },
-    { artistIdx: 5, charityIdx: 2, title: 'Futures We Carry', slug: 'futures-we-carry', category: 'EBOOK', basePrice: 9.99, comparePrice: 12.99, productType: 'DOWNLOADABLE', year: 2026, sdgIds: [5, 10], autoCertificate: true, certificateId: 'AFC-2026-EB02', fileFormat: 'ePub + PDF', pages: 148, tags: ['short stories', 'women'],
-      description: 'Eight short stories exploring what it means to be a woman building something new in a continent mid-transformation.',
-      images: [{ url: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=700&q=85', label: 'Cover' }] },
     { artistIdx: 6, charityIdx: 0, title: 'Ceremony (EP)', slug: 'ceremony-ep', category: 'MUSIC', basePrice: 7.99, productType: 'DOWNLOADABLE', year: 2025, sdgIds: [10, 3], autoCertificate: true, certificateId: 'AFC-2025-MU02', fileFormat: 'FLAC + MP3', tags: ['ambient', 'meditative', 'EP'],
       description: 'A five-track EP designed for in-between spaces — the hour before ceremony, the silence after.',
       images: [{ url: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=700&q=85', label: 'Live Performance' }] },
@@ -284,18 +273,9 @@ async function main() {
     { artistIdx: 10, charityIdx: 2, title: 'Melanin Portrait Brush Set', slug: 'melanin-portrait-brush-set', category: 'GRAPHIC', basePrice: 18.99, productType: 'DOWNLOADABLE', year: 2025, sdgIds: [5, 10], autoCertificate: true, certificateId: 'AFC-2025-GR03', fileFormat: 'ABR + Procreate', tags: ['brushes', 'portrait', 'skin tones'],
       description: '48 Procreate + Photoshop brushes calibrated for rich melanin skin tone rendering.',
       images: [{ url: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?w=700&q=85', label: 'Brush Samples' }] },
-    { artistIdx: 7, charityIdx: 1, title: 'Kente in Motion — Loop Pack', slug: 'kente-in-motion-loop-pack', category: 'ANIMATION', basePrice: 44.99, productType: 'DOWNLOADABLE', year: 2026, sdgIds: [9, 4], autoCertificate: true, certificateId: 'AFC-2026-AN02', fileFormat: 'MOV + MP4 + GIF', tags: ['motion graphics', 'Kente', 'loops'],
-      description: '24 seamlessly looping animated patterns based on traditional Kente cloth geometry.',
-      images: [{ url: 'https://images.unsplash.com/photo-1574717025058-2f8737d2e2b7?w=700&q=85', label: 'Loop Preview' }] },
-    { artistIdx: 8, charityIdx: 2, title: 'Voices — Animated Poem Series', slug: 'voices-animated-poem-series', category: 'ANIMATION', basePrice: 12.99, productType: 'DOWNLOADABLE', year: 2025, sdgIds: [10, 5], autoCertificate: true, certificateId: 'AFC-2025-AN03', fileFormat: 'MP4 HD', tags: ['poetry', 'animation', 'women'],
-      description: 'Five short animated poems by African women poets. Silkscreen-inspired animation style.',
-      images: [{ url: 'https://images.unsplash.com/photo-1616400619175-5beda3a17896?w=700&q=85', label: 'Animation Frame' }] },
     { artistIdx: 10, charityIdx: 3, title: 'SDG Infographic Kit', slug: 'sdg-infographic-kit', category: 'GRAPHIC', basePrice: 34.99, productType: 'DOWNLOADABLE', year: 2026, sdgIds: [17, 4], autoCertificate: true, certificateId: 'AFC-2026-GR04', fileFormat: 'Figma + PowerPoint + Canva', tags: ['templates', 'NGO', 'SDG'],
       description: '120 professionally designed infographic templates built around all 17 UN SDGs.',
       images: [{ url: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=700&q=85', label: 'Template Overview' }] },
-    { artistIdx: 7, charityIdx: 1, title: 'AfroFuture — Motion Bundle', slug: 'afrofuture-motion-bundle', category: 'ANIMATION', basePrice: 89.99, comparePrice: 119.99, productType: 'DOWNLOADABLE', year: 2026, sdgIds: [9, 11], autoCertificate: true, certificateId: 'AFC-2026-AN04', fileFormat: 'AEP + MOV + MP4', tags: ['After Effects', 'Afrofuturism', 'broadcast'],
-      description: '48 After Effects templates and motion graphics presets for an Afrofuturist visual language.',
-      images: [{ url: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=700&q=85', label: 'Bundle Overview' }] },
   ];
 
   const allProducts = [...artworks, ...digitals];

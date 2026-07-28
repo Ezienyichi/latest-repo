@@ -55,11 +55,9 @@ export default function DigitalsPage() {
                 {activeCatData ? activeCatData.label : 'Creative Digital Works'}
               </h1>
               <p style={{ fontSize: 14, color: 'rgba(255,255,255,.5)', marginTop: 8, maxWidth: 400 }}>
-                {activeCat === 'EBOOK' ? 'Illustrated books, essays & stories that fund change'
-                  : activeCat === 'MUSIC' ? 'Original albums, EPs & soundscapes by impact artists'
+                {activeCat === 'MUSIC' ? 'Original albums, EPs & soundscapes by impact artists'
                   : activeCat === 'GRAPHIC' ? 'Vector packs, icon sets & design assets with purpose'
-                  : activeCat === 'ANIMATION' ? 'Short films, motion graphics & animated art'
-                  : 'eBooks, Music, Graphics & Animation — every purchase funds change'}
+                  : 'Music & Graphics — every purchase funds change'}
               </p>
             </div>
             <select className="fi fsel" value={sort} onChange={e => setSort(e.target.value)} style={{ width: 160, background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.15)', color: '#fff' }}>

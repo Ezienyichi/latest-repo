@@ -8,10 +8,8 @@ import Icon from '../components/ui/Icon';
 import ProductAddons from '../components/ui/ProductAddons';
 import CertificateModal from '../components/ui/CertificateModal';
 import SocialShare from '../components/ui/SocialShare';
-import EbookPreview from '../components/ui/EbookPreview';
 import MusicPlayer from '../components/ui/MusicPlayer';
 import GraphicPreview from '../components/ui/GraphicPreview';
-import AnimationPreview from '../components/ui/AnimationPreview';
 import IncludesList from '../components/ui/IncludesList';
 import CharityLogo from '../components/ui/CharityLogo';
 import TrustBadges from '../components/ui/TrustBadges';
@@ -302,10 +300,8 @@ export default function ProductPage() {
             )}
 
             {/* Digital product previews */}
-            {product.category === 'EBOOK' && <EbookPreview product={product} />}
             {product.category === 'MUSIC' && <MusicPlayer product={product} />}
             {product.category === 'GRAPHIC' && <GraphicPreview product={product} />}
-            {product.category === 'ANIMATION' && <AnimationPreview product={product} />}
 
             {/* What's included (for digital products) */}
             {product.tags?.length > 3 && isDigital && (

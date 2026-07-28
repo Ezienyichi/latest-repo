@@ -8,10 +8,11 @@ products.get('/', optionalAuth, async (c) => {
   const prisma = c.get('prisma');
   try {
     const q = c.req.query();
-    const { category, sdg, charityId, artistId, minPrice, maxPrice, search, sort, type, featured } = q;
+    const { category, editionType, sdg, charityId, artistId, minPrice, maxPrice, search, sort, type, featured } = q;
     const page = q.page || 1, limit = q.limit || 12;
     const where = { status: 'ACTIVE' };
     if (category) where.category = category.toUpperCase();
+    if (editionType) where.editionType = editionType.toUpperCase();
     if (sdg) where.sdgIds = { hasSome: [parseInt(sdg)] };
     if (charityId) where.charityId = charityId;
     if (artistId) where.artistId = artistId;
@@ -19,7 +20,16 @@ products.get('/', optionalAuth, async (c) => {
     if (featured === 'true') where.featured = true;
     if (search) where.OR = [{ title: { contains: search, mode: 'insensitive' } }, { tags: { hasSome: [search.toLowerCase()] } }];
     if (minPrice || maxPrice) { where.basePrice = {}; if (minPrice) where.basePrice.gte = parseFloat(minPrice); if (maxPrice) where.basePrice.lte = parseFloat(maxPrice); }
-    const orderBy = sort === 'price_asc' ? { basePrice: 'asc' } : sort === 'price_desc' ? { basePrice: 'desc' } : sort === 'newest' ? { createdAt: 'desc' } : { featured: 'desc' };
+    // bestselling ranks by units sold (count of OrderItem rows per product);
+    // when sales are sparse — currently every product ties at 0 — the
+    // tie-breakers (featured desc, then newest) take over, so the row
+    // degrades gracefully to "featured, then newest" instead of looking
+    // arbitrarily ordered.
+    const orderBy = sort === 'price_asc' ? { basePrice: 'asc' }
+      : sort === 'price_desc' ? { basePrice: 'desc' }
+      : sort === 'newest' ? { createdAt: 'desc' }
+      : sort === 'bestselling' ? [{ orderItems: { _count: 'desc' } }, { featured: 'desc' }, { createdAt: 'desc' }]
+      : { featured: 'desc' };
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const [items, total] = await Promise.all([
       prisma.product.findMany({ where, orderBy, skip, take: parseInt(limit), include: { artist: { select: { id: true, displayName: true, avatarUrl: true, verified: true } }, charity: { select: { id: true, name: true, logo: true } }, variations: true, reviews: { select: { rating: true } } } }),
@@ -44,12 +54,12 @@ products.post('/', authenticate, requireRole('ARTIST', 'ADMIN'), async (c) => {
     const artist = await prisma.artistProfile.findUnique({ where: { userId: c.get('userId') } });
     if (!artist) return c.json({ error: 'Artist profile required' }, 400);
     const body = await c.req.json();
-    const { title, description, productType, category, basePrice, comparePrice, sku, stockQuantity, medium, year, sdgIds, images, gallery, charityId, autoCertificate, videoUrl, tags, fileUrl, fileFormat, previewUrl, pages: pg, featured } = body;
+    const { title, description, productType, category, editionType, basePrice, comparePrice, sku, stockQuantity, medium, year, sdgIds, images, gallery, charityId, autoCertificate, videoUrl, tags, fileUrl, fileFormat, previewUrl, pages: pg, featured } = body;
     if (!title || !basePrice) return c.json({ error: 'Title and price required' }, 400);
     let slug = slugify(title);
     if (await prisma.product.findUnique({ where: { slug } })) slug += '-' + Date.now().toString(36);
     const certId = autoCertificate ? `CAG-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}` : undefined;
-    const product = await prisma.product.create({ data: { artistId: artist.id, charityId, title, slug, description, productType: productType || 'SIMPLE', category: category || 'ARTWORK', basePrice, comparePrice, sku, stockQuantity, medium, year, sdgIds: sdgIds || [], images: images || [], gallery, videoUrl, tags: tags || [], fileUrl, fileFormat, previewUrl, pages: pg, autoCertificate: !!autoCertificate, certificateId: certId, featured: !!featured, status: 'DRAFT' }, include: { variations: true, addons: true, artist: true, charity: true } });
+    const product = await prisma.product.create({ data: { artistId: artist.id, charityId, title, slug, description, productType: productType || 'SIMPLE', category: category || 'ARTWORK', editionType: editionType || 'ORIGINAL', basePrice, comparePrice, sku, stockQuantity, medium, year, sdgIds: sdgIds || [], images: images || [], gallery, videoUrl, tags: tags || [], fileUrl, fileFormat, previewUrl, pages: pg, autoCertificate: !!autoCertificate, certificateId: certId, featured: !!featured, status: 'DRAFT' }, include: { variations: true, addons: true, artist: true, charity: true } });
     return c.json(product, 201);
   } catch (e) { console.error(e); return c.json({ error: 'Create failed' }, 500); }
 });

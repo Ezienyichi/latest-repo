@@ -20,7 +20,7 @@ export default function ArtworkManager() {
   const [editId, setEditId] = useState(null);
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
-    title: '', description: '', productType: 'SIMPLE', category: 'ARTWORK',
+    title: '', description: '', productType: 'SIMPLE', category: 'ARTWORK', editionType: 'ORIGINAL',
     basePrice: '', comparePrice: '', sku: '', stockQuantity: '',
     medium: '', year: new Date().getFullYear(), sdgIds: [], charityId: '',
     autoCertificate: true, featured: false, tags: '',
@@ -80,7 +80,7 @@ export default function ArtworkManager() {
         toast('Artwork created as draft!', 'ok');
       }
       setShowForm(false); setEditId(null); setStep(1);
-      setForm({ title: '', description: '', productType: 'SIMPLE', category: 'ARTWORK', basePrice: '', comparePrice: '', sku: '', stockQuantity: '', medium: '', year: new Date().getFullYear(), sdgIds: [], charityId: '', autoCertificate: true, featured: false, tags: '', fileFormat: '', pages: '', previewUrl: '', fileUrl: '', images: [{ url: '', label: 'Front View' }], galleryImages: [], galleryVideo: '' });
+      setForm({ title: '', description: '', productType: 'SIMPLE', category: 'ARTWORK', editionType: 'ORIGINAL', basePrice: '', comparePrice: '', sku: '', stockQuantity: '', medium: '', year: new Date().getFullYear(), sdgIds: [], charityId: '', autoCertificate: true, featured: false, tags: '', fileFormat: '', pages: '', previewUrl: '', fileUrl: '', images: [{ url: '', label: 'Front View' }], galleryImages: [], galleryVideo: '' });
       loadProducts();
     } catch (e) { toast(e.message, 'err'); }
   };
@@ -178,12 +178,19 @@ export default function ArtworkManager() {
                   </select></div>
                 <div className="fg" style={{ margin: 0 }}><label className="fl">Category</label>
                   <select className="fi fsel" value={form.category} onChange={e => set('category', e.target.value)}>
-                    <option value="ARTWORK">Artwork</option><option value="EBOOK">eBook</option><option value="MUSIC">Music</option><option value="GRAPHIC">Graphic</option><option value="ANIMATION">Animation</option>
+                    <option value="ARTWORK">Artwork</option><option value="MUSIC">Music</option><option value="GRAPHIC">Graphic</option>
                   </select></div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginTop: 14 }}>
                 <div className="fg" style={{ margin: 0 }}><label className="fl">Medium</label><input className="fi" value={form.medium} onChange={e => set('medium', e.target.value)} placeholder="e.g. Oil on Canvas" /></div>
                 <div className="fg" style={{ margin: 0 }}><label className="fl">Year</label><input className="fi" type="number" value={form.year} onChange={e => set('year', e.target.value)} /></div>
+              </div>
+              <div className="fg" style={{ marginTop: 14 }}><label className="fl">Edition Type</label>
+                <select className="fi fsel" value={form.editionType} onChange={e => set('editionType', e.target.value)}>
+                  <option value="ORIGINAL">Original — one-of-a-kind piece</option>
+                  <option value="PRINT">Print — reproduction of an original</option>
+                  <option value="EDITION">Edition — numbered/limited run</option>
+                </select>
               </div>
             </>)}
 

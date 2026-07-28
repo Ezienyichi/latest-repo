@@ -38,10 +38,8 @@ const ORIGINALS_SUBCATS = [
 ];
 const DIGITAL_SUBCATS = [
   { id: 'all', label: 'All' },
-  { id: 'EBOOK', label: 'Ebooks' },
   { id: 'MUSIC', label: 'Music' },
   { id: 'GRAPHIC', label: 'Graphics' },
-  { id: 'ANIMATION', label: 'Animation' },
   { id: 'DIGITAL_ART', label: 'Digital Art' },
 ];
 const PAINTING_PLACEHOLDERS = [
@@ -53,10 +51,10 @@ const PAINTING_PLACEHOLDERS = [
   { title: 'The River at Dusk', artist: 'Boipelo Seape', price: 980, charityName: 'CAMFED', category: 'ARTWORK', subcat: 'oil', img: 'https://images.unsplash.com/photo-1578926375605-eaf7559b1458?w=600&h=750&fit=crop&q=80' },
 ];
 const DIGITAL_PLACEHOLDERS = [
-  { title: 'The Long Way Home', artist: 'Amina Bello', price: 18, charityName: 'CAMFED', category: 'EBOOK', subcat: 'EBOOK', img: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=600&h=750&fit=crop&q=80' },
   { title: 'Midnight Sessions', artist: 'Kwame Boateng', price: 12, charityName: 'Oxfam', category: 'MUSIC', subcat: 'MUSIC', img: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=600&h=750&fit=crop&q=80' },
+  { title: 'Analog Mix', artist: 'Nia Kariuki', price: 15, charityName: 'WaterAid UK', category: 'MUSIC', subcat: 'MUSIC', img: 'https://images.unsplash.com/photo-1574517947730-55cb23e608c2?w=600&h=750&fit=crop&q=80' },
   { title: 'Prism Set Vol. 2', artist: 'Zainab Hassan', price: 35, charityName: 'WaterAid UK', category: 'GRAPHIC', subcat: 'GRAPHIC', img: 'https://images.unsplash.com/photo-1639170952854-16636715af61?w=600&h=750&fit=crop&q=80' },
-  { title: 'Kinetic Bloom', artist: 'Sipho Dlamini', price: 45, charityName: 'Greenpeace Africa', category: 'ANIMATION', subcat: 'ANIMATION', img: 'https://images.unsplash.com/photo-1574717025058-2f8737d2e2b7?w=600&h=750&fit=crop&q=80' },
+  { title: 'Fracture Grid', artist: 'Owen Mensah', price: 26, charityName: 'CAMFED', category: 'GRAPHIC', subcat: 'GRAPHIC', img: 'https://images.unsplash.com/photo-1754411072193-fa49c36554e4?w=600&h=750&fit=crop&q=80' },
   { title: 'Chromatic Drift', artist: 'Tumi Radebe', price: 28, charityName: 'CAMFED', category: 'DIGITAL_ART', subcat: 'DIGITAL_ART', img: 'https://images.unsplash.com/photo-1748363565614-7fea470379f4?w=600&h=750&fit=crop&q=80' },
   { title: 'Still Frame', artist: 'Nomvula Dube', price: 22, charityName: 'Oxfam', category: 'DIGITAL_ART', subcat: 'DIGITAL_ART', img: 'https://images.unsplash.com/photo-1736147066581-95fa303553a0?w=600&h=750&fit=crop&q=80' },
 ];
@@ -247,6 +245,60 @@ function GalleryRow({ label, heading, real, placeholders, subcats, browsePath, o
   );
 }
 
+// Cross-category pool (real categories only — DIGITAL_ART is a
+// placeholder-only pseudo-category for the Digital Works subcat filter and
+// doesn't belong in these catalog-wide rows) reused, in different
+// slices/order, to fill Latest Collections and Top Sellers without
+// sourcing more images. Originals Only reuses PAINTING_PLACEHOLDERS
+// directly since every item in it already reads as an original piece.
+const CROSS_CATEGORY_PLACEHOLDERS = [...PAINTING_PLACEHOLDERS, ...DIGITAL_PLACEHOLDERS.filter(p => p.category !== 'DIGITAL_ART')];
+const LATEST_PLACEHOLDERS = CROSS_CATEGORY_PLACEHOLDERS.slice(0, ROW_TARGET);
+const TOPSELLER_PLACEHOLDERS = [...CROSS_CATEGORY_PLACEHOLDERS].reverse().slice(0, ROW_TARGET);
+
+function mapProduct(p) {
+  return {
+    id: p.id, slug: p.slug, title: p.title, artist: p.artist?.displayName || 'Unknown Artist',
+    price: p.basePrice, category: p.category, img: p.images?.[0]?.url,
+    charityId: p.charity?.id, charityName: p.charity?.name || 'Unaffiliated', charityLogo: p.charity?.logo,
+  };
+}
+
+// Same CarouselTrack as GalleryRow, without the subcategory filter tabs —
+// these three rows are each a single dynamic query (newest / bestselling /
+// originals-only), not a filterable group.
+function SimpleCarouselRow({ label, heading, real, placeholders, browsePath, onOpen, onCharityClick }) {
+  const merged = [...real.map(mapProduct).filter(p => p.img), ...placeholders].slice(0, ROW_TARGET);
+
+  return (
+    <div className="gallery-row">
+      <div className="wrap">
+        <div className="gallery-row-head">
+          <div>
+            <div className="lbl" style={{ marginBottom: 8 }}>{label}</div>
+            <h3 className="display" style={{ fontSize: 30 }}>{heading}</h3>
+          </div>
+          <button className="btn btn-s" onClick={() => onOpen(browsePath)}>View All <Icon icon={ArrowRight} size="inline" /></button>
+        </div>
+      </div>
+      {merged.length === 0 ? (
+        <div className="wrap">
+          <div className="empty" style={{ padding: '48px 24px' }}>
+            <div className="empty-ico"><Icon icon={ImageOff} size={40} /></div>
+            <div className="empty-t" style={{ fontSize: 20 }}>Nothing here yet</div>
+            <p style={{ color: 'var(--muted)', fontSize: 13 }}>Check back soon for new {label.toLowerCase()}.</p>
+          </div>
+        </div>
+      ) : (
+        <CarouselTrack items={merged}
+          renderItem={(item, i) => (
+            <GalleryCard key={`${item.slug || 'ph-' + (i % merged.length)}-${i < merged.length ? 'a' : 'b'}`} item={item} onCharityClick={onCharityClick}
+              onClick={() => onOpen(item.slug ? `/shop/${item.slug}` : browsePath)} />
+          )} />
+      )}
+    </div>
+  );
+}
+
 export default function HomePage() {
   const navigate = useNavigate();
   const { toast } = useCart();
@@ -256,6 +308,9 @@ export default function HomePage() {
   const [theory, setTheory] = useState(null);
   const [paintings, setPaintings] = useState([]);
   const [digitalWorks, setDigitalWorks] = useState([]);
+  const [latest, setLatest] = useState([]);
+  const [topSellers, setTopSellers] = useState([]);
+  const [originals, setOriginals] = useState([]);
 
   useEffect(() => {
     api.getProducts({ featured: 'true', limit: 16 }).then(r => setFeatured(r.items || [])).catch(() => {});
@@ -264,6 +319,15 @@ export default function HomePage() {
     // client-side from this same set rather than re-fetching per tab.
     api.getProducts({ category: 'ARTWORK', limit: 24, sort: 'newest' }).then(r => setPaintings(r.items || [])).catch(() => {});
     api.getProducts({ limit: 48, sort: 'newest' }).then(r => setDigitalWorks((r.items || []).filter(p => p.category !== 'ARTWORK'))).catch(() => {});
+    // Latest Collections — dynamic view: ACTIVE products, createdAt desc.
+    api.getProducts({ limit: 24, sort: 'newest' }).then(r => setLatest(r.items || [])).catch(() => {});
+    // Top Sellers — dynamic view: ACTIVE products ranked by units sold
+    // (count of OrderItem rows per product; no soldCount field exists on
+    // Product). Ties (everything, until real orders exist) fall back to
+    // featured then newest — see products.js.
+    api.getProducts({ limit: 24, sort: 'bestselling' }).then(r => setTopSellers(r.items || [])).catch(() => {});
+    // Originals Only — product attribute filter on the new editionType field.
+    api.getProducts({ editionType: 'ORIGINAL', limit: 24, sort: 'newest' }).then(r => setOriginals(r.items || [])).catch(() => {});
   }, []);
 
   const openCharity = id => navigate(`/charities/${id}`);
@@ -387,6 +451,12 @@ export default function HomePage() {
           subcats={ORIGINALS_SUBCATS} browsePath="/shop" onOpen={navigate} onCharityClick={openCharity} />
         <GalleryRow label="Creative Digital Works" heading="Downloadable Creations" real={digitalWorks} placeholders={DIGITAL_PLACEHOLDERS}
           subcats={DIGITAL_SUBCATS} browsePath="/digitals" onOpen={navigate} onCharityClick={openCharity} />
+        <SimpleCarouselRow label="Latest Collections" heading="Just Added" real={latest} placeholders={LATEST_PLACEHOLDERS}
+          browsePath="/shop?sort=newest" onOpen={navigate} onCharityClick={openCharity} />
+        <SimpleCarouselRow label="Top Sellers" heading="Most Loved" real={topSellers} placeholders={TOPSELLER_PLACEHOLDERS}
+          browsePath="/shop" onOpen={navigate} onCharityClick={openCharity} />
+        <SimpleCarouselRow label="Originals Only" heading="One-of-a-Kind Pieces" real={originals} placeholders={PAINTING_PLACEHOLDERS}
+          browsePath="/shop" onOpen={navigate} onCharityClick={openCharity} />
       </section>
 
       {/* ═══ WHAT WE PROVIDE ═══ */}

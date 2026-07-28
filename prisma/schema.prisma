@@ -33,10 +33,18 @@ enum ProductStatus {
 
 enum ProductCategory {
   ARTWORK
-  EBOOK
   MUSIC
   GRAPHIC
-  ANIMATION
+}
+
+// Originals vs. reproductions — drives the "Originals Only" homepage row.
+// Defaults to ORIGINAL: most listed work is a one-of-a-kind piece, and
+// artists explicitly opt in to PRINT/EDITION when that's what they're
+// actually selling.
+enum EditionType {
+  ORIGINAL
+  PRINT
+  EDITION
 }
 
 enum OrderStatus {
@@ -173,6 +181,7 @@ model Product {
   description     String?            @db.Text
   productType     ProductType        @default(SIMPLE)
   category        ProductCategory    @default(ARTWORK)
+  editionType     EditionType        @default(ORIGINAL)
   basePrice       Decimal            @db.Decimal(10, 2)
   comparePrice    Decimal?           @db.Decimal(10, 2)
   status          ProductStatus      @default(DRAFT)
