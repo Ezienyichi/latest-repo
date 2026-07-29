@@ -106,6 +106,7 @@ class ApiClient {
 
   // Admin
   getAdminUsers(params = {}) { const qs = new URLSearchParams(params).toString(); return this.get(`/admin/users${qs ? '?' + qs : ''}`); }
+  getAdminProducts(params = {}) { const qs = new URLSearchParams(params).toString(); return this.get(`/admin/products${qs ? '?' + qs : ''}`); }
   verifyArtistAdmin(id) { return this.post(`/admin/verify-artist/${id}`, {}); }
   verifyCharityAdmin(id) { return this.post(`/admin/verify-charity/${id}`, {}); }
   getModeration() { return this.get('/admin/moderation'); }

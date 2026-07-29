@@ -54,12 +54,12 @@ products.post('/', authenticate, requireRole('ARTIST', 'ADMIN'), async (c) => {
     const artist = await prisma.artistProfile.findUnique({ where: { userId: c.get('userId') } });
     if (!artist) return c.json({ error: 'Artist profile required' }, 400);
     const body = await c.req.json();
-    const { title, description, productType, category, editionType, basePrice, comparePrice, sku, stockQuantity, medium, year, sdgIds, images, gallery, charityId, autoCertificate, videoUrl, tags, fileUrl, fileFormat, previewUrl, pages: pg, featured } = body;
+    const { title, description, productType, category, editionType, basePrice, comparePrice, estimatedValue, sku, stockQuantity, medium, year, sdgIds, images, gallery, charityId, autoCertificate, videoUrl, tags, fileUrl, fileFormat, previewUrl, pages: pg, featured } = body;
     if (!title || !basePrice) return c.json({ error: 'Title and price required' }, 400);
     let slug = slugify(title);
     if (await prisma.product.findUnique({ where: { slug } })) slug += '-' + Date.now().toString(36);
     const certId = autoCertificate ? `CAG-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}` : undefined;
-    const product = await prisma.product.create({ data: { artistId: artist.id, charityId, title, slug, description, productType: productType || 'SIMPLE', category: category || 'ARTWORK', editionType: editionType || 'ORIGINAL', basePrice, comparePrice, sku, stockQuantity, medium, year, sdgIds: sdgIds || [], images: images || [], gallery, videoUrl, tags: tags || [], fileUrl, fileFormat, previewUrl, pages: pg, autoCertificate: !!autoCertificate, certificateId: certId, featured: !!featured, status: 'DRAFT' }, include: { variations: true, addons: true, artist: true, charity: true } });
+    const product = await prisma.product.create({ data: { artistId: artist.id, charityId, title, slug, description, productType: productType || 'SIMPLE', category: category || 'ARTWORK', editionType: editionType || 'ORIGINAL', basePrice, comparePrice, estimatedValue, sku, stockQuantity, medium, year, sdgIds: sdgIds || [], images: images || [], gallery, videoUrl, tags: tags || [], fileUrl, fileFormat, previewUrl, pages: pg, autoCertificate: !!autoCertificate, certificateId: certId, featured: !!featured, status: 'DRAFT' }, include: { variations: true, addons: true, artist: true, charity: true } });
     return c.json(product, 201);
   } catch (e) { console.error(e); return c.json({ error: 'Create failed' }, 500); }
 });

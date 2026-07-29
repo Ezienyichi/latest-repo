@@ -127,6 +127,29 @@ admin.patch('/charity-documents/:id/review', async (c) => {
   } catch (e) { return c.json({ error: 'Update failed' }, 500); }
 });
 
+// Full catalog view across every status (public GET /products only ever
+// returns ACTIVE) — this is what AdminProductManager.jsx's list lives on.
+admin.get('/products', async (c) => {
+  const prisma = c.get('prisma');
+  try {
+    const q = c.req.query();
+    const { status, category, search } = q;
+    const page = q.page || 1, limit = q.limit || 50;
+    const where = {};
+    if (status) where.status = status;
+    if (category) where.category = category;
+    if (search) where.title = { contains: search, mode: 'insensitive' };
+    const [items, total] = await Promise.all([
+      prisma.product.findMany({
+        where, skip: (page - 1) * limit, take: parseInt(limit), orderBy: { createdAt: 'desc' },
+        include: { artist: { select: { displayName: true } }, charity: { select: { name: true } }, _count: { select: { orderItems: true } } },
+      }),
+      prisma.product.count({ where }),
+    ]);
+    return c.json({ items, total, page: parseInt(page), pages: Math.ceil(total / limit) });
+  } catch (e) { return c.json({ error: 'Failed' }, 500); }
+});
+
 admin.patch('/products/:id/moderate', async (c) => {
   const prisma = c.get('prisma');
   try {

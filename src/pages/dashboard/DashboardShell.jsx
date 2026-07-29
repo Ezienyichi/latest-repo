@@ -26,6 +26,7 @@ const CHARITY_NAV = [
 
 const ADMIN_NAV = [
   { id: 'overview', icon: LayoutDashboard, label: 'Overview', path: '/dashboard/admin' },
+  { id: 'products', icon: Palette, label: 'Products', path: '/dashboard/products' },
   { id: 'users', icon: Users, label: 'Users', path: '/dashboard/users' },
   { id: 'moderation', icon: Search, label: 'Moderation', path: '/dashboard/moderation' },
   { id: 'analytics', icon: BarChart3, label: 'Analytics', path: '/dashboard/analytics' },
