@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Users, Palette, Package, Wallet, Landmark, Leaf, Search, Check } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
@@ -7,11 +7,20 @@ import DashboardShell, { StatCard } from './DashboardShell';
 import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
 
+// The URL is the single source of truth for which tab is active, so the
+// DashboardShell sidebar (real navigate() calls to /dashboard/users etc.)
+// and these in-page tab buttons stay in sync instead of drifting apart —
+// that drift is exactly what left /dashboard/users and /dashboard/moderation
+// dead (no matching route) while the tab state defaulted back to overview.
+const TAB_PATHS = { overview: '/dashboard/admin', moderation: '/dashboard/moderation', users: '/dashboard/users', analytics: '/dashboard/analytics' };
+const TAB_BY_PATH = { '/dashboard/moderation': 'moderation', '/dashboard/users': 'users', '/dashboard/analytics': 'analytics' };
+
 export default function AdminDashboard() {
   const { user } = useAuth();
   const { toast } = useCart();
   const navigate = useNavigate();
-  const [tab, setTab] = useState('overview');
+  const location = useLocation();
+  const tab = TAB_BY_PATH[location.pathname] || 'overview';
   const [stats, setStats] = useState(null);
   const [moderation, setModeration] = useState(null);
   const [users, setUsers] = useState({ users: [], total: 0 });
@@ -67,7 +76,7 @@ export default function AdminDashboard() {
       {/* Tabs */}
       <div className="tabs-container" style={{ marginBottom: 24 }}>
         {['overview', 'moderation', 'users', 'analytics'].map(t => (
-          <button key={t} className={`tab-btn${tab === t ? ' active' : ''}`} onClick={() => setTab(t)} style={{ textTransform: 'capitalize' }}>{t}</button>
+          <button key={t} className={`tab-btn${tab === t ? ' active' : ''}`} onClick={() => navigate(TAB_PATHS[t])} style={{ textTransform: 'capitalize' }}>{t}</button>
         ))}
       </div>
 

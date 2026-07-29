@@ -97,6 +97,9 @@ function WithLayout() {
         <Route path="/dashboard/resources" element={<CharityResources />} />
         <Route path="/dashboard/charity-profile" element={<CharityProfileEditor />} />
         <Route path="/dashboard/admin" element={<AdminDashboard />} />
+        <Route path="/dashboard/moderation" element={<AdminDashboard />} />
+        <Route path="/dashboard/users" element={<AdminDashboard />} />
+        <Route path="/dashboard/analytics" element={<AdminDashboard />} />
         <Route path="/verify/:certId" element={<VerifyCertificatePage />} />
         <Route path="/certificates" element={<MyCertificatesPage />} />
         <Route path="*" element={<HomePage />} />

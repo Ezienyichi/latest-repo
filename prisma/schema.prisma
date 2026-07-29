@@ -184,6 +184,7 @@ model Product {
   editionType     EditionType        @default(ORIGINAL)
   basePrice       Decimal            @db.Decimal(10, 2)
   comparePrice    Decimal?           @db.Decimal(10, 2)
+  estimatedValue  Decimal?           @db.Decimal(10, 2)
   status          ProductStatus      @default(DRAFT)
   sku             String?            @unique
   stockQuantity   Int?

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Palette, Package, Wallet, User, Handshake, Mail, Folder, Users, Search, ArrowRight, ArrowLeft, Check } from 'lucide-react';
+import { LayoutDashboard, Palette, Package, Wallet, User, Handshake, Mail, Folder, Users, Search, BarChart3, ArrowRight, ArrowLeft, Check } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Icon from '../../components/ui/Icon';
 
@@ -25,9 +25,10 @@ const CHARITY_NAV = [
 ];
 
 const ADMIN_NAV = [
-  { id: 'overview', icon: LayoutDashboard, label: 'Overview', path: '/dashboard' },
+  { id: 'overview', icon: LayoutDashboard, label: 'Overview', path: '/dashboard/admin' },
   { id: 'users', icon: Users, label: 'Users', path: '/dashboard/users' },
   { id: 'moderation', icon: Search, label: 'Moderation', path: '/dashboard/moderation' },
+  { id: 'analytics', icon: BarChart3, label: 'Analytics', path: '/dashboard/analytics' },
 ];
 
 export default function DashboardShell({ children, title }) {
