@@ -6,7 +6,13 @@ const settings = new Hono();
 // Keeps the split rates admin-editable (via /api/admin/settings) while
 // letting unauthenticated pages (checkout) show the real numbers instead
 // of a guess baked into the frontend.
-const PUBLIC_KEYS = ['charity_pct', 'platform_pct', 'theory_if', 'theory_and_if', 'theory_then', 'site_name', 'site_logo_url'];
+const PUBLIC_KEYS = [
+  'charity_pct', 'platform_pct', 'theory_if', 'theory_and_if', 'theory_then', 'site_name', 'site_logo_url',
+  // Top announcement bar — all admin-editable, see admin.js SETTING_VALIDATORS.
+  'contact_email', 'contact_phone', 'announcement_message',
+  'social_instagram_url', 'social_facebook_url', 'social_twitter_url',
+  'trustpilot_url', 'google_review_url',
+];
 const DEFAULTS = {
   charity_pct: 0.10,
   platform_pct: 0.10,
@@ -17,6 +23,14 @@ const DEFAULTS = {
   // Unset until a real logo exists — the Wordmark component falls back to
   // the text name whenever this is null, so nothing breaks by leaving it.
   site_logo_url: null,
+  contact_email: 'hello@fasttackle.africa',
+  contact_phone: '+44 20 1234 5678',
+  announcement_message: 'Mon–Fri, 9am–6pm GMT · Worldwide Shipping & Digital Delivery',
+  social_instagram_url: '#',
+  social_facebook_url: '#',
+  social_twitter_url: '#',
+  trustpilot_url: '#',
+  google_review_url: '#',
 };
 
 settings.get('/public', async (c) => {

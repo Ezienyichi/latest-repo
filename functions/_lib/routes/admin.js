@@ -36,6 +36,16 @@ const SETTING_VALIDATORS = {
   // null is valid here — it's how a logo gets unset to fall back to the
   // text wordmark, not just how it gets set.
   site_logo_url: async (value) => (value === null || (typeof value === 'string' && /^https?:\/\//.test(value))) ? null : 'Must be a valid URL or null',
+  // Top announcement bar. Link fields are deliberately lenient (not
+  // required to be a real https URL) — "#" is a valid placeholder until
+  // admin has the real destination.
+  contact_phone: async (value) => (typeof value === 'string' && value.trim()) ? null : 'Must be a non-empty string',
+  announcement_message: async (value) => (typeof value === 'string') ? null : 'Must be a string',
+  social_instagram_url: async (value) => (typeof value === 'string') ? null : 'Must be a string',
+  social_facebook_url: async (value) => (typeof value === 'string') ? null : 'Must be a string',
+  social_twitter_url: async (value) => (typeof value === 'string') ? null : 'Must be a string',
+  trustpilot_url: async (value) => (typeof value === 'string') ? null : 'Must be a string',
+  google_review_url: async (value) => (typeof value === 'string') ? null : 'Must be a string',
 };
 
 admin.get('/users', async (c) => {

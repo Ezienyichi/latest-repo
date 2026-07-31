@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { User, Eye, AlertTriangle, Lightbulb } from 'lucide-react';
 import CountUp from '../components/ui/CountUp';
 import Icon from '../components/ui/Icon';
+import PartnersCarousel from '../components/ui/PartnersCarousel';
 import api from '../utils/api';
 
 const PILLARS = [
@@ -100,6 +101,9 @@ export default function AboutPage() {
           </div>
         </section>
       )}
+
+      {/* ═══ OUR PARTNERS — same shared carousel as the homepage ═══ */}
+      <PartnersCarousel />
     </div>
   );
 }

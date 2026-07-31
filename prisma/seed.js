@@ -17,16 +17,29 @@ async function main() {
   await prisma.siteSetting.upsert({ where: { key: 'site_name' }, update: {}, create: { key: 'site_name', value: 'FastTackle Africa' } });
 
   // ── THEORY OF CHANGE (homepage copy — admin-editable) ──
-  await prisma.siteSetting.upsert({ where: { key: 'theory_if' }, update: {}, create: { key: 'theory_if', value: 'If talented creatives are provided with a trusted platform to commercialize their creative work while partnering with credible charitable organizations and community initiatives,' } });
-  await prisma.siteSetting.upsert({ where: { key: 'theory_and_if' }, update: {}, create: { key: 'theory_and_if', value: 'and if consumers, businesses, philanthropists, and corporate partners are given transparent opportunities to purchase creative products that directly finance SDG-aligned projects,' } });
-  await prisma.siteSetting.upsert({ where: { key: 'theory_then' }, update: {}, create: { key: 'theory_then', value: 'then creative commerce can become a sustainable source of philanthropic capital that strengthens nonprofit organizations, empowers creative entrepreneurs, and delivers measurable improvements in communities across the world.' } });
+  // Split from the About page's single theoryText string (see the
+  // pageContent 'about' upsert below) at its own "if / and if / then"
+  // clauses, so the two pages read as the same statement word-for-word
+  // instead of drifting into two different versions of it.
+  await prisma.siteSetting.upsert({ where: { key: 'theory_if' }, update: {}, create: { key: 'theory_if', value: 'If creatives are given a trusted platform to sell their work alongside credible charitable partners,' } });
+  await prisma.siteSetting.upsert({ where: { key: 'theory_and_if' }, update: {}, create: { key: 'theory_and_if', value: 'and if buyers get transparent ways to purchase products that directly finance SDG-aligned projects,' } });
+  await prisma.siteSetting.upsert({ where: { key: 'theory_then' }, update: {}, create: { key: 'theory_then', value: 'then creative commerce becomes a sustainable source of philanthropic capital that strengthens nonprofits, empowers creative entrepreneurs, and delivers measurable improvements in communities worldwide.' } });
+
+  // ── TOP ANNOUNCEMENT BAR (placeholders — admin-editable) ──
+  await prisma.siteSetting.upsert({ where: { key: 'contact_email' }, update: {}, create: { key: 'contact_email', value: 'hello@fasttackle.africa' } });
+  await prisma.siteSetting.upsert({ where: { key: 'contact_phone' }, update: {}, create: { key: 'contact_phone', value: '+44 20 1234 5678' } });
+  await prisma.siteSetting.upsert({ where: { key: 'announcement_message' }, update: {}, create: { key: 'announcement_message', value: 'Mon–Fri, 9am–6pm GMT · Worldwide Shipping & Digital Delivery' } });
+  await prisma.siteSetting.upsert({ where: { key: 'social_instagram_url' }, update: {}, create: { key: 'social_instagram_url', value: '#' } });
+  await prisma.siteSetting.upsert({ where: { key: 'social_facebook_url' }, update: {}, create: { key: 'social_facebook_url', value: '#' } });
+  await prisma.siteSetting.upsert({ where: { key: 'social_twitter_url' }, update: {}, create: { key: 'social_twitter_url', value: '#' } });
+  await prisma.siteSetting.upsert({ where: { key: 'trustpilot_url' }, update: {}, create: { key: 'trustpilot_url', value: '#' } });
+  await prisma.siteSetting.upsert({ where: { key: 'google_review_url' }, update: {}, create: { key: 'google_review_url', value: '#' } });
 
   // ── ABOUT PAGE BODY (admin-editable) ──
-  // This page's Theory of Change is its own condensed copy, stored here —
-  // deliberately NOT the same theory_if/theory_and_if/theory_then
-  // SiteSetting keys the homepage reads, since the About page rebuild uses
-  // different (shorter, combined) wording by design. The two will drift
-  // independently unless someone updates both.
+  // theoryText here is the single source of truth for the site's Theory of
+  // Change statement — the homepage's theory_if/theory_and_if/theory_then
+  // SiteSetting keys above are this same string, split at its own "if / and
+  // if / then" clauses. Keep both in sync if either is edited.
   await prisma.pageContent.upsert({
     where: { slug: 'about' },
     update: {},
@@ -55,10 +68,12 @@ async function main() {
   });
 
   // ── HOMEPAGE BODY (admin-editable) ──
-  // "How It Works" and the "What We Provide" Vision/Problem/Solution copy
-  // both live under this one slug since they're both homepage-only content,
-  // distinct from the About page's own (differently-worded) vision/
-  // problem/solution fields under the 'about' slug above.
+  // "How It Works" and the Fundraising Projects preview gallery both live
+  // under this one slug since they're both homepage-only content. The old
+  // "What We Provide" Vision/Problem/Solution fields were dropped from here
+  // — that section moved off the homepage entirely; the About page's own
+  // (differently-worded) vision/problem/solution fields under the 'about'
+  // slug above are unaffected and still in use there.
   await prisma.pageContent.upsert({
     where: { slug: 'homepage' },
     update: {},
@@ -73,9 +88,39 @@ async function main() {
           { n: '03', t: 'We Fund', d: 'A set share of every purchase or donation funds SDG-aligned community projects.' },
           { n: '04', t: 'We Track', d: 'Impact is tracked transparently.' },
         ],
-        vision: 'Turn creativity into lasting social change — channelling the work of talented artists into funding for high-impact, SDG-aligned community projects across Africa and beyond.',
-        problem: "Creatives rarely see their work translate into lasting social impact, while charities and community initiatives face chronic, unpredictable funding gaps. Donation-only fundraising is hard to sustain. What's missing is a model that links creative work, commerce, and measurable community impact.",
-        solution: 'FastTackle Africa curates original work from carefully selected artists and pairs each piece with a verified fundraising project. Whether you buy an artwork or donate directly to a cause, a set share of every contribution funds SDG-aligned community projects — with transparent impact tracking, project verification, and full financial accountability.',
+        // Placeholder gallery — no real Project/fundraising model exists
+        // yet (tracked as a separate, blocked piece of work), so these are
+        // explicitly illustrative rather than live-tracked campaigns, each
+        // still pointing at a real seeded CharityProfile by name.
+        projectsHeading: "Projects We're Funding",
+        fundraisingProjects: [
+          { title: 'Clean Water Access — Northern Kenya', blurb: 'Boreholes and hand-pumps bringing safe drinking water to rural communities.', charityName: 'WaterAid UK', image: 'https://images.pexels.com/photos/3030281/pexels-photo-3030281.jpeg?auto=compress&cs=tinysrgb&w=700' },
+          { title: "Girls' Education Fund — Rural Ghana", blurb: 'School fees, books, and mentorship supporting girls through secondary education.', charityName: 'CAMFED', image: 'https://images.pexels.com/photos/6963779/pexels-photo-6963779.jpeg?auto=compress&cs=tinysrgb&w=700' },
+          { title: 'Community Reforestation — Kenya', blurb: 'Native tree planting to restore degraded land and support local livelihoods.', charityName: 'Greenpeace Africa', image: 'https://images.pexels.com/photos/18468252/pexels-photo-18468252.jpeg?auto=compress&cs=tinysrgb&w=700' },
+        ],
+      },
+    },
+  });
+
+  // ── OUR PARTNERS (homepage — admin-editable) ──
+  // Placeholder org names, not real companies — url is null until admin
+  // uploads a real logo, so these render as a plain text mark rather than
+  // implying endorsement from an invented "brand".
+  await prisma.pageContent.upsert({
+    where: { slug: 'partners' },
+    update: {},
+    create: {
+      slug: 'partners',
+      title: 'Our Partners',
+      body: {
+        logos: [
+          { name: 'Meridian Foundation', url: null },
+          { name: 'Northbridge Trust', url: null },
+          { name: 'Sable & Co.', url: null },
+          { name: 'Lumen Partners', url: null },
+          { name: 'Kestrel Group', url: null },
+          { name: 'Anchor Collective', url: null },
+        ],
       },
     },
   });

@@ -5,11 +5,36 @@ import { useCart } from '../context/CartContext';
 import { SDGs, FRAMED_CATEGORIES } from '../data/constants';
 import api from '../utils/api';
 import Icon from '../components/ui/Icon';
+import EditionBadge, { priceLabel, priceAmount } from '../components/ui/EditionBadge';
 
 function SdgDot({ id }) {
   const s = SDGs.find(x => x.id === id); if (!s) return null;
   return <span className="sdg" title={s.n} style={{ background: s.c, color: '#fff', width: 22, height: 22, fontSize: 9, borderRadius: 5 }}>{id}</span>;
 }
+
+// Subcategory filter — mirrors the homepage's Originals row (mirrors the
+// real `medium` field, lowercased, so real ARTWORK products with a tagged
+// medium bucket correctly once any exist).
+const ORIGINALS_SUBCATS = [
+  { id: 'all', label: 'All' },
+  { id: 'abstract', label: 'Abstract' },
+  { id: 'oil', label: 'Oil' },
+  { id: 'acrylic', label: 'Acrylic' },
+];
+
+// Full product-shaped placeholders (unlike the homepage carousel's
+// lightweight item shape) so they render through the exact same grid/list/
+// quick-view JSX real products do. No slug — every interactive action below
+// (card click-through, Add to Cart, Wishlist) is guarded on slug presence
+// so these can't reach checkout as a fake product.
+const SUBCAT_PLACEHOLDERS = [
+  { id: 'ph-1', slug: null, title: 'Crimson Bloom', artist: { displayName: 'Imani Osei' }, charity: { name: 'WaterAid UK' }, images: [{ url: 'https://images.unsplash.com/photo-1563882687284-b4381efc07f5?w=600&h=750&fit=crop&q=80' }], basePrice: 780, editionType: 'ORIGINAL', estimatedValue: 1450, category: 'ARTWORK', productType: 'SIMPLE', medium: 'Abstract', sdgIds: [] },
+  { id: 'ph-2', slug: null, title: 'Ember & Indigo', artist: { displayName: 'Thabo Nkosi' }, charity: { name: 'Oxfam' }, images: [{ url: 'https://images.unsplash.com/photo-1541367777708-7905fe3296c0?w=600&h=750&fit=crop&q=80' }], basePrice: 850, editionType: 'ORIGINAL', estimatedValue: 1600, category: 'ARTWORK', productType: 'SIMPLE', medium: 'Abstract', sdgIds: [] },
+  { id: 'ph-3', slug: null, title: 'The Little Pond', artist: { displayName: 'Selam Girma' }, charity: { name: 'WaterAid UK' }, images: [{ url: 'https://images.unsplash.com/photo-1688588426729-dc4f7bdb8fbe?w=600&h=750&fit=crop&q=80' }], basePrice: 1100, editionType: 'PRINT', category: 'ARTWORK', productType: 'SIMPLE', medium: 'Oil', sdgIds: [] },
+  { id: 'ph-4', slug: null, title: 'The River at Dusk', artist: { displayName: 'Boipelo Seape' }, charity: { name: 'CAMFED' }, images: [{ url: 'https://images.unsplash.com/photo-1578926375605-eaf7559b1458?w=600&h=750&fit=crop&q=80' }], basePrice: 980, editionType: 'ORIGINAL', estimatedValue: 2100, category: 'ARTWORK', productType: 'SIMPLE', medium: 'Oil', sdgIds: [] },
+  { id: 'ph-5', slug: null, title: 'Golden Hour Study', artist: { displayName: 'Malik Toure' }, charity: { name: 'CAMFED' }, images: [{ url: 'https://images.unsplash.com/flagged/photo-1563882687293-71c93ae4d7dc?w=600&h=750&fit=crop&q=80' }], basePrice: 640, editionType: 'PRINT', category: 'ARTWORK', productType: 'SIMPLE', medium: 'Acrylic', sdgIds: [] },
+  { id: 'ph-6', slug: null, title: 'Coastal Fragments', artist: { displayName: 'Naledi Khumalo' }, charity: { name: 'Greenpeace Africa' }, images: [{ url: 'https://images.unsplash.com/photo-1704786574827-b4dfa47ad4f4?w=600&h=750&fit=crop&q=80' }], basePrice: 920, editionType: 'ORIGINAL', estimatedValue: 1800, category: 'ARTWORK', productType: 'SIMPLE', medium: 'Acrylic', sdgIds: [] },
+];
 
 export default function ShopPage() {
   const navigate = useNavigate();
@@ -26,6 +51,7 @@ export default function ShopPage() {
   const [maxPrice, setMaxPrice] = useState(3000);
   const [page, setPage] = useState(1);
   const [qv, setQv] = useState(null);
+  const [activeSubcat, setActiveSubcat] = useState('all');
 
   useEffect(() => {
     setLoading(true);
@@ -34,11 +60,29 @@ export default function ShopPage() {
     if (sdgF) q.sdg = sdgF;
     if (charityF) q.charityId = charityF;
     if (maxPrice < 3000) q.maxPrice = maxPrice;
-    const cat = params.get('category');
+    // A subcategory tab forces ARTWORK — there's no `medium` query param on
+    // the backend, so real matches are narrowed client-side below instead.
+    const cat = activeSubcat !== 'all' ? 'ARTWORK' : params.get('category');
     if (cat) q.category = cat;
 
     api.getProducts(q).then(r => { setProducts(r.items || []); setTotal(r.total || 0); }).catch(() => {}).finally(() => setLoading(false));
-  }, [search, sdgF, charityF, sort, maxPrice, page, params]);
+  }, [search, sdgF, charityF, sort, maxPrice, page, params, activeSubcat]);
+
+  // When a subcategory tab is active: narrow real results to matching
+  // medium client-side (no backend support for it), then top up with
+  // subcat-tagged placeholders so the tab never renders empty.
+  const displayProducts = activeSubcat === 'all' ? products : [
+    ...products.filter(p => (p.medium || '').toLowerCase() === activeSubcat),
+    ...SUBCAT_PLACEHOLDERS.filter(p => p.medium.toLowerCase() === activeSubcat),
+  ];
+  const displayTotal = activeSubcat === 'all' ? total : displayProducts.length;
+
+  const goToProduct = (p) => { if (p.slug) navigate(`/shop/${p.slug}`); };
+  const addPlaceholderAware = (e, p) => {
+    e.stopPropagation();
+    if (!p.slug) { toast('This is a placeholder — real products coming soon', 'info'); return; }
+    addToCart(p);
+  };
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--base)' }}>
@@ -62,6 +106,12 @@ export default function ShopPage() {
                 ))}
               </div>
             </div>
+          </div>
+          {/* Subcategory tabs — Originals, filterable by medium */}
+          <div style={{ display: 'flex', gap: 8, marginTop: 20, flexWrap: 'wrap' }}>
+            {ORIGINALS_SUBCATS.map(s => (
+              <button key={s.id} className={`btn ${activeSubcat === s.id ? 'btn-p' : 'btn-s'} btn-sm`} onClick={() => { setActiveSubcat(s.id); setPage(1); }}>{s.label}</button>
+            ))}
           </div>
         </div>
       </div>
@@ -92,32 +142,36 @@ export default function ShopPage() {
 
           {/* Products */}
           <div>
-            <div style={{ marginBottom: 14, fontSize: 13, color: 'var(--muted)' }}>{total} artwork{total !== 1 ? 's' : ''} found</div>
+            <div style={{ marginBottom: 14, fontSize: 13, color: 'var(--muted)' }}>{displayTotal} artwork{displayTotal !== 1 ? 's' : ''} found</div>
             {loading ? (
               <div className="product-grid">{[1,2,3,4,5,6].map(i => <div key={i} className="skel" style={{ height: 380, borderRadius: 'var(--rl)' }} />)}</div>
-            ) : products.length === 0 ? (
+            ) : displayProducts.length === 0 ? (
               <div className="empty"><div className="empty-t">No artworks found</div><p style={{ color: 'var(--muted)' }}>Try adjusting your filters</p></div>
             ) : view === 'grid' ? (
               <div className="product-grid">
-                {products.map(p => (
-                  <div key={p.id} className="product-card" onClick={() => navigate(`/shop/${p.slug}`)}>
+                {displayProducts.map(p => (
+                  <div key={p.id} className="product-card" onClick={() => goToProduct(p)} style={{ cursor: p.slug ? 'pointer' : 'default' }}>
                     <div className={`product-card-img${FRAMED_CATEGORIES.includes(p.category) ? ' pf-framed' : ''}`}>
                       {p.images?.[0]?.url ? <img src={p.images[0].url} alt={p.title} loading="lazy" /> : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(145deg,#1B4332,#2D6A4F)' }} />}
                       <div className="product-card-overlay">
                         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 7 }}>
-                          <button className="btn btn-p" style={{ width: '100%', justifyContent: 'center' }} onClick={e => { e.stopPropagation(); addToCart(p); }}>Add to Cart</button>
+                          <button className="btn btn-p" style={{ width: '100%', justifyContent: 'center' }} onClick={e => addPlaceholderAware(e, p)}>Add to Cart</button>
                           <button className="btn btn-s btn-sm" style={{ width: '100%', justifyContent: 'center' }} onClick={e => { e.stopPropagation(); setQv(p); }}>Quick View</button>
                         </div>
                       </div>
                       {p.comparePrice && <div className="badge b-red" style={{ position: 'absolute', top: 10, left: 10, zIndex: 3 }}>SALE</div>}
-                      <button className={`wish-btn${isWished(p.id) ? ' active' : ''}`} onClick={e => { e.stopPropagation(); toggleWishlist(p.id); toast(isWished(p.id) ? 'Removed from wishlist' : 'Added to wishlist'); }}><Icon icon={Heart} size="inline" fill={isWished(p.id) ? 'currentColor' : 'none'} /></button>
+                      <EditionBadge editionType={p.editionType} style={{ position: 'absolute', top: 10, right: 44, zIndex: 3 }} />
+                      <button className={`wish-btn${isWished(p.id) ? ' active' : ''}`} onClick={e => { e.stopPropagation(); if (!p.slug) { toast('This is a placeholder — real products coming soon', 'info'); return; } toggleWishlist(p.id); toast(isWished(p.id) ? 'Removed from wishlist' : 'Added to wishlist'); }}><Icon icon={Heart} size="inline" fill={isWished(p.id) ? 'currentColor' : 'none'} /></button>
                     </div>
                     <div className="product-card-body">
                       <div style={{ display: 'flex', gap: 3, marginBottom: 6 }}>{p.sdgIds?.map(id => <SdgDot key={id} id={id} />)}</div>
                       <h3 style={{ fontFamily: 'var(--fd)', fontSize: 18, fontWeight: 600, marginBottom: 3 }}>{p.title}</h3>
                       <p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 8 }}>by {p.artist?.displayName} · {p.charity?.name}</p>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontFamily: 'var(--fd)', fontSize: 18, color: 'var(--accent)', fontWeight: 700 }}>£{Number(p.basePrice).toLocaleString()}</span>
+                        <span>
+                          {priceLabel(p) && <span style={{ display: 'block', fontSize: 9, fontWeight: 700, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--muted)' }}>{priceLabel(p)}</span>}
+                          <span style={{ fontFamily: 'var(--fd)', fontSize: 18, color: 'var(--accent)', fontWeight: 700 }}>£{priceAmount(p).toLocaleString()}</span>
+                        </span>
                         <span className="badge b-muted" style={{ fontSize: 9, textTransform: 'capitalize' }}>{p.productType?.toLowerCase()}</span>
                       </div>
                     </div>
@@ -126,19 +180,20 @@ export default function ShopPage() {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {products.map(p => (
-                  <div key={p.id} className="card card-h" style={{ display: 'flex', gap: 18, padding: 16, cursor: 'pointer' }} onClick={() => navigate(`/shop/${p.slug}`)}>
+                {displayProducts.map(p => (
+                  <div key={p.id} className="card card-h" style={{ display: 'flex', gap: 18, padding: 16, cursor: p.slug ? 'pointer' : 'default' }} onClick={() => goToProduct(p)}>
                     <div className={FRAMED_CATEGORIES.includes(p.category) ? 'pf-contain' : ''} style={{ width: 76, height: 76, borderRadius: 'var(--r)', overflow: 'hidden', flexShrink: 0 }}>
                       {p.images?.[0]?.url ? <img src={p.images[0].url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: '#1B4332' }} />}
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', gap: 3, marginBottom: 4 }}>{p.sdgIds?.map(id => <SdgDot key={id} id={id} />)}</div>
+                      <div style={{ display: 'flex', gap: 3, marginBottom: 4, alignItems: 'center' }}>{p.sdgIds?.map(id => <SdgDot key={id} id={id} />)}<EditionBadge editionType={p.editionType} /></div>
                       <h3 style={{ fontFamily: 'var(--fd)', fontSize: 18, fontWeight: 600, marginBottom: 2 }}>{p.title}</h3>
                       <p style={{ fontSize: 11, color: 'var(--muted)' }}>{p.artist?.displayName} · {p.medium} · {p.charity?.name}</p>
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <div style={{ fontFamily: 'var(--fd)', fontSize: 20, color: 'var(--accent)', fontWeight: 700, marginBottom: 8 }}>£{Number(p.basePrice).toLocaleString()}</div>
-                      <button className="btn btn-p btn-sm" onClick={e => { e.stopPropagation(); addToCart(p); }}>Add to Cart</button>
+                      {priceLabel(p) && <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--muted)' }}>{priceLabel(p)}</div>}
+                      <div style={{ fontFamily: 'var(--fd)', fontSize: 20, color: 'var(--accent)', fontWeight: 700, marginBottom: 8 }}>£{priceAmount(p).toLocaleString()}</div>
+                      <button className="btn btn-p btn-sm" onClick={e => addPlaceholderAware(e, p)}>Add to Cart</button>
                     </div>
                   </div>
                 ))}
@@ -159,11 +214,12 @@ export default function ShopPage() {
                   {qv.images?.[0]?.url ? <img src={qv.images[0].url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: '#1B4332' }} />}
                 </div>
                 <div>
-                  <div style={{ display: 'flex', gap: 3, marginBottom: 8 }}>{qv.sdgIds?.map(id => <SdgDot key={id} id={id} />)}</div>
+                  <div style={{ display: 'flex', gap: 3, marginBottom: 8, alignItems: 'center' }}>{qv.sdgIds?.map(id => <SdgDot key={id} id={id} />)}<EditionBadge editionType={qv.editionType} /></div>
                   <p style={{ fontSize: 13, color: 'var(--txt2)', lineHeight: 1.7, marginBottom: 14 }}>{qv.description?.slice(0, 180)}…</p>
-                  <div style={{ fontFamily: 'var(--fd)', fontSize: 26, color: 'var(--accent)', fontWeight: 700, marginBottom: 14 }}>£{Number(qv.basePrice).toLocaleString()}</div>
-                  <button className="btn btn-p" style={{ width: '100%', justifyContent: 'center' }} onClick={() => { addToCart(qv); setQv(null); }}>Add to Cart</button>
-                  <button className="btn btn-g" style={{ width: '100%', justifyContent: 'center', marginTop: 7, display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => { navigate(`/shop/${qv.slug}`); setQv(null); }}>Full Details <Icon icon={ArrowRight} size="inline" /></button>
+                  {priceLabel(qv) && <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--muted)' }}>{priceLabel(qv)}</div>}
+                  <div style={{ fontFamily: 'var(--fd)', fontSize: 26, color: 'var(--accent)', fontWeight: 700, marginBottom: 14 }}>£{priceAmount(qv).toLocaleString()}</div>
+                  <button className="btn btn-p" style={{ width: '100%', justifyContent: 'center' }} onClick={() => { if (!qv.slug) { toast('This is a placeholder — real products coming soon', 'info'); return; } addToCart(qv); setQv(null); }}>Add to Cart</button>
+                  {qv.slug && <button className="btn btn-g" style={{ width: '100%', justifyContent: 'center', marginTop: 7, display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => { navigate(`/shop/${qv.slug}`); setQv(null); }}>Full Details <Icon icon={ArrowRight} size="inline" /></button>}
                 </div>
               </div>
             </div>

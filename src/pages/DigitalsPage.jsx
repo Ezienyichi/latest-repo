@@ -36,11 +36,22 @@ export default function DigitalsPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--base)' }}>
-      {/* Hero */}
-      <div style={{ background: `linear-gradient(135deg,${activeCatData?.bg || '#0a0a1a'} 0%,${activeCatData?.color || '#1a1030'}33 50%,#041525 100%)`, padding: '48px 0 36px', position: 'relative', overflow: 'hidden' }}>
+      {/* Hero — category-specific background photo (placeholder) under the
+          existing gradient, which now doubles as the legibility scrim */}
+      <div style={{ background: activeCatData?.bgImage ? '#0a0a1a' : `linear-gradient(135deg,${activeCatData?.bg || '#0a0a1a'} 0%,${activeCatData?.color || '#1a1030'}33 50%,#041525 100%)`, padding: '48px 0 36px', position: 'relative', overflow: 'hidden' }}>
+        {activeCatData?.bgImage && (
+          <>
+            <img src={activeCatData.bgImage} alt="" aria-hidden="true" loading="lazy"
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+            <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(135deg,${activeCatData.bg}e6 0%,${activeCatData.color}59 50%,#041525f2 100%)` }} />
+          </>
+        )}
         {/* Ambient glow */}
         <div style={{ position: 'absolute', top: '20%', right: '10%', width: 300, height: 300, borderRadius: '50%', background: `${activeCatData?.color || '#9B72CF'}15`, filter: 'blur(80px)', pointerEvents: 'none' }} />
-        <div className="wrap">
+        {/* position:relative so this paints above the absolutely-positioned
+            image/scrim/glow layers above (which would otherwise stack on
+            top of it regardless of DOM order, since it's non-positioned) */}
+        <div className="wrap" style={{ position: 'relative' }}>
           <div className="breadcrumbs" style={{ marginBottom: 10 }}>
             <Link to="/" style={{ color: 'rgba(255,255,255,.5)' }}>Home</Link>
             <span className="sep" style={{ color: 'rgba(255,255,255,.3)' }}>›</span>

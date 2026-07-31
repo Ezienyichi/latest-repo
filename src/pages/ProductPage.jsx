@@ -13,6 +13,7 @@ import GraphicPreview from '../components/ui/GraphicPreview';
 import IncludesList from '../components/ui/IncludesList';
 import CharityLogo from '../components/ui/CharityLogo';
 import TrustBadges from '../components/ui/TrustBadges';
+import EditionBadge, { priceLabel, priceAmount } from '../components/ui/EditionBadge';
 import api from '../utils/api';
 
 function SdgDot({ id, sm }) {
@@ -215,6 +216,7 @@ export default function ProductPage() {
             {/* SDG badges + type */}
             <div style={{ display: 'flex', gap: 5, marginBottom: 12, flexWrap: 'wrap' }}>
               {product.sdgIds?.map(id => <SdgDot key={id} id={id} />)}
+              <EditionBadge editionType={product.editionType} />
               <span className="badge b-muted" style={{ textTransform: 'capitalize' }}>{product.productType?.toLowerCase()}</span>
               {isDigital && <span className="badge b-blue">{product.category}</span>}
             </div>
@@ -231,9 +233,12 @@ export default function ProductPage() {
             {/* Rating summary */}
             {avgRating && <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}><Stars val={Math.round(avgRating)} ro /><span style={{ fontSize: 13, color: 'var(--muted)' }}>{avgRating} ({reviews.length} review{reviews.length !== 1 ? 's' : ''})</span></div>}
 
-            {/* Price */}
+            {/* Price — originals headline their estimated value; the Add to
+                Cart button below always shows the real amount charged, so
+                relabeling this number never obscures what's actually paid. */}
+            {!selVar && priceLabel(product) && <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 4 }}>{priceLabel(product)}</div>}
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 22 }}>
-              <span style={{ fontFamily: 'var(--fd)', fontSize: 42, color: 'var(--accent)', fontWeight: 700 }}>£{price.toLocaleString()}</span>
+              <span style={{ fontFamily: 'var(--fd)', fontSize: 42, color: 'var(--accent)', fontWeight: 700 }}>£{(selVar ? price : priceAmount(product)).toLocaleString()}</span>
               {product.comparePrice && <span style={{ fontFamily: 'var(--fd)', fontSize: 22, color: 'var(--muted)', textDecoration: 'line-through' }}>£{Number(product.comparePrice).toLocaleString()}</span>}
               {product.comparePrice && <span className="badge b-red">SAVE £{(Number(product.comparePrice) - price).toLocaleString()}</span>}
             </div>

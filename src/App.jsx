@@ -1,8 +1,11 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useAuth } from './context/AuthContext';
 import { useCart } from './context/CartContext';
+import AnnouncementBar from './components/layout/AnnouncementBar';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
+import NewsletterPopup from './components/ui/NewsletterPopup';
 import Toasts from './components/ui/Toasts';
 import Wordmark from './components/ui/Wordmark';
 import HomePage from './pages/HomePage';
@@ -39,6 +42,15 @@ import AdminProductManager from './pages/dashboard/AdminProductManager';
 import VerifyCertificatePage from './pages/VerifyCertificatePage';
 import MyCertificatesPage from './pages/MyCertificatesPage';
 
+// Route changes don't reset scroll position by default in React Router —
+// without this, navigating from a page you'd scrolled down on (e.g. a long
+// homepage) can land the next page already scrolled past its own header.
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+}
+
 export default function App() {
   const { loading } = useAuth();
   const { toasts, dismissToast } = useCart();
@@ -54,6 +66,7 @@ export default function App() {
 
   return (
     <>
+      <ScrollToTop />
       <Toasts list={toasts} dismiss={dismissToast} />
       <Routes>
         {/* Auth pages — no nav/footer */}
@@ -70,7 +83,9 @@ export default function App() {
 function WithLayout() {
   return (
     <>
+      <AnnouncementBar />
       <Navbar />
+      <NewsletterPopup />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />

@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Palette, Check, ImageOff, Eye, AlertTriangle, Lightbulb } from 'lucide-react';
+import { ArrowRight, Palette, Check, ImageOff } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { SDGs, FRAMED_CATEGORIES } from '../data/constants';
 import api from '../utils/api';
 import Icon from '../components/ui/Icon';
 import CharityLogo from '../components/ui/CharityLogo';
 import TrustBadges from '../components/ui/TrustBadges';
+import EditionBadge, { priceLabel, priceAmount } from '../components/ui/EditionBadge';
+import PartnersCarousel from '../components/ui/PartnersCarousel';
 
 function SdgDot({ id, sm }) {
   const s = SDGs.find(x => x.id === id);
@@ -43,12 +45,12 @@ const DIGITAL_SUBCATS = [
   { id: 'DIGITAL_ART', label: 'Digital Art' },
 ];
 const PAINTING_PLACEHOLDERS = [
-  { title: 'Crimson Bloom', artist: 'Imani Osei', price: 780, charityName: 'WaterAid UK', category: 'ARTWORK', subcat: 'abstract', img: 'https://images.unsplash.com/photo-1563882687284-b4381efc07f5?w=600&h=750&fit=crop&q=80' },
-  { title: 'Golden Hour Study', artist: 'Malik Toure', price: 640, charityName: 'CAMFED', category: 'ARTWORK', subcat: 'acrylic', img: 'https://images.unsplash.com/flagged/photo-1563882687293-71c93ae4d7dc?w=600&h=750&fit=crop&q=80' },
-  { title: 'Coastal Fragments', artist: 'Naledi Khumalo', price: 920, charityName: 'Greenpeace Africa', category: 'ARTWORK', subcat: 'acrylic', img: 'https://images.unsplash.com/photo-1704786574827-f4dfa47ad4f4?w=600&h=750&fit=crop&q=80' },
-  { title: 'Ember & Indigo', artist: 'Thabo Nkosi', price: 850, charityName: 'Oxfam', category: 'ARTWORK', subcat: 'abstract', img: 'https://images.unsplash.com/photo-1541367777708-7905fe3296c0?w=600&h=750&fit=crop&q=80' },
-  { title: 'The Little Pond', artist: 'Selam Girma', price: 1100, charityName: 'WaterAid UK', category: 'ARTWORK', subcat: 'oil', img: 'https://images.unsplash.com/photo-1688588426729-dc4f7bdb8fbe?w=600&h=750&fit=crop&q=80' },
-  { title: 'The River at Dusk', artist: 'Boipelo Seape', price: 980, charityName: 'CAMFED', category: 'ARTWORK', subcat: 'oil', img: 'https://images.unsplash.com/photo-1578926375605-eaf7559b1458?w=600&h=750&fit=crop&q=80' },
+  { title: 'Crimson Bloom', artist: 'Imani Osei', price: 780, editionType: 'ORIGINAL', estimatedValue: 1450, charityName: 'WaterAid UK', category: 'ARTWORK', subcat: 'abstract', img: 'https://images.unsplash.com/photo-1563882687284-b4381efc07f5?w=600&h=750&fit=crop&q=80' },
+  { title: 'Golden Hour Study', artist: 'Malik Toure', price: 640, editionType: 'PRINT', charityName: 'CAMFED', category: 'ARTWORK', subcat: 'acrylic', img: 'https://images.unsplash.com/flagged/photo-1563882687293-71c93ae4d7dc?w=600&h=750&fit=crop&q=80' },
+  { title: 'Coastal Fragments', artist: 'Naledi Khumalo', price: 920, editionType: 'ORIGINAL', estimatedValue: 1800, charityName: 'Greenpeace Africa', category: 'ARTWORK', subcat: 'acrylic', img: 'https://images.unsplash.com/photo-1704786574827-f4dfa47ad4f4?w=600&h=750&fit=crop&q=80' },
+  { title: 'Ember & Indigo', artist: 'Thabo Nkosi', price: 850, editionType: 'ORIGINAL', estimatedValue: 1600, charityName: 'Oxfam', category: 'ARTWORK', subcat: 'abstract', img: 'https://images.unsplash.com/photo-1541367777708-7905fe3296c0?w=600&h=750&fit=crop&q=80' },
+  { title: 'The Little Pond', artist: 'Selam Girma', price: 1100, editionType: 'PRINT', charityName: 'WaterAid UK', category: 'ARTWORK', subcat: 'oil', img: 'https://images.unsplash.com/photo-1688588426729-dc4f7bdb8fbe?w=600&h=750&fit=crop&q=80' },
+  { title: 'The River at Dusk', artist: 'Boipelo Seape', price: 980, editionType: 'ORIGINAL', estimatedValue: 2100, charityName: 'CAMFED', category: 'ARTWORK', subcat: 'oil', img: 'https://images.unsplash.com/photo-1578926375605-eaf7559b1458?w=600&h=750&fit=crop&q=80' },
 ];
 const DIGITAL_PLACEHOLDERS = [
   { title: 'Midnight Sessions', artist: 'Kwame Boateng', price: 12, charityName: 'Oxfam', category: 'MUSIC', subcat: 'MUSIC', img: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=600&h=750&fit=crop&q=80' },
@@ -60,26 +62,34 @@ const DIGITAL_PLACEHOLDERS = [
 ];
 const ROW_TARGET = 6;
 
-const PILLARS = [
-  { key: 'vision', label: 'Vision', icon: Eye },
-  { key: 'problem', label: 'Problem', icon: AlertTriangle },
-  { key: 'solution', label: 'Solution', icon: Lightbulb },
+// Fallback shown until PageContent('homepage').fundraisingProjects loads —
+// same shape admin will edit later. There's no Project model yet (tracked
+// separately), so these are explicitly illustrative, not live-tracked
+// campaigns — each still points at a real seeded CharityProfile by name.
+const FUNDRAISING_PROJECTS_FALLBACK = [
+  { title: 'Clean Water Access — Northern Kenya', blurb: 'Boreholes and hand-pumps bringing safe drinking water to rural communities.', charityName: 'WaterAid UK', image: 'https://images.pexels.com/photos/3030281/pexels-photo-3030281.jpeg?auto=compress&cs=tinysrgb&w=700' },
+  { title: "Girls' Education Fund — Rural Ghana", blurb: 'School fees, books, and mentorship supporting girls through secondary education.', charityName: 'CAMFED', image: 'https://images.pexels.com/photos/6963779/pexels-photo-6963779.jpeg?auto=compress&cs=tinysrgb&w=700' },
+  { title: 'Community Reforestation — Kenya', blurb: 'Native tree planting to restore degraded land and support local livelihoods.', charityName: 'Greenpeace Africa', image: 'https://images.pexels.com/photos/18468252/pexels-photo-18468252.jpeg?auto=compress&cs=tinysrgb&w=700' },
 ];
-
 
 function GalleryCard({ item, onClick, onCharityClick }) {
   const framed = FRAMED_CATEGORIES.includes(item.category);
+  const label = priceLabel(item);
   return (
     <div className="gallery-card" onClick={onClick} tabIndex={0} role="button"
       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}>
       <div className={`gallery-card-img-wrap${framed ? ' pf-framed' : ''}`}>
         <img src={item.img} alt={item.title} loading="lazy" draggable={false} />
+        <EditionBadge editionType={item.editionType} style={{ position: 'absolute', top: 10, left: 10, zIndex: 3 }} />
       </div>
       <div className="gallery-card-body">
         <h3 className="gallery-card-title">{item.title}</h3>
         <p className="gallery-card-artist">by {item.artist}</p>
         <div className="gallery-card-foot">
-          <span className="gallery-card-price">£{Number(item.price).toLocaleString()}</span>
+          <span>
+            {label && <span className="gallery-card-est-lbl">{label}</span>}
+            <span className="gallery-card-price">£{priceAmount(item).toLocaleString()}</span>
+          </span>
           {item.charityId ? (
             <span className="gallery-card-charity" onClick={e => { e.stopPropagation(); onCharityClick(item.charityId); }}>
               <CharityLogo logo={item.charityLogo} size={14} /> {item.charityName}
@@ -206,6 +216,7 @@ function GalleryRow({ label, heading, real, placeholders, subcats, browsePath, o
   const realMapped = real.map(p => ({
     id: p.id, slug: p.slug, title: p.title, artist: p.artist?.displayName || 'Unknown Artist',
     price: p.basePrice, category: p.category, img: p.images?.[0]?.url,
+    editionType: p.editionType, estimatedValue: p.estimatedValue,
     subcat: isDigitalRow ? p.category : (p.medium || '').toLowerCase(),
     charityId: p.charity?.id, charityName: p.charity?.name || 'Unaffiliated', charityLogo: p.charity?.logo,
   })).filter(p => p.img);
@@ -265,6 +276,7 @@ function mapProduct(p) {
   return {
     id: p.id, slug: p.slug, title: p.title, artist: p.artist?.displayName || 'Unknown Artist',
     price: p.basePrice, category: p.category, img: p.images?.[0]?.url,
+    editionType: p.editionType, estimatedValue: p.estimatedValue,
     charityId: p.charity?.id, charityName: p.charity?.name || 'Unaffiliated', charityLogo: p.charity?.logo,
   };
 }
@@ -422,7 +434,7 @@ export default function HomePage() {
 
       {/* ═══ THEORY OF CHANGE — editorial two-column ═══ */}
       <section className="toc2">
-        <img className="toc2-watermark" src="https://images.unsplash.com/photo-1630068846062-3ffe78aa5049?w=900&q=60" alt="" aria-hidden="true" loading="lazy" />
+        <img className="toc2-watermark" src="https://images.unsplash.com/photo-1649299313612-48cc3493f62e?w=1800&q=70" alt="" aria-hidden="true" loading="lazy" />
         <div className="toc2-wrap">
           <div className="toc2-grid">
             <div className="toc2-photos">
@@ -491,19 +503,27 @@ export default function HomePage() {
           browsePath="/shop" onOpen={navigate} onCharityClick={openCharity} />
       </section>
 
-      {/* ═══ WHAT WE PROVIDE — Vision / Problem / Solution ═══ */}
+      {/* ═══ FUNDRAISING PROJECTS — placeholder gallery; no Project model
+          yet, see FUNDRAISING_PROJECTS_FALLBACK comment above ═══ */}
       <section className="section" style={{ background: 'var(--panel)' }}>
         <div className="wrap">
           <div style={{ textAlign: 'center', marginBottom: 56 }}>
-            <div className="lbl" style={{ marginBottom: 10 }}>What We Provide</div>
-            <h2 className="display" style={{ fontSize: 46 }}>Creativity, Commerce, Community Impact</h2>
+            <div className="lbl" style={{ marginBottom: 10 }}>Where Your Support Goes</div>
+            <h2 className="display" style={{ fontSize: 46 }}>{content?.projectsHeading || 'Projects We\'re Funding'}</h2>
+            <p style={{ fontSize: 14, color: 'var(--muted)', maxWidth: 560, margin: '12px auto 0' }}>A preview of the kind of SDG-aligned community projects your purchases and donations support.</p>
           </div>
           <div className="g3" style={{ gap: 24 }}>
-            {PILLARS.map(p => (
-              <div key={p.key} className="about-pillar">
-                <div className="about-pillar-icon"><Icon icon={p.icon} size={26} /></div>
-                <h3>{p.label}</h3>
-                <p>{content?.[p.key]}</p>
+            {(content?.fundraisingProjects || FUNDRAISING_PROJECTS_FALLBACK).map(proj => (
+              <div key={proj.title} className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                <div style={{ aspectRatio: '4/3', position: 'relative' }}>
+                  <img src={proj.image} alt="" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <span className="badge b-muted" style={{ position: 'absolute', top: 10, left: 10 }}>Preview</span>
+                </div>
+                <div style={{ padding: 20 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 6 }}>{proj.charityName}</div>
+                  <h3 style={{ fontFamily: 'var(--fd)', fontSize: 19, fontWeight: 600, marginBottom: 8 }}>{proj.title}</h3>
+                  <p style={{ fontSize: 13, color: 'var(--txt2)', lineHeight: 1.65 }}>{proj.blurb}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -536,12 +556,14 @@ export default function HomePage() {
                       </div>
                     )}
                     {aw.comparePrice && <div className="badge b-red" style={{ position: 'absolute', top: 10, left: 10, zIndex: 3 }}>SALE</div>}
+                    <EditionBadge editionType={aw.editionType} style={{ position: 'absolute', top: 10, right: 10, zIndex: 3 }} />
                   </div>
                   <div style={{ padding: 14 }}>
                     <div style={{ display: 'flex', gap: 3, marginBottom: 6 }}>{aw.sdgIds?.map(id => <SdgDot key={id} id={id} sm />)}</div>
                     <h3 style={{ fontFamily: 'var(--fd)', fontSize: 18, fontWeight: 600, marginBottom: 3 }}>{aw.title}</h3>
                     <p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 9 }}>by {aw.artist?.displayName} · {aw.charity?.name}</p>
-                    <div style={{ fontFamily: 'var(--fd)', fontSize: 18, color: 'var(--accent)', fontWeight: 700 }}>£{Number(aw.basePrice).toLocaleString()}</div>
+                    {priceLabel(aw) && <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--muted)' }}>{priceLabel(aw)}</div>}
+                    <div style={{ fontFamily: 'var(--fd)', fontSize: 18, color: 'var(--accent)', fontWeight: 700 }}>£{priceAmount(aw).toLocaleString()}</div>
                   </div>
                 </div>
               ))}
@@ -550,17 +572,9 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* ═══ SDG IMPACT STRIP ═══ */}
-      <section style={{ background: 'linear-gradient(135deg,#0d2318 0%,#1B4332 50%,#0d2318 100%)', padding: '36px 0', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', padding: '0 24px' }}>
-          {SDGs.map(s => (
-            <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px', background: 'rgba(255,255,255,.06)', borderRadius: 20, border: '1px solid rgba(255,255,255,.08)' }}>
-              <span className="sdg" style={{ background: s.c, color: '#fff', width: 20, height: 20, fontSize: 9, borderRadius: 4 }}>{s.id}</span>
-              <span style={{ fontSize: 10, color: 'rgba(255,255,255,.5)', fontWeight: 500, letterSpacing: .5 }}>{s.n}</span>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* ═══ OUR PARTNERS — replaces the old SDG icon strip. Shared
+          component, also used on the About page. ═══ */}
+      <PartnersCarousel />
 
       {/* ═══ TESTIMONIALS ═══ */}
       <section className="section" style={{ background: 'var(--base)' }}>

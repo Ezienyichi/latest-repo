@@ -21,8 +21,8 @@ export const SDGs = [
 ];
 
 export const DIGITAL_CATS = [
-  { id: 'MUSIC', label: 'Music', icon: Music, color: '#2EB8E6', bg: '#041525' },
-  { id: 'GRAPHIC', label: 'Graphics', icon: PenTool, color: '#E07B54', bg: '#1F0E08' },
+  { id: 'MUSIC', label: 'Music', icon: Music, color: '#2EB8E6', bg: '#041525', bgImage: 'https://images.pexels.com/photos/32215665/pexels-photo-32215665.jpeg?auto=compress&cs=tinysrgb&w=1600' },
+  { id: 'GRAPHIC', label: 'Graphics', icon: PenTool, color: '#E07B54', bg: '#1F0E08', bgImage: 'https://images.pexels.com/photos/33950026/pexels-photo-33950026.jpeg?auto=compress&cs=tinysrgb&w=1600' },
 ];
 
 export function getSdg(id) {
