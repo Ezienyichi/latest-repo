@@ -37,6 +37,7 @@ class ApiClient {
 
   get(path) { return this.request(path); }
   post(path, body) { return this.request(path, { method: 'POST', body: JSON.stringify(body) }); }
+  put(path, body) { return this.request(path, { method: 'PUT', body: JSON.stringify(body) }); }
   patch(path, body) { return this.request(path, { method: 'PATCH', body: JSON.stringify(body) }); }
   delete(path) { return this.request(path, { method: 'DELETE' }); }
 
@@ -112,6 +113,8 @@ class ApiClient {
   getModeration() { return this.get('/admin/moderation'); }
   moderateProduct(id, status) { return this.patch(`/admin/products/${id}/moderate`, { status }); }
   getAdminAnalytics() { return this.get('/admin/analytics'); }
+  getAdminSettings() { return this.get('/admin/settings'); }
+  updateAdminSetting(key, value) { return this.put(`/admin/settings/${key}`, { value }); }
 }
 
 export const api = new ApiClient();

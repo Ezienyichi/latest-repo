@@ -12,6 +12,8 @@ const PUBLIC_KEYS = [
   'contact_email', 'contact_phone', 'announcement_message',
   'social_instagram_url', 'social_facebook_url', 'social_twitter_url',
   'trustpilot_url', 'google_review_url',
+  // Homepage hero background — video or image, admin-editable.
+  'hero_media_type', 'hero_video_url', 'hero_poster_url', 'hero_image_url',
 ];
 const DEFAULTS = {
   charity_pct: 0.10,
@@ -31,6 +33,12 @@ const DEFAULTS = {
   social_twitter_url: '#',
   trustpilot_url: '#',
   google_review_url: '#',
+  // Unset by default — the hero falls back to the existing hardcoded
+  // video until admin explicitly picks a mode and sets a URL.
+  hero_media_type: null,
+  hero_video_url: null,
+  hero_poster_url: null,
+  hero_image_url: null,
 };
 
 settings.get('/public', async (c) => {

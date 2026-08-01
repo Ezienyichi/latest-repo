@@ -318,15 +318,16 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .vert-thumbs::-webkit-scrollbar{width:3px}
 .vert-thumbs::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
-/* ── TOP ANNOUNCEMENT BAR ─────────────────────────────────── */
-.announce-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 48px;background:var(--panel);border-bottom:1px solid var(--border);font-size:11px;color:var(--txt2)}
+/* ── TOP ANNOUNCEMENT BAR — same background/text tokens as the footer,
+   so the two dark bars read as one system ─────────────────────────── */
+.announce-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 48px;background:var(--footer-bg);border-bottom:1px solid var(--border);font-size:11px;color:var(--footer-txt)}
 .announce-left,.announce-right{display:flex;align-items:center;gap:16px;flex:1;min-width:0}
 .announce-right{justify-content:flex-end}
-.announce-center{flex:1;text-align:center;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.announce-item{display:inline-flex;align-items:center;gap:5px;color:var(--txt2);text-decoration:none;white-space:nowrap;transition:color .15s}
+.announce-center{flex:1;text-align:center;color:var(--footer-txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.announce-item{display:inline-flex;align-items:center;gap:5px;color:var(--footer-txt);text-decoration:none;white-space:nowrap;transition:color .15s}
 .announce-item:hover{color:var(--accent)}
 .announce-social{display:flex;align-items:center;gap:10px;padding-left:14px;border-left:1px solid var(--border)}
-.announce-social a{display:flex;color:var(--muted);transition:color .15s}
+.announce-social a{display:flex;color:var(--footer-txt);transition:color .15s}
 .announce-social a:hover{color:var(--accent)}
 @media(max-width:900px){
   .announce-bar{padding:6px 16px;gap:8px}

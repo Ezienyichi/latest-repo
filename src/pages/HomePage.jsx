@@ -317,6 +317,15 @@ function SimpleCarouselRow({ label, heading, real, placeholders, browsePath, onO
   );
 }
 
+// Existing hardcoded hero — the fallback whenever admin hasn't configured
+// hero_media_type/hero_video_url/hero_image_url, or whatever they set
+// fails to load.
+const DEFAULT_HERO_VIDEO_SOURCES = [
+  'https://videos.pexels.com/video-files/3571264/3571264-uhd_2560_1440_25fps.mp4',
+  'https://videos.pexels.com/video-files/4172900/4172900-hd_1920_1080_25fps.mp4',
+];
+const DEFAULT_HERO_POSTER = 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=1920&q=85';
+
 export default function HomePage() {
   const navigate = useNavigate();
   const { toast } = useCart();
@@ -325,6 +334,8 @@ export default function HomePage() {
   const [featured, setFeatured] = useState([]);
   const [theory, setTheory] = useState(null);
   const [content, setContent] = useState(null);
+  const [heroFailed, setHeroFailed] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
   const [paintings, setPaintings] = useState([]);
   const [digitalWorks, setDigitalWorks] = useState([]);
   const [latest, setLatest] = useState([]);
@@ -348,7 +359,38 @@ export default function HomePage() {
     api.getProducts({ limit: 24, sort: 'bestselling' }).then(r => setTopSellers(r.items || [])).catch(() => {});
     // Originals Only — product attribute filter on the new editionType field.
     api.getProducts({ editionType: 'ORIGINAL', limit: 24, sort: 'newest' }).then(r => setOriginals(r.items || [])).catch(() => {});
+    setReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }, []);
+
+  // Reset the failure flag whenever the underlying setting changes (e.g.
+  // admin fixes a broken URL) so it isn't stuck on the fallback forever.
+  useEffect(() => { setHeroFailed(false); }, [theory?.hero_media_type, theory?.hero_video_url, theory?.hero_image_url]);
+
+  const adminVideoReady = theory?.hero_media_type === 'video' && !!theory?.hero_video_url;
+  const adminImageReady = theory?.hero_media_type === 'image' && !!theory?.hero_image_url;
+
+  // Single decision point: 'video' (autoplaying) or 'still' (a plain
+  // image — either the chosen still, or a video's poster when
+  // prefers-reduced-motion is on, or the default poster once anything has
+  // actually failed to load, so a failure never retries the same media).
+  let heroRenderMode, heroStillSrc, heroPosterSrc, heroVideoSrcs;
+  if (heroFailed) {
+    heroRenderMode = 'still';
+    heroStillSrc = DEFAULT_HERO_POSTER;
+  } else if (adminVideoReady) {
+    heroPosterSrc = theory.hero_poster_url || DEFAULT_HERO_POSTER;
+    heroVideoSrcs = [theory.hero_video_url];
+    heroRenderMode = reducedMotion ? 'still' : 'video';
+    heroStillSrc = heroPosterSrc;
+  } else if (adminImageReady) {
+    heroRenderMode = 'still';
+    heroStillSrc = theory.hero_image_url;
+  } else {
+    heroPosterSrc = DEFAULT_HERO_POSTER;
+    heroVideoSrcs = DEFAULT_HERO_VIDEO_SOURCES;
+    heroRenderMode = reducedMotion ? 'still' : 'video';
+    heroStillSrc = DEFAULT_HERO_POSTER;
+  }
 
   const openCharity = id => navigate(`/charities/${id}`);
 
@@ -360,14 +402,22 @@ export default function HomePage() {
 
   return (
     <div>
-      {/* ═══ HERO — full-bleed video background ═══ */}
+      {/* ═══ HERO — video or image background, admin-editable via
+          SiteSetting hero_media_type/hero_video_url/hero_poster_url/
+          hero_image_url; falls back to the default video below whenever
+          nothing's configured or the chosen media fails to load ═══ */}
       <section style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
-        <video className="hero-vid" autoPlay muted loop playsInline preload="auto"
-          style={{ filter: 'saturate(1.25) brightness(.48) contrast(1.08)' }}
-          poster="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=1920&q=85">
-          <source src="https://videos.pexels.com/video-files/3571264/3571264-uhd_2560_1440_25fps.mp4" type="video/mp4" />
-          <source src="https://videos.pexels.com/video-files/4172900/4172900-hd_1920_1080_25fps.mp4" type="video/mp4" />
-        </video>
+        {heroRenderMode === 'video' ? (
+          <video className="hero-vid" autoPlay muted loop playsInline preload="auto"
+            style={{ filter: 'saturate(1.25) brightness(.48) contrast(1.08)' }}
+            poster={heroPosterSrc} onError={() => setHeroFailed(true)}>
+            {heroVideoSrcs.map(src => <source key={src} src={src} type="video/mp4" />)}
+          </video>
+        ) : (
+          <img className="hero-vid" src={heroStillSrc} alt="" aria-hidden="true" loading="eager"
+            style={{ filter: 'saturate(1.25) brightness(.48) contrast(1.08)' }}
+            onError={() => setHeroFailed(true)} />
+        )}
 
         {/* Gradient overlays */}
         <div style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none', background: 'linear-gradient(108deg,rgba(5,12,8,.97) 0%,rgba(8,18,11,.88) 32%,rgba(12,24,15,.55) 58%,rgba(6,14,9,.78) 100%)' }} />
