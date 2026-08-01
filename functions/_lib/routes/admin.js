@@ -206,6 +206,70 @@ admin.put('/settings/:key', async (c) => {
   } catch (e) { return c.json({ error: 'Update failed' }, 500); }
 });
 
+// ─── Orders ─────────────────────────────────────────────────────────────
+// GET /orders and GET /orders/:id in orders.js are hard-scoped to the
+// requesting buyer (buyerId in the where clause) — there's no way for an
+// admin to see any order but their own through them. These bypass that
+// scoping entirely; access is already gated by the router-wide
+// requireRole('ADMIN') at the top of this file.
+admin.get('/orders', async (c) => {
+  const prisma = c.get('prisma');
+  try {
+    const q = c.req.query();
+    const { status, buyerEmail, dateFrom, dateTo } = q;
+    const page = q.page || 1, limit = q.limit || 20;
+    const where = {};
+    if (status) where.status = status;
+    if (buyerEmail) where.buyerEmail = { contains: buyerEmail, mode: 'insensitive' };
+    if (dateFrom || dateTo) {
+      where.createdAt = {};
+      if (dateFrom) where.createdAt.gte = new Date(dateFrom);
+      if (dateTo) where.createdAt.lte = new Date(`${dateTo}T23:59:59.999Z`);
+    }
+    const [items, total] = await Promise.all([
+      prisma.order.findMany({
+        where, skip: (page - 1) * limit, take: parseInt(limit), orderBy: { createdAt: 'desc' },
+        include: {
+          buyer: { select: { firstName: true, lastName: true, email: true } },
+          items: { take: 1, select: { product: { select: { title: true, images: true } } } },
+          _count: { select: { items: true } },
+        },
+      }),
+      prisma.order.count({ where }),
+    ]);
+    return c.json({ items, total, page: parseInt(page), pages: Math.ceil(total / limit) });
+  } catch (e) { return c.json({ error: 'Failed' }, 500); }
+});
+
+admin.get('/orders/:id', async (c) => {
+  const prisma = c.get('prisma');
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id: c.req.param('id') },
+      include: {
+        buyer: { select: { id: true, email: true, firstName: true, lastName: true, phone: true } },
+        items: {
+          include: {
+            product: { select: { title: true, images: true, slug: true, category: true, artist: { select: { displayName: true } }, charity: { select: { name: true } } } },
+            variation: true,
+          },
+        },
+      },
+    });
+    if (!order) return c.json({ error: 'Order not found' }, 404);
+    // artistPayout is never persisted (see split.js) — derived per line the
+    // same way order creation computes it: the remainder of the LINE TOTAL
+    // (unitPrice × quantity, which is what charitySplitAmt/platformFeeAmt
+    // were split from) after subtracting both, never unitPrice alone.
+    const items = order.items.map(item => {
+      const lineTotal = Number(item.unitPrice) * item.quantity;
+      const artistPayout = Math.round((lineTotal - Number(item.charitySplitAmt) - Number(item.platformFeeAmt) + Number.EPSILON) * 100) / 100;
+      return { ...item, lineTotal, artistPayout };
+    });
+    return c.json({ ...order, items });
+  } catch (e) { return c.json({ error: 'Failed' }, 500); }
+});
+
 admin.get('/analytics', async (c) => {
   const prisma = c.get('prisma');
   try {

@@ -39,6 +39,8 @@ import CharityProfileEditor from './pages/dashboard/CharityProfileEditor';
 import DashboardRouter from './pages/dashboard/DashboardRouter';
 import AdminDashboard from './pages/dashboard/AdminDashboard';
 import AdminProductManager from './pages/dashboard/AdminProductManager';
+import AdminOrders from './pages/dashboard/AdminOrders';
+import AdminOrderDetail from './pages/dashboard/AdminOrderDetail';
 import AdminSettings from './pages/dashboard/AdminSettings';
 import VerifyCertificatePage from './pages/VerifyCertificatePage';
 import MyCertificatesPage from './pages/MyCertificatesPage';
@@ -115,6 +117,8 @@ function WithLayout() {
         <Route path="/dashboard/charity-profile" element={<CharityProfileEditor />} />
         <Route path="/dashboard/admin" element={<AdminDashboard />} />
         <Route path="/dashboard/products" element={<AdminProductManager />} />
+        <Route path="/dashboard/admin/orders" element={<AdminOrders />} />
+        <Route path="/dashboard/admin/orders/:id" element={<AdminOrderDetail />} />
         <Route path="/dashboard/settings" element={<AdminSettings />} />
         <Route path="/dashboard/moderation" element={<AdminDashboard />} />
         <Route path="/dashboard/users" element={<AdminDashboard />} />

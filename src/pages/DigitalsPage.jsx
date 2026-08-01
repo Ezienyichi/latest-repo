@@ -6,6 +6,12 @@ import { SDGs, DIGITAL_CATS, FRAMED_CATEGORIES } from '../data/constants';
 import api from '../utils/api';
 import Icon from '../components/ui/Icon';
 
+// Shown in the hero when no specific category tab is active — a free
+// commercial-use Pexels placeholder (same CDN pattern as DIGITAL_CATS'
+// per-category bgImage) so the header always has a banner image, not just
+// the gradient, on first load / "All Products".
+const DEFAULT_HERO_BG = 'https://images.pexels.com/photos/10996846/pexels-photo-10996846.jpeg?auto=compress&cs=tinysrgb&w=1600';
+
 function SdgDot({ id }) {
   const s = SDGs.find(x => x.id === id); if (!s) return null;
   return <span className="sdg" title={s.n} style={{ background: s.c, color: '#fff', width: 20, height: 20, fontSize: 9, borderRadius: 4 }}>{id}</span>;
@@ -33,19 +39,18 @@ export default function DigitalsPage() {
   }, [activeCat, sort]);
 
   const activeCatData = DIGITAL_CATS.find(c => c.id === activeCat);
+  const heroBg = activeCatData?.bgImage || DEFAULT_HERO_BG;
+  const heroTint = activeCatData?.bg || '#0a0a1a';
+  const heroAccent = activeCatData?.color || '#1a1030';
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--base)' }}>
-      {/* Hero — category-specific background photo (placeholder) under the
-          existing gradient, which now doubles as the legibility scrim */}
-      <div style={{ background: activeCatData?.bgImage ? '#0a0a1a' : `linear-gradient(135deg,${activeCatData?.bg || '#0a0a1a'} 0%,${activeCatData?.color || '#1a1030'}33 50%,#041525 100%)`, padding: '48px 0 36px', position: 'relative', overflow: 'hidden' }}>
-        {activeCatData?.bgImage && (
-          <>
-            <img src={activeCatData.bgImage} alt="" aria-hidden="true" loading="lazy"
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-            <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(135deg,${activeCatData.bg}e6 0%,${activeCatData.color}59 50%,#041525f2 100%)` }} />
-          </>
-        )}
+      {/* Hero — category-specific background photo, or the default banner
+          above when no tab is active — under a gradient scrim for legibility */}
+      <div style={{ background: '#0a0a1a', padding: '48px 0 36px', position: 'relative', overflow: 'hidden' }}>
+        <img src={heroBg} alt="" aria-hidden="true" loading="lazy"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(135deg,${heroTint}e6 0%,${heroAccent}59 50%,#041525f2 100%)` }} />
         {/* Ambient glow */}
         <div style={{ position: 'absolute', top: '20%', right: '10%', width: 300, height: 300, borderRadius: '50%', background: `${activeCatData?.color || '#9B72CF'}15`, filter: 'blur(80px)', pointerEvents: 'none' }} />
         {/* position:relative so this paints above the absolutely-positioned

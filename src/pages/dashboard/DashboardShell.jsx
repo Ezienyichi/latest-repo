@@ -27,6 +27,7 @@ const CHARITY_NAV = [
 const ADMIN_NAV = [
   { id: 'overview', icon: LayoutDashboard, label: 'Overview', path: '/dashboard/admin' },
   { id: 'products', icon: Palette, label: 'Products', path: '/dashboard/products' },
+  { id: 'orders', icon: Package, label: 'Orders', path: '/dashboard/admin/orders' },
   { id: 'users', icon: Users, label: 'Users', path: '/dashboard/users' },
   { id: 'moderation', icon: Search, label: 'Moderation', path: '/dashboard/moderation' },
   { id: 'analytics', icon: BarChart3, label: 'Analytics', path: '/dashboard/analytics' },
@@ -61,7 +62,7 @@ export default function DashboardShell({ children, title }) {
         </div>
         <div style={{ padding: '4px 0' }}>
           {nav.map(item => (
-            <div key={item.id} className={`sb-item${pathname === item.path ? ' on' : ''}`}
+            <div key={item.id} className={`sb-item${(pathname === item.path || pathname.startsWith(item.path + '/')) ? ' on' : ''}`}
               onClick={() => navigate(item.path)}
               style={{ justifyContent: collapsed ? 'center' : 'flex-start', paddingLeft: collapsed ? 0 : 20 }}>
               <span className="sb-icon" style={{ display: 'flex' }}><Icon icon={item.icon} /></span>

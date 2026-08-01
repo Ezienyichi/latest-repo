@@ -110,6 +110,9 @@ class ApiClient {
   getAdminProducts(params = {}) { const qs = new URLSearchParams(params).toString(); return this.get(`/admin/products${qs ? '?' + qs : ''}`); }
   verifyArtistAdmin(id) { return this.post(`/admin/verify-artist/${id}`, {}); }
   verifyCharityAdmin(id) { return this.post(`/admin/verify-charity/${id}`, {}); }
+  getAdminOrders(params = {}) { const qs = new URLSearchParams(params).toString(); return this.get(`/admin/orders${qs ? '?' + qs : ''}`); }
+  getAdminOrder(id) { return this.get(`/admin/orders/${id}`); }
+  updateOrderStatus(id, status) { return this.patch(`/orders/${id}/status`, { status }); }
   getModeration() { return this.get('/admin/moderation'); }
   moderateProduct(id, status) { return this.patch(`/admin/products/${id}/moderate`, { status }); }
   getAdminAnalytics() { return this.get('/admin/analytics'); }

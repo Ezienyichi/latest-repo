@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { Heart, ArrowRight } from 'lucide-react';
+import { Heart, ArrowRight, Palette } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { SDGs, FRAMED_CATEGORIES } from '../data/constants';
+import { SDGs, FRAMED_CATEGORIES, DIGITAL_CATS } from '../data/constants';
 import api from '../utils/api';
 import Icon from '../components/ui/Icon';
 import EditionBadge, { priceLabel, priceAmount } from '../components/ui/EditionBadge';
@@ -22,6 +22,15 @@ const ORIGINALS_SUBCATS = [
   { id: 'acrylic', label: 'Acrylic' },
 ];
 
+// Full category nav shown above the SDG filter section — Artwork (with its
+// medium subcategories above) plus the two digital categories, reusing
+// DIGITAL_CATS as the single source of truth for their icon/label rather
+// than redeclaring MUSIC/GRAPHIC here.
+const SHOP_CATEGORIES = [
+  { id: 'ARTWORK', label: 'Artwork', icon: Palette, subcats: ORIGINALS_SUBCATS },
+  ...DIGITAL_CATS.map(c => ({ id: c.id, label: c.label, icon: c.icon, subcats: null })),
+];
+
 // Full product-shaped placeholders (unlike the homepage carousel's
 // lightweight item shape) so they render through the exact same grid/list/
 // quick-view JSX real products do. No slug — every interactive action below
@@ -35,6 +44,21 @@ const SUBCAT_PLACEHOLDERS = [
   { id: 'ph-5', slug: null, title: 'Golden Hour Study', artist: { displayName: 'Malik Toure' }, charity: { name: 'CAMFED' }, images: [{ url: 'https://images.unsplash.com/flagged/photo-1563882687293-71c93ae4d7dc?w=600&h=750&fit=crop&q=80' }], basePrice: 640, editionType: 'PRINT', category: 'ARTWORK', productType: 'SIMPLE', medium: 'Acrylic', sdgIds: [] },
   { id: 'ph-6', slug: null, title: 'Coastal Fragments', artist: { displayName: 'Naledi Khumalo' }, charity: { name: 'Greenpeace Africa' }, images: [{ url: 'https://images.unsplash.com/photo-1704786574827-b4dfa47ad4f4?w=600&h=750&fit=crop&q=80' }], basePrice: 920, editionType: 'ORIGINAL', estimatedValue: 1800, category: 'ARTWORK', productType: 'SIMPLE', medium: 'Acrylic', sdgIds: [] },
 ];
+
+// Same guarded-placeholder pattern as SUBCAT_PLACEHOLDERS above, one pool
+// per digital category — MUSIC/GRAPHIC have no real listings yet, so the
+// category nav below always has something to show without ever being
+// clickable through to checkout (slug: null, same guards).
+const CATEGORY_PLACEHOLDERS = {
+  MUSIC: [
+    { id: 'ph-m1', slug: null, title: 'Midnight Sessions', artist: { displayName: 'Kwame Boateng' }, charity: { name: 'Oxfam' }, images: [{ url: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=600&h=750&fit=crop&q=80' }], basePrice: 12, category: 'MUSIC', productType: 'DIGITAL', sdgIds: [] },
+    { id: 'ph-m2', slug: null, title: 'Analog Mix', artist: { displayName: 'Nia Kariuki' }, charity: { name: 'WaterAid UK' }, images: [{ url: 'https://images.unsplash.com/photo-1574517947730-55cb23e608c2?w=600&h=750&fit=crop&q=80' }], basePrice: 15, category: 'MUSIC', productType: 'DIGITAL', sdgIds: [] },
+  ],
+  GRAPHIC: [
+    { id: 'ph-g1', slug: null, title: 'Prism Set Vol. 2', artist: { displayName: 'Zainab Hassan' }, charity: { name: 'WaterAid UK' }, images: [{ url: 'https://images.unsplash.com/photo-1639170952854-16636715af61?w=600&h=750&fit=crop&q=80' }], basePrice: 35, category: 'GRAPHIC', productType: 'DIGITAL', sdgIds: [] },
+    { id: 'ph-g2', slug: null, title: 'Fracture Grid', artist: { displayName: 'Owen Mensah' }, charity: { name: 'CAMFED' }, images: [{ url: 'https://images.unsplash.com/photo-1754411072193-fa49c36554e4?w=600&h=750&fit=crop&q=80' }], basePrice: 26, category: 'GRAPHIC', productType: 'DIGITAL', sdgIds: [] },
+  ],
+};
 
 export default function ShopPage() {
   const navigate = useNavigate();
@@ -51,6 +75,7 @@ export default function ShopPage() {
   const [maxPrice, setMaxPrice] = useState(3000);
   const [page, setPage] = useState(1);
   const [qv, setQv] = useState(null);
+  const [activeCategory, setActiveCategory] = useState(params.get('category') || 'all');
   const [activeSubcat, setActiveSubcat] = useState('all');
 
   useEffect(() => {
@@ -60,22 +85,26 @@ export default function ShopPage() {
     if (sdgF) q.sdg = sdgF;
     if (charityF) q.charityId = charityF;
     if (maxPrice < 3000) q.maxPrice = maxPrice;
-    // A subcategory tab forces ARTWORK — there's no `medium` query param on
-    // the backend, so real matches are narrowed client-side below instead.
-    const cat = activeSubcat !== 'all' ? 'ARTWORK' : params.get('category');
+    const cat = activeCategory !== 'all' ? activeCategory : params.get('category');
     if (cat) q.category = cat;
 
     api.getProducts(q).then(r => { setProducts(r.items || []); setTotal(r.total || 0); }).catch(() => {}).finally(() => setLoading(false));
-  }, [search, sdgF, charityF, sort, maxPrice, page, params, activeSubcat]);
+  }, [search, sdgF, charityF, sort, maxPrice, page, params, activeCategory]);
 
-  // When a subcategory tab is active: narrow real results to matching
-  // medium client-side (no backend support for it), then top up with
-  // subcat-tagged placeholders so the tab never renders empty.
-  const displayProducts = activeSubcat === 'all' ? products : [
-    ...products.filter(p => (p.medium || '').toLowerCase() === activeSubcat),
-    ...SUBCAT_PLACEHOLDERS.filter(p => p.medium.toLowerCase() === activeSubcat),
-  ];
-  const displayTotal = activeSubcat === 'all' ? total : displayProducts.length;
+  // Artwork subcategory tab active: narrow real results to matching medium
+  // client-side (no backend support for it), then top up with subcat-tagged
+  // placeholders so the tab never renders empty. MUSIC/GRAPHIC have no real
+  // listings yet, so their real (already category-filtered, currently
+  // empty) results are topped up with their placeholder pool the same way.
+  const displayProducts =
+    activeCategory === 'ARTWORK' && activeSubcat !== 'all' ? [
+      ...products.filter(p => (p.medium || '').toLowerCase() === activeSubcat),
+      ...SUBCAT_PLACEHOLDERS.filter(p => p.medium.toLowerCase() === activeSubcat),
+    ]
+    : (activeCategory === 'MUSIC' || activeCategory === 'GRAPHIC') ? [...products, ...CATEGORY_PLACEHOLDERS[activeCategory]]
+    : products;
+  const usingPlaceholders = (activeCategory === 'ARTWORK' && activeSubcat !== 'all') || activeCategory === 'MUSIC' || activeCategory === 'GRAPHIC';
+  const displayTotal = usingPlaceholders ? displayProducts.length : total;
 
   const goToProduct = (p) => { if (p.slug) navigate(`/shop/${p.slug}`); };
   const addPlaceholderAware = (e, p) => {
@@ -107,16 +136,36 @@ export default function ShopPage() {
               </div>
             </div>
           </div>
-          {/* Subcategory tabs — Originals, filterable by medium */}
-          <div style={{ display: 'flex', gap: 8, marginTop: 20, flexWrap: 'wrap' }}>
-            {ORIGINALS_SUBCATS.map(s => (
-              <button key={s.id} className={`btn ${activeSubcat === s.id ? 'btn-p' : 'btn-s'} btn-sm`} onClick={() => { setActiveSubcat(s.id); setPage(1); }}>{s.label}</button>
-            ))}
-          </div>
         </div>
       </div>
 
       <div className="wrap" style={{ paddingTop: 28, paddingBottom: 80 }}>
+        {/* Category navigation — Artwork (+ medium subcategories), Music,
+            Graphic. Placed above the SDG filter section below; drives the
+            same category query the sidebar's SDG/price filters compose
+            with. Real products are shown where they exist, placeholders
+            top up any category/subcategory with none yet (guarded — no
+            slug, so they can never reach checkout). */}
+        <div className="card" style={{ padding: 20, marginBottom: 24 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 14 }}>Shop by Category</div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button className={`btn ${activeCategory === 'all' ? 'btn-p' : 'btn-s'} btn-sm`} onClick={() => { setActiveCategory('all'); setActiveSubcat('all'); setPage(1); }}>All Categories</button>
+            {SHOP_CATEGORIES.map(c => (
+              <button key={c.id} className={`btn ${activeCategory === c.id ? 'btn-p' : 'btn-s'} btn-sm`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                onClick={() => { setActiveCategory(c.id); setActiveSubcat('all'); setPage(1); }}>
+                <Icon icon={c.icon} size="inline" /> {c.label}
+              </button>
+            ))}
+          </div>
+          {activeCategory === 'ARTWORK' && (
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+              {ORIGINALS_SUBCATS.map(s => (
+                <button key={s.id} className={`btn ${activeSubcat === s.id ? 'btn-p' : 'btn-g'} btn-sm`} onClick={() => { setActiveSubcat(s.id); setPage(1); }}>{s.label}</button>
+              ))}
+            </div>
+          )}
+        </div>
+
         <div className="filter-layout">
           {/* Sidebar */}
           <div className="filter-sidebar">
