@@ -9,6 +9,7 @@ import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
 
 const EMPTY_HERO = { hero_media_type: 'video', hero_video_url: '', hero_poster_url: '', hero_image_url: '' };
+const VIDEO_URL_RE = /^https?:\/\/.+\.(mp4|webm|ogg)(\?.*)?$/i;
 
 // Only the Hero Media settings today — a focused first slice of the wider
 // admin settings surface (SiteSetting already supports far more keys via
@@ -21,6 +22,7 @@ export default function AdminSettings() {
   const [hero, setHero] = useState(EMPTY_HERO);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [videoPreviewError, setVideoPreviewError] = useState(false);
 
   useEffect(() => { if (user && user.role !== 'ADMIN') navigate('/'); }, [user]);
 
@@ -73,11 +75,39 @@ export default function AdminSettings() {
           <>
             <div className="fg">
               <label className="fl">Video URL</label>
-              <input className="fi" value={hero.hero_video_url} onChange={e => set('hero_video_url', e.target.value)} placeholder="https://example.com/hero.mp4" />
+              <input className="fi" value={hero.hero_video_url} onChange={e => { set('hero_video_url', e.target.value); setVideoPreviewError(false); }} placeholder="https://example.com/hero.mp4" />
               <div className="alert alert-i" style={{ marginTop: 8, fontSize: 12 }}>
                 <Icon icon={Info} size="inline" />
                 <div>Must be a direct link to an <strong>.mp4</strong> file, not a YouTube or Vimeo page — those can't be embedded as a background video.</div>
               </div>
+            </div>
+
+            <div className="fg">
+              <label className="fl">Preview</label>
+              <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', borderRadius: 'var(--r)', overflow: 'hidden', background: 'var(--border)' }}>
+                {VIDEO_URL_RE.test(hero.hero_video_url) && !videoPreviewError ? (
+                  <video
+                    key={hero.hero_video_url}
+                    src={hero.hero_video_url}
+                    poster={hero.hero_poster_url || undefined}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    muted loop autoPlay playsInline controls
+                    onError={() => setVideoPreviewError(true)}
+                  />
+                ) : hero.hero_poster_url ? (
+                  <img src={hero.hero_poster_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)', fontSize: 12, textAlign: 'center', padding: 16 }}>
+                    {hero.hero_video_url ? 'No preview yet — waiting for a valid .mp4/.webm/.ogg URL' : 'Add a video URL or poster image to preview the hero'}
+                  </div>
+                )}
+              </div>
+              {videoPreviewError && (
+                <div className="alert alert-w" style={{ marginTop: 8, fontSize: 12 }}>
+                  <Icon icon={Info} size="inline" />
+                  <div>This URL didn't load as a video — double-check it's a direct .mp4 link, not a page URL.</div>
+                </div>
+              )}
             </div>
             <div className="fg">
               <label className="fl">Poster Image <span style={{ fontWeight: 400, color: 'var(--muted)' }}>(shown while the video loads, and instead of it if reduced-motion is on)</span></label>
@@ -98,6 +128,14 @@ export default function AdminSettings() {
               onUploaded={({ publicUrl }) => set('hero_image_url', publicUrl)}
               label="Upload the hero background image"
             />
+            {hero.hero_image_url && (
+              <div style={{ marginTop: 12 }}>
+                <label className="fl">Preview</label>
+                <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: 'var(--r)', overflow: 'hidden', background: 'var(--border)' }}>
+                  <img src={hero.hero_image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              </div>
+            )}
           </div>
         )}
 

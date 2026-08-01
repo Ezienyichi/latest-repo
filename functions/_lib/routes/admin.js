@@ -50,7 +50,7 @@ const SETTING_VALIDATORS = {
   // pattern as site_logo_url — null is how a field gets unset, not just
   // how it starts, so the hero can fall back to the built-in default.
   hero_media_type: async (value) => (value === null || value === 'video' || value === 'image') ? null : 'Must be "video", "image", or null',
-  hero_video_url: async (value) => (value === null || (typeof value === 'string' && /^https?:\/\//.test(value))) ? null : 'Must be a valid URL or null',
+  hero_video_url: async (value) => (value === null || (typeof value === 'string' && /^https?:\/\/.+\.(mp4|webm|ogg)(\?.*)?$/i.test(value))) ? null : 'Must be a direct link to an .mp4/.webm/.ogg file (not a YouTube/Vimeo page URL) or null',
   hero_poster_url: async (value) => (value === null || (typeof value === 'string' && /^https?:\/\//.test(value))) ? null : 'Must be a valid URL or null',
   hero_image_url: async (value) => (value === null || (typeof value === 'string' && /^https?:\/\//.test(value))) ? null : 'Must be a valid URL or null',
 };
