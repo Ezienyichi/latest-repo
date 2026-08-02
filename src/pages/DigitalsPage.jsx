@@ -24,19 +24,21 @@ export default function DigitalsPage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCat, setActiveCat] = useState(params.get('category') || 'all');
+  const [sdgF, setSdgF] = useState(null);
   const [sort, setSort] = useState('featured');
 
   useEffect(() => {
     setLoading(true);
     const q = { limit: 30 };
     if (activeCat !== 'all') q.category = activeCat;
+    if (sdgF) q.sdg = sdgF;
     api.getProducts(q).then(r => {
       let items = (r.items || []).filter(p => p.category !== 'ARTWORK');
       if (sort === 'price_asc') items.sort((a, b) => Number(a.basePrice) - Number(b.basePrice));
       if (sort === 'price_desc') items.sort((a, b) => Number(b.basePrice) - Number(a.basePrice));
       setProducts(items);
     }).catch(() => {}).finally(() => setLoading(false));
-  }, [activeCat, sort]);
+  }, [activeCat, sdgF, sort]);
 
   const activeCatData = DIGITAL_CATS.find(c => c.id === activeCat);
   const heroBg = activeCatData?.bgImage || DEFAULT_HERO_BG;
@@ -96,6 +98,27 @@ export default function DigitalsPage() {
                 }}
                 onClick={() => setActiveCat(c.id)}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Icon icon={c.icon} size="inline" /> {c.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* SDG filter — combines with the category tabs above (both apply
+              together, same AND semantics as ShopPage's category+SDG filter). */}
+          <div style={{ display: 'flex', gap: 6, marginTop: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,.45)', marginRight: 2 }}>SDG</span>
+            <button onClick={() => setSdgF(null)}
+              style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 20, cursor: 'pointer', background: !sdgF ? 'rgba(255,255,255,.18)' : 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.15)', color: '#fff' }}>
+              All
+            </button>
+            {SDGs.map(s => (
+              <button key={s.id} title={s.n} onClick={() => setSdgF(sdgF === s.id ? null : s.id)}
+                style={{
+                  width: 22, height: 22, fontSize: 9, fontWeight: 700, borderRadius: 5, cursor: 'pointer',
+                  background: s.c, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  border: sdgF === s.id ? '2px solid #fff' : '2px solid transparent',
+                  opacity: sdgF && sdgF !== s.id ? .4 : 1, transition: 'opacity .15s, border-color .15s',
+                }}>
+                {s.id}
               </button>
             ))}
           </div>

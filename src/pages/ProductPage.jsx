@@ -153,7 +153,7 @@ export default function ProductPage() {
               {/* Main image / video */}
               <div style={{ flex: 1 }}>
                 <div ref={imgRef} className={`gallery-main${isFramed && !isVideoActive ? ' pf-framed' : ''}`}
-                  style={{ aspectRatio: '3/2', cursor: isVideoActive ? 'default' : 'zoom-in', overflow: 'hidden', position: 'relative' }}
+                  style={{ aspectRatio: '4/5', cursor: isVideoActive ? 'default' : 'zoom-in', overflow: 'hidden', position: 'relative' }}
                   onClick={() => !isVideoActive && images[activeImg] && setLightbox(true)}
                   onMouseMove={handleImgMouseMove}
                   onMouseLeave={() => setZoomPos(null)}>

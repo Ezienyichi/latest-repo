@@ -391,7 +391,9 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
 
 .product-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;transition:all .22s var(--ease);cursor:pointer}
 .product-card:hover{transform:translateY(-3px);box-shadow:var(--sh);border-color:var(--borderl)}
-.product-card-img{aspect-ratio:3/4;position:relative;overflow:hidden;background:var(--glass)}
+/* Taller than the previous 3/4 — same frame system (.pf-framed/.pf-contain
+   below untouched), just more vertical room for the work itself. */
+.product-card-img{aspect-ratio:2/3;position:relative;overflow:hidden;background:var(--glass)}
 .product-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .45s var(--ease);display:block}
 .product-card:hover .product-card-img img{transform:scale(1.04)}
 
@@ -536,11 +538,13 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
 /* Card width: ~5-6 fit in the visible track on desktop with the next one
    peeking in at the edge, per spec. Mobile shows ~1.6 per screen — a clear
    swipeable row, not a stacked list. */
-.gallery-card{cursor:pointer;transition:transform .2s var(--ease);flex:0 0 clamp(160px,15vw,200px);-webkit-user-select:none;user-select:none}
-@media(max-width:640px){.gallery-card{flex-basis:62%}}
+/* Both card width and image aspect-ratio bumped up from the previous
+   clamp(160px,15vw,200px)/4:5 — same frame system, just larger. */
+.gallery-card{cursor:pointer;transition:transform .2s var(--ease);flex:0 0 clamp(185px,17vw,230px);-webkit-user-select:none;user-select:none}
+@media(max-width:640px){.gallery-card{flex-basis:68%}}
 .gallery-card:hover{transform:translateY(-3px)}
 .gallery-card:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-.gallery-card-img-wrap{position:relative;aspect-ratio:4/5;border-radius:var(--r);overflow:hidden;background:var(--glass)}
+.gallery-card-img-wrap{position:relative;aspect-ratio:3/4;border-radius:var(--r);overflow:hidden;background:var(--glass)}
 .gallery-card-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s var(--ease)}
 .gallery-card:hover .gallery-card-img-wrap img{transform:scale(1.04)}
 /* Auto-frame (mat + border): see the shared .pf-framed rule above — applied
@@ -581,7 +585,10 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
 .gallery-vert::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
 /* ═══ DETAIL PAGE ═══ */
-.detail-layout{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
+/* Gallery column gets a slight edge over the info column — modest, not a
+   full restructure — so the main image renders a bit wider too, on top of
+   the taller aspect-ratio set on .gallery-main itself. */
+.detail-layout{display:grid;grid-template-columns:6fr 5fr;gap:48px;align-items:start}
 @media(max-width:900px){.detail-layout{grid-template-columns:1fr;gap:24px}}
 
 /* ═══ FILTER SIDEBAR ═══ */

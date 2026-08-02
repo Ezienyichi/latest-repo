@@ -245,7 +245,18 @@ export default function AdminProductManager() {
                   </select></div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginTop: 14 }}>
-                <div className="fg" style={{ margin: 0 }}><label className="fl">Medium</label><input className="fi" value={form.medium} onChange={e => set('medium', e.target.value)} placeholder="e.g. Oil on Canvas" /></div>
+                {form.category === 'ARTWORK' ? (
+                  <div className="fg" style={{ margin: 0 }}><label className="fl">Subcategory / Medium <span style={{ fontWeight: 400, color: 'var(--muted)' }}>(drives Shop's Artwork filter)</span></label>
+                    <select className="fi fsel" value={form.medium} onChange={e => set('medium', e.target.value)}>
+                      <option value="">— Select —</option>
+                      <option value="Abstract">Abstract</option>
+                      <option value="Oil">Oil</option>
+                      <option value="Acrylic">Acrylic</option>
+                    </select></div>
+                ) : (
+                  <div className="fg" style={{ margin: 0 }}><label className="fl">Medium <span style={{ fontWeight: 400, color: 'var(--muted)' }}>(optional)</span></label>
+                    <input className="fi" value={form.medium} onChange={e => set('medium', e.target.value)} placeholder="e.g. Digital / Mixed" /></div>
+                )}
                 <div className="fg" style={{ margin: 0 }}><label className="fl">Year</label><input className="fi" type="number" value={form.year} onChange={e => set('year', e.target.value)} /></div>
               </div>
               <div className="fg" style={{ marginTop: 14 }}><label className="fl">Edition Type</label>

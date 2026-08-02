@@ -184,12 +184,22 @@ function CarouselTrack({ items, itemKey, renderItem }) {
     if (s.setWidth > 0) next = ((next % s.setWidth) + s.setWidth) % s.setWidth;
     el.scrollLeft = next;
   };
-  const endDrag = () => {
+  const endDrag = e => {
     const s = state.current;
     if (!s.dragging) return;
     s.dragging = false;
     s.resumeAt = performance.now() + 2000; // resume auto-scroll ~2s after release
-    trackRef.current?.classList.remove('dragging');
+    const el = trackRef.current;
+    el?.classList.remove('dragging');
+    // Explicitly release pointer capture here rather than relying on the
+    // implicit release-on-pointerup — with capture still technically held
+    // at the instant the browser resolves the following synthetic click's
+    // target, some engines retarget that click to the capturing element
+    // (this track, which has no onClick) instead of the actual card under
+    // the cursor, silently eating every mouse click on a real product.
+    // Keyboard (Enter/Space, wired directly per-card) and touch (pointerType
+    // check above skips capture entirely) were never affected — only mouse.
+    if (e?.pointerId != null && el?.hasPointerCapture?.(e.pointerId)) el.releasePointerCapture(e.pointerId);
   };
   const onClickCapture = e => {
     if (state.current.moved) { e.stopPropagation(); e.preventDefault(); state.current.moved = false; }
