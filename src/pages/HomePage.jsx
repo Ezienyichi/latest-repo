@@ -482,39 +482,24 @@ export default function HomePage() {
           browsePath="/shop" onOpen={navigate} onCharityClick={openCharity} />
       </section>
 
-      {/* ═══ THEORY OF CHANGE — editorial two-column ═══ */}
-      <section className="toc2">
-        <img className="toc2-watermark" src="https://images.unsplash.com/photo-1649299313612-48cc3493f62e?w=1800&q=70" alt="" aria-hidden="true" loading="lazy" />
-        <div className="toc2-wrap">
-          <div className="toc2-grid">
-            <div className="toc2-photos">
-              <img className="toc2-photo-main" loading="lazy"
-                src="https://images.unsplash.com/photo-1536064479547-7ee40b74b807?w=700&h=780&fit=crop&q=80"
-                alt="A community healthcare charity project" />
-              <img className="toc2-photo-accent" loading="lazy"
-                src="https://images.unsplash.com/photo-1611414779790-abb3e1ec462e?w=460&h=490&fit=crop&q=80"
-                alt="An African artist at work on a canvas" />
-            </div>
-            <div className="toc2-copy">
-              <div className="toc2-kicker">Theory of Change</div>
-              <h2 className="toc2-heading">How Change Compounds</h2>
-              {theory && (
-                <>
-                  <p className="toc2-para">{theory.theory_if}</p>
-                  <div className="toc2-highlight">
-                    <img className="toc2-highlight-thumb" loading="lazy"
-                      src="https://images.unsplash.com/photo-1769117695165-6ecb44ff1150?w=340&h=180&fit=crop&q=80"
-                      alt="Buyers and partners engaging with creative work" />
-                    <div className="toc2-highlight-text">
-                      <p className="toc2-clamp2">{theory.theory_and_if}</p>
-                      <span className="toc2-link" onClick={() => navigate('/about')}>Learn more</span>
-                    </div>
-                  </div>
-                  <p className="toc2-para toc2-para-second">{theory.theory_then}</p>
-                </>
-              )}
-            </div>
-          </div>
+      {/* ═══ THEORY OF CHANGE — full-bleed background image, text overlaid.
+          Background image: theory_bg_image SiteSetting, admin-editable from
+          AdminSettings.jsx same as the hero image; falls back to this
+          placeholder (African artist at work — same photo already used
+          elsewhere on the site) until admin sets one. Statement text:
+          theoryStatement field on the 'homepage' PageContent row, same
+          content?.field-with-fallback pattern the How It Works section
+          above uses — no admin editor for PageContent exists yet, so the
+          fallback is the copy of record until one is built. ═══ */}
+      <section className="section toc-full">
+        <img className="toc-full-bg" loading="lazy" aria-hidden="true" alt=""
+          src={theory?.theory_bg_image || 'https://images.unsplash.com/photo-1611414779790-abb3e1ec462e?w=1920&q=75'} />
+        <div className="toc-full-scrim" />
+        <div className="wrap toc-full-content">
+          <div className="lbl" style={{ marginBottom: 16, color: 'var(--accent2)' }}>Theory of Change</div>
+          <p className="toc-full-text">
+            {content?.theoryStatement || 'If creatives are given a trusted platform to sell their work alongside credible charitable partners, and if buyers get transparent ways to purchase products that directly finance SDG-aligned projects, then creative commerce becomes a sustainable source of philanthropic capital that strengthens nonprofits, empowers creative entrepreneurs, and delivers measurable improvements in communities worldwide.'}
+          </p>
         </div>
       </section>
 

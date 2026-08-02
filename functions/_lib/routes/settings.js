@@ -14,6 +14,8 @@ const PUBLIC_KEYS = [
   'trustpilot_url', 'google_review_url',
   // Homepage hero background — video or image, admin-editable.
   'hero_media_type', 'hero_video_url', 'hero_poster_url', 'hero_image_url',
+  // Homepage Theory of Change section — full-bleed background image, admin-editable.
+  'theory_bg_image',
 ];
 const DEFAULTS = {
   charity_pct: 0.10,
@@ -39,6 +41,9 @@ const DEFAULTS = {
   hero_video_url: null,
   hero_poster_url: null,
   hero_image_url: null,
+  // Unset by default — falls back to the hardcoded placeholder image in
+  // HomePage.jsx until admin picks a real one.
+  theory_bg_image: null,
 };
 
 settings.get('/public', async (c) => {

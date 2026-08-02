@@ -53,6 +53,9 @@ const SETTING_VALIDATORS = {
   hero_video_url: async (value) => (value === null || (typeof value === 'string' && /^https?:\/\/.+\.(mp4|webm|ogg)(\?.*)?$/i.test(value))) ? null : 'Must be a direct link to an .mp4/.webm/.ogg file (not a YouTube/Vimeo page URL) or null',
   hero_poster_url: async (value) => (value === null || (typeof value === 'string' && /^https?:\/\//.test(value))) ? null : 'Must be a valid URL or null',
   hero_image_url: async (value) => (value === null || (typeof value === 'string' && /^https?:\/\//.test(value))) ? null : 'Must be a valid URL or null',
+  // Homepage Theory of Change background — same null-or-URL pattern as the
+  // hero image fields above.
+  theory_bg_image: async (value) => (value === null || (typeof value === 'string' && /^https?:\/\//.test(value))) ? null : 'Must be a valid URL or null',
 };
 
 admin.get('/users', async (c) => {
