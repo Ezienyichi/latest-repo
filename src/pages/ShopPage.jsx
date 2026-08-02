@@ -201,7 +201,12 @@ export default function ShopPage() {
                 {displayProducts.map(p => (
                   <div key={p.id} className="product-card" onClick={() => goToProduct(p)} style={{ cursor: p.slug ? 'pointer' : 'default' }}>
                     <div className={`product-card-img${FRAMED_CATEGORIES.includes(p.category) ? ' pf-framed' : ''}`}>
-                      {p.images?.[0]?.url ? <img src={p.images[0].url} alt={p.title} loading="lazy" /> : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(145deg,#1B4332,#2D6A4F)' }} />}
+                      {p.images?.[0]?.url ? (
+                        <div className={`imgswap${p.images[1]?.url ? ' has-second' : ''}`}>
+                          <img className="imgswap-main" src={p.images[0].url} alt={p.title} loading="lazy" />
+                          {p.images[1]?.url && <img className="imgswap-hover" src={p.images[1].url} alt="" loading="lazy" />}
+                        </div>
+                      ) : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(145deg,#1B4332,#2D6A4F)' }} />}
                       <div className="product-card-overlay">
                         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 7 }}>
                           <button className="btn btn-p" style={{ width: '100%', justifyContent: 'center' }} onClick={e => addPlaceholderAware(e, p)}>Add to Cart</button>

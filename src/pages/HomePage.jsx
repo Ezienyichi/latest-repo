@@ -79,7 +79,10 @@ function GalleryCard({ item, onClick, onCharityClick }) {
     <div className="gallery-card" onClick={onClick} tabIndex={0} role="button"
       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}>
       <div className={`gallery-card-img-wrap${framed ? ' pf-framed' : ''}`}>
-        <img src={item.img} alt={item.title} loading="lazy" draggable={false} />
+        <div className={`imgswap${item.img2 ? ' has-second' : ''}`}>
+          <img className="imgswap-main" src={item.img} alt={item.title} loading="lazy" draggable={false} />
+          {item.img2 && <img className="imgswap-hover" src={item.img2} alt="" loading="lazy" draggable={false} />}
+        </div>
         <EditionBadge editionType={item.editionType} style={{ position: 'absolute', top: 10, left: 10, zIndex: 3 }} />
       </div>
       <div className="gallery-card-body">
@@ -225,7 +228,7 @@ function GalleryRow({ label, heading, real, placeholders, subcats, browsePath, o
 
   const realMapped = real.map(p => ({
     id: p.id, slug: p.slug, title: p.title, artist: p.artist?.displayName || 'Unknown Artist',
-    price: p.basePrice, category: p.category, img: p.images?.[0]?.url,
+    price: p.basePrice, category: p.category, img: p.images?.[0]?.url, img2: p.images?.[1]?.url,
     editionType: p.editionType, estimatedValue: p.estimatedValue,
     subcat: isDigitalRow ? p.category : (p.medium || '').toLowerCase(),
     charityId: p.charity?.id, charityName: p.charity?.name || 'Unaffiliated', charityLogo: p.charity?.logo,
@@ -285,7 +288,7 @@ const TOPSELLER_PLACEHOLDERS = [...CROSS_CATEGORY_PLACEHOLDERS].reverse().slice(
 function mapProduct(p) {
   return {
     id: p.id, slug: p.slug, title: p.title, artist: p.artist?.displayName || 'Unknown Artist',
-    price: p.basePrice, category: p.category, img: p.images?.[0]?.url,
+    price: p.basePrice, category: p.category, img: p.images?.[0]?.url, img2: p.images?.[1]?.url,
     editionType: p.editionType, estimatedValue: p.estimatedValue,
     charityId: p.charity?.id, charityName: p.charity?.name || 'Unaffiliated', charityLogo: p.charity?.logo,
   };

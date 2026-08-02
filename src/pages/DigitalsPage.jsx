@@ -144,10 +144,11 @@ export default function DigitalsPage() {
                   <div className={`product-card-img${FRAMED_CATEGORIES.includes(p.category) ? ' pf-framed' : ''}`}>
                     {p.images?.[0]?.url ? (
                       <>
-                        <img src={p.images[0].url} alt={p.title} loading="lazy" style={{ transition: 'transform .4s' }}
-                          onMouseEnter={e => { if (!FRAMED_CATEGORIES.includes(p.category)) e.target.style.transform = 'scale(1.05)'; }}
-                          onMouseLeave={e => e.target.style.transform = 'scale(1)'} />
-                        {!FRAMED_CATEGORIES.includes(p.category) && <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top,${cat?.bg || '#111'}dd,transparent 55%)` }} />}
+                        <div className={`imgswap${p.images[1]?.url ? ' has-second' : ''}`}>
+                          <img className="imgswap-main" src={p.images[0].url} alt={p.title} loading="lazy" />
+                          {p.images[1]?.url && <img className="imgswap-hover" src={p.images[1].url} alt="" loading="lazy" />}
+                        </div>
+                        {!FRAMED_CATEGORIES.includes(p.category) && <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top,${cat?.bg || '#111'}dd,transparent 55%)`, pointerEvents: 'none' }} />}
                       </>
                     ) : (
                       <div style={{ width: '100%', height: '100%', background: `linear-gradient(145deg,${cat?.bg || '#1B4332'},${cat?.color || '#2D6A4F'}44)`, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: .3 }}>

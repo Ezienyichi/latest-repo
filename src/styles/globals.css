@@ -394,8 +394,29 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
 /* Taller than the previous 3/4 — same frame system (.pf-framed/.pf-contain
    below untouched), just more vertical room for the work itself. */
 .product-card-img{aspect-ratio:2/3;position:relative;overflow:hidden;background:var(--glass)}
-.product-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .45s var(--ease);display:block}
-.product-card:hover .product-card-img img{transform:scale(1.04)}
+
+/* ═══ PRODUCT IMAGE HOVER-SWAP — shared between .product-card-img (Shop/
+   Digitals grid) and .gallery-card-img-wrap (homepage carousels). Two
+   stacked <img>s inside a normal-flow wrapper (.imgswap): the wrapper is a
+   plain block that fills whatever content box it's given, so it correctly
+   sits inside .pf-framed's padding (the mat) — the absolutely-positioned
+   images inset:0 to THIS wrapper, not the card's own edge, so the mat never
+   gets covered. With a second image (.has-second): hover cross-fades to it.
+   Without one: hover applies a subtle zoom instead — the existing behavior,
+   just now properly gated. Both gated to devices that genuinely support
+   hover (excludes touch — a tap should navigate, not preview a swap) and
+   to prefers-reduced-motion: no-preference (reduced-motion users get a
+   static card either way, no hover-triggered movement at all). ═══ */
+.imgswap{position:relative;width:100%;height:100%}
+.imgswap-main,.imgswap-hover{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.imgswap-hover{opacity:0}
+@media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  .imgswap-main,.imgswap-hover{transition:opacity .45s var(--ease)}
+  .product-card:hover .imgswap-hover,.gallery-card:hover .imgswap-hover{opacity:1}
+  .imgswap:not(.has-second) .imgswap-main{transition:transform .45s var(--ease)}
+  .product-card:hover .imgswap:not(.has-second) .imgswap-main,
+  .gallery-card:hover .imgswap:not(.has-second) .imgswap-main{transform:scale(1.04)}
+}
 
 /* ═══ PRODUCT IMAGE FRAMES — shared sitewide (card thumbnail, carousel card,
    product detail main, and any other fixed-frame product image container).
@@ -545,8 +566,7 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
 .gallery-card:hover{transform:translateY(-3px)}
 .gallery-card:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .gallery-card-img-wrap{position:relative;aspect-ratio:3/4;border-radius:var(--r);overflow:hidden;background:var(--glass)}
-.gallery-card-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s var(--ease)}
-.gallery-card:hover .gallery-card-img-wrap img{transform:scale(1.04)}
+/* Hover cross-fade / zoom-fallback: see the shared .imgswap rules above. */
 /* Auto-frame (mat + border): see the shared .pf-framed rule above — applied
    directly to this element via a conditional class, not a descendant
    selector, so the same modifier works identically on every fixed-frame
