@@ -62,7 +62,7 @@ export default function ProductPage() {
 
   if (loading) return (
     <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ display: 'flex', gap: 32, maxWidth: 1100, width: '100%', padding: '0 48px' }}>
+      <div className="pdp-skel">
         <div className="skel" style={{ flex: 1, aspectRatio: '3/2', borderRadius: 16 }} />
         <div style={{ flex: 1 }}><div className="skel" style={{ height: 32, width: '60%', borderRadius: 8, marginBottom: 12 }} /><div className="skel" style={{ height: 20, width: '40%', borderRadius: 6, marginBottom: 20 }} /><div className="skel" style={{ height: 48, width: '30%', borderRadius: 8 }} /></div>
       </div>
@@ -122,7 +122,7 @@ export default function ProductPage() {
 
         <div className="detail-layout">
           {/* ═══ LEFT — GALLERY ═══ */}
-          <div style={{ position: 'sticky', top: 86 }}>
+          <div className="pdp-gallery-col">
             <div style={{ display: 'flex', gap: 8 }}>
               {/* Vertical thumbnails */}
               {totalSlides > 1 && (

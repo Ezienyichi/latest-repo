@@ -438,7 +438,7 @@ export default function HomePage() {
         <div style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none', background: 'radial-gradient(ellipse 50% 60% at 88% 82%,rgba(255,173,0,.1) 0%,transparent 60%)' }} />
 
         {/* Content */}
-        <div style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: 1340, margin: '0 auto', padding: 'clamp(100px,12vh,150px) clamp(24px,4vw,64px) clamp(80px,10vh,110px)', display: 'grid', gridTemplateColumns: '1fr clamp(340px,32vw,440px)', gap: 'clamp(32px,5vw,80px)', alignItems: 'center' }}>
+        <div className="hero-grid" style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: 1340, margin: '0 auto', padding: 'clamp(100px,12vh,150px) clamp(24px,4vw,64px) clamp(80px,10vh,110px)' }}>
           <div>
             <div className="hero-tag">
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0, opacity: .9 }} />
