@@ -457,3 +457,17 @@ model Coupon {
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
 }
+
+enum NewsletterSource {
+  popup
+  homepage
+}
+
+model NewsletterSubscriber {
+  id        String           @id @default(cuid())
+  email     String           @unique
+  source    NewsletterSource
+  createdAt DateTime         @default(now())
+
+  @@index([createdAt])
+}

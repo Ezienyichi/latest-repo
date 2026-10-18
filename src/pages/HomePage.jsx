@@ -595,9 +595,10 @@ export default function HomePage() {
                   onClick={() => navigate(`/shop/${aw.slug}`)}>
                   <div className={`product-card-img${FRAMED_CATEGORIES.includes(aw.category) ? ' pf-framed' : ''}`}>
                     {aw.images?.[0]?.url ? (
-                      <img src={aw.images[0].url} alt={aw.title} loading="lazy" style={{ transition: 'transform .4s' }}
-                        onMouseEnter={e => { if (!FRAMED_CATEGORIES.includes(aw.category)) e.target.style.transform = 'scale(1.04)'; }}
-                        onMouseLeave={e => e.target.style.transform = 'scale(1)'} />
+                      <div className={`imgswap${aw.images[1]?.url ? ' has-second' : ''}`}>
+                        <img className="imgswap-main" src={aw.images[0].url} alt={aw.title} loading="lazy" />
+                        {aw.images[1]?.url && <img className="imgswap-hover" src={aw.images[1].url} alt="" loading="lazy" />}
+                      </div>
                     ) : (
                       <div style={{ width: '100%', height: '100%', background: 'linear-gradient(145deg,#1B4332,#2D6A4F)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: .3 }}>
                         <Icon icon={Palette} size={40} />

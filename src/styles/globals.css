@@ -108,8 +108,8 @@ body{font-family:var(--fb);background:var(--base);color:var(--txt);overflow-x:hi
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
 .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
-@media(max-width:1024px){.g4{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr}}
-@media(max-width:640px){.g2,.g3,.g4{grid-template-columns:1fr}}
+@media(max-width:1024px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.g2,.g3,.g4{grid-template-columns:minmax(0,1fr)}}
 
 /* Buttons */
 .btn{border:none;cursor:pointer;font-family:var(--fb);font-weight:500;display:inline-flex;align-items:center;gap:7px;transition:all .2s var(--ease);outline:none;white-space:nowrap;text-decoration:none}
@@ -840,7 +840,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--mint);outline-offse
   .step-conn{width:16px}
   .tbl{font-size:11px}
   .tbl th,.tbl td{padding:8px 10px}
-  .g2,.g3,.g4{grid-template-columns:1fr!important;gap:12px!important}
+  .g2,.g3,.g4{grid-template-columns:minmax(0,1fr)!important;gap:12px!important}
 }
 
 @media(max-width:480px){
