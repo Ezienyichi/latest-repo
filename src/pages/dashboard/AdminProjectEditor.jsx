@@ -137,8 +137,8 @@ export default function AdminProjectEditor() {
             onUploaded={({ publicUrl }) => set('headerImage', publicUrl)} label="Upload a header image" />
         </div>
         <div className="fg">
-          <label className="fl">Campaign Video <span style={{ fontWeight: 400, color: 'var(--muted)' }}>— direct link to a video file (optional)</span></label>
-          <input className="fi" value={form.campaignVideo} onChange={e => set('campaignVideo', e.target.value)} placeholder="https://example.com/campaign.mp4" />
+          <label className="fl">Campaign Video <span style={{ fontWeight: 400, color: 'var(--muted)' }}>— YouTube link or direct video file (optional)</span></label>
+          <input className="fi" value={form.campaignVideo} onChange={e => set('campaignVideo', e.target.value)} placeholder="https://www.youtube.com/watch?v=… or https://example.com/campaign.mp4" />
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>

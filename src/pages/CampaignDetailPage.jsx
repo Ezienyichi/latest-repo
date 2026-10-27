@@ -9,6 +9,8 @@ import EditionBadge, { priceLabel, priceAmount } from '../components/ui/EditionB
 import { ArtistCredit } from '../components/ui/ArtistAvatar';
 import { CampaignProgress, SdgDot, money } from './CampaignsPage';
 import { cur } from '../utils/currency';
+import CampaignVideo from '../components/ui/CampaignVideo';
+import { parseVideo } from '../utils/video';
 
 const fmtDate = (d) => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
@@ -17,10 +19,9 @@ export default function CampaignDetailPage() {
   const navigate = useNavigate();
   const [p, setP] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [videoFailed, setVideoFailed] = useState(false);
 
   useEffect(() => {
-    setLoading(true); setP(null); setVideoFailed(false);
+    setLoading(true); setP(null);
     api.getProject(slug).then(setP).catch(() => {}).finally(() => setLoading(false));
   }, [slug]);
 
@@ -43,6 +44,7 @@ export default function CampaignDetailPage() {
   const funded = p.status === 'COMPLETED';
   const sdgs = (p.sdgIds || []).map(id => SDGs.find(s => s.id === id)).filter(Boolean);
   const products = p.products || [];
+  const hasVideo = !!parseVideo(p.campaignVideo);
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--base)' }}>
@@ -57,54 +59,51 @@ export default function CampaignDetailPage() {
           <span className="current">{p.title}</span>
         </div>
 
-        <div className="campaign-layout">
+        {funded && <span className="badge b-green" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 10 }}><Icon icon={Check} size="inline" /> Funded</span>}
+        <h1 className="display" style={{ fontSize: 'clamp(30px,5vw,46px)', marginBottom: 10 }}>{p.title}</h1>
+        <p style={{ fontSize: 14, color: 'var(--muted)', marginBottom: 32 }}>
+          A campaign by <Link to={`/charities/${p.charity.id}`} style={{ color: 'var(--accent)', fontWeight: 500 }}>{p.charity.name}</Link>
+          {(p.startDate || p.endDate) && <> · {p.startDate && fmtDate(p.startDate)}{p.startDate && p.endDate && ' – '}{p.endDate && fmtDate(p.endDate)}</>}
+        </p>
+
+        <div className={`campaign-storyvideo${hasVideo ? '' : ' no-video'}`}>
           <div>
-            {funded && <span className="badge b-green" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 10 }}><Icon icon={Check} size="inline" /> Funded</span>}
-            <h1 className="display" style={{ fontSize: 'clamp(30px,5vw,46px)', marginBottom: 10 }}>{p.title}</h1>
-            <p style={{ fontSize: 14, color: 'var(--muted)', marginBottom: 22 }}>
-              A campaign by <Link to={`/charities/${p.charity.id}`} style={{ color: 'var(--accent)', fontWeight: 500 }}>{p.charity.name}</Link>
-              {(p.startDate || p.endDate) && <> · {p.startDate && fmtDate(p.startDate)}{p.startDate && p.endDate && ' – '}{p.endDate && fmtDate(p.endDate)}</>}
-            </p>
-
-            {p.campaignVideo && !videoFailed && (
-              <video className="campaign-video" controls playsInline preload="metadata" poster={p.headerImage || undefined}
-                src={p.campaignVideo} onError={() => setVideoFailed(true)} style={{ marginBottom: 28 }} />
-            )}
-
             <div className="lbl" style={{ marginBottom: 10 }}>The Story</div>
             <div className="campaign-story">{p.story}</div>
           </div>
+          {hasVideo && <CampaignVideo url={p.campaignVideo} poster={p.headerImage} title={`${p.title} — campaign video`} />}
+        </div>
 
-          <aside style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div className="card" style={{ padding: 22 }}>
-              <div style={{ fontFamily: 'var(--fd)', fontSize: 32, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>{money(p.raisedAmount)}</div>
-              <div style={{ fontSize: 12, color: 'var(--muted)', margin: '4px 0 14px' }}>raised of {money(p.targetAmount)} target</div>
-              <CampaignProgress project={p} />
-              {!funded && products.length > 0 && <a href="#artworks" className="btn btn-p" style={{ width: '100%', justifyContent: 'center', marginTop: 16 }}>Support with art</a>}
-            </div>
+        <div className="campaign-info">
+          <div className="card" style={{ padding: 22 }}>
+            <div className="lbl" style={{ marginBottom: 10 }}>{funded ? 'Funded' : 'Progress'}</div>
+            <div style={{ fontFamily: 'var(--fd)', fontSize: 32, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>{money(p.raisedAmount)}</div>
+            <div style={{ fontSize: 12, color: 'var(--muted)', margin: '4px 0 14px' }}>raised of {money(p.targetAmount)} target</div>
+            <CampaignProgress project={p} />
+            {!funded && products.length > 0 && <a href="#artworks" className="btn btn-p" style={{ width: '100%', justifyContent: 'center', marginTop: 16 }}>Support with art</a>}
+          </div>
 
-            {sdgs.length > 0 && (
-              <div className="card" style={{ padding: 22 }}>
-                <div className="lbl" style={{ marginBottom: 10 }}>Global Goals</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {sdgs.map(s => <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}><SdgDot id={s.id} size={24} />{s.n}</div>)}
-                </div>
+          <div className="card" style={{ padding: 22 }}>
+            <div className="lbl" style={{ marginBottom: 10 }}>Global Goals</div>
+            {sdgs.length === 0 ? <div style={{ fontSize: 13, color: 'var(--muted)' }}>No goals tagged yet.</div> : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {sdgs.map(s => <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}><SdgDot id={s.id} size={24} />{s.n}</div>)}
               </div>
             )}
+          </div>
 
-            <div className="card card-h" style={{ padding: 22, cursor: 'pointer' }} onClick={() => navigate(`/charities/${p.charity.id}`)}>
-              <div className="lbl" style={{ marginBottom: 10 }}>The Charity</div>
-              <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10 }}>
-                <CharityLogo logo={p.charity.logo} size={36} />
-                <div style={{ fontFamily: 'var(--fd)', fontSize: 20, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                  {p.charity.name}{p.charity.verified && <span className="badge b-green" style={{ fontSize: 9, display: 'inline-flex', alignItems: 'center', gap: 3 }}><Icon icon={Check} size="inline" /> Verified</span>}
-                </div>
+          <div className="card card-h" style={{ padding: 22, cursor: 'pointer' }} onClick={() => navigate(`/charities/${p.charity.id}`)}>
+            <div className="lbl" style={{ marginBottom: 10 }}>The Charity</div>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10 }}>
+              <CharityLogo logo={p.charity.logo} size={36} />
+              <div style={{ fontFamily: 'var(--fd)', fontSize: 20, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                {p.charity.name}{p.charity.verified && <span className="badge b-green" style={{ fontSize: 9, display: 'inline-flex', alignItems: 'center', gap: 3 }}><Icon icon={Check} size="inline" /> Verified</span>}
               </div>
-              {p.charity.mission && <p style={{ fontSize: 12, color: 'var(--txt2)', lineHeight: 1.7, marginBottom: 10, display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.charity.mission}</p>}
-              <div style={{ fontSize: 12, color: 'var(--muted)' }}>{money(p.charityRaised)} raised across all their campaigns</div>
-              <div style={{ fontSize: 12, color: 'var(--accent)', marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 4 }}>View charity <Icon icon={ExternalLink} size="inline" /></div>
             </div>
-          </aside>
+            {p.charity.mission && <p style={{ fontSize: 12, color: 'var(--txt2)', lineHeight: 1.7, marginBottom: 10, display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.charity.mission}</p>}
+            <div style={{ fontSize: 12, color: 'var(--muted)' }}>{money(p.charityRaised)} raised across all their campaigns</div>
+            <div style={{ fontSize: 12, color: 'var(--accent)', marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 4 }}>View charity <Icon icon={ExternalLink} size="inline" /></div>
+          </div>
         </div>
 
         <div id="artworks" style={{ marginTop: 56, scrollMarginTop: 90 }}>
