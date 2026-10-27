@@ -11,7 +11,7 @@ import SocialShare from '../components/ui/SocialShare';
 import MusicPlayer from '../components/ui/MusicPlayer';
 import GraphicPreview from '../components/ui/GraphicPreview';
 import IncludesList from '../components/ui/IncludesList';
-import CharityLogo from '../components/ui/CharityLogo';
+import ArtworkCause from '../components/ui/ArtworkCause';
 import TrustBadges from '../components/ui/TrustBadges';
 import EditionBadge, { priceLabel, priceAmount } from '../components/ui/EditionBadge';
 import api from '../utils/api';
@@ -245,6 +245,9 @@ export default function ProductPage() {
               {product.comparePrice && <span className="badge b-red">SAVE {cur()}{(Number(product.comparePrice) - price).toLocaleString()}</span>}
             </div>
 
+            {/* Campaign + charity this artwork supports */}
+            <ArtworkCause product={product} />
+
             {/* Variations */}
             {product.variations?.length > 0 && (
               <div style={{ marginBottom: 22 }}>
@@ -292,19 +295,6 @@ export default function ProductPage() {
             <div style={{ marginBottom: 22 }}>
               <SocialShare title={`${product.title} by ${product.artist?.displayName} — FastTackle Africa`} />
             </div>
-
-            {/* Charity impact card */}
-            {product.charity && (
-              <div className="card" style={{ padding: 18, marginBottom: 22, display: 'flex', gap: 14, alignItems: 'center', cursor: 'pointer', background: 'rgba(23,124,29,.04)', border: '1px solid rgba(23,124,29,.15)' }}
-                onClick={() => navigate(`/charities/${product.charity.id}`)}>
-                <CharityLogo logo={product.charity.logo} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent)' }}>{product.charity.name}</div>
-                  <div style={{ fontSize: 12, color: 'var(--txt2)', lineHeight: 1.5 }}>10% of this sale goes directly to their SDG-aligned projects</div>
-                </div>
-                <span style={{ color: 'var(--accent)', fontSize: 13, flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 4 }}>View charity <Icon icon={ArrowRight} size="inline" /></span>
-              </div>
-            )}
 
             {/* Digital product previews */}
             {product.category === 'MUSIC' && <MusicPlayer product={product} />}

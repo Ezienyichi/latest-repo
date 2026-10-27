@@ -42,8 +42,10 @@ products.get('/', optionalAuth, async (c) => {
 products.get('/:slug', optionalAuth, async (c) => {
   const prisma = c.get('prisma');
   try {
-    const product = await prisma.product.findUnique({ where: { slug: c.req.param('slug') }, include: { artist: true, charity: true, variations: true, addons: { orderBy: { sortOrder: 'asc' } }, reviews: { include: { user: { select: { firstName: true, lastName: true, avatarUrl: true } } }, orderBy: { createdAt: 'desc' } } } });
+    const product = await prisma.product.findUnique({ where: { slug: c.req.param('slug') }, include: { artist: true, charity: true, project: { select: { id: true, slug: true, title: true, status: true, charity: { select: { id: true, name: true, logo: true } } } }, variations: true, addons: { orderBy: { sortOrder: 'asc' } }, reviews: { include: { user: { select: { firstName: true, lastName: true, avatarUrl: true } } }, orderBy: { createdAt: 'desc' } } } });
     if (!product) return c.json({ error: 'Not found' }, 404);
+    // Only a public campaign (ACTIVE, or COMPLETED shown as funded) is surfaced — DRAFT/ARCHIVED stay private even if linked.
+    if (product.project && !['ACTIVE', 'COMPLETED'].includes(product.project.status)) product.project = null;
     return c.json(product);
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
 });
