@@ -119,6 +119,15 @@ class ApiClient {
   getAdminSettings() { return this.get('/admin/settings'); }
   updateAdminSetting(key, value) { return this.put(`/admin/settings/${key}`, { value }); }
 
+  // Projects (campaigns) — admin
+  getAdminProjects(params = {}) { const qs = new URLSearchParams(params).toString(); return this.get(`/admin/projects${qs ? '?' + qs : ''}`); }
+  getAdminProject(id) { return this.get(`/admin/projects/${id}`); }
+  createAdminProject(data) { return this.post('/admin/projects', data); }
+  updateAdminProject(id, data) { return this.patch(`/admin/projects/${id}`, data); }
+  deleteAdminProject(id) { return this.delete(`/admin/projects/${id}`); }
+  linkProjectProduct(id, productId) { return this.post(`/admin/projects/${id}/products`, { productId }); }
+  unlinkProjectProduct(id, productId) { return this.delete(`/admin/projects/${id}/products/${productId}`); }
+
   // Newsletter
   subscribeNewsletter(email, source) { return this.post('/newsletter', { email, source }); }
   getAdminNewsletter(params = {}) { const qs = new URLSearchParams(params).toString(); return this.get(`/admin/newsletter${qs ? '?' + qs : ''}`); }

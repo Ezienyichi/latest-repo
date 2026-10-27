@@ -13,7 +13,7 @@ const STATUS_BADGE = { ACTIVE: 'b-green', DRAFT: 'b-gold', SOLD: 'b-muted', SUSP
 const EMPTY_FORM = {
   title: '', description: '', productType: 'SIMPLE', category: 'ARTWORK', editionType: 'ORIGINAL',
   basePrice: '', comparePrice: '', estimatedValue: '', sku: '', stockQuantity: '',
-  medium: '', year: new Date().getFullYear(), sdgIds: [], charityId: '',
+  medium: '', year: new Date().getFullYear(), sdgIds: [], charityId: '', projectId: '',
   autoCertificate: true, featured: false, tags: '',
   fileFormat: '', pages: '', previewUrl: '', fileUrl: '',
   images: [{ url: '', label: 'Front View' }],
@@ -41,6 +41,7 @@ export default function AdminProductManager() {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [search, setSearch] = useState('');
   const [charities, setCharities] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [showForm, setShowForm] = useState(params.get('new') === '1');
   const [editId, setEditId] = useState(null);
   const [step, setStep] = useState(1);
@@ -49,6 +50,7 @@ export default function AdminProductManager() {
   useEffect(() => { if (user && user.role !== 'ADMIN') navigate('/'); }, [user]);
   useEffect(() => { loadProducts(); }, []);
   useEffect(() => { api.getCharities().then(setCharities).catch(() => {}); }, []);
+  useEffect(() => { api.getAdminProjects({ limit: 200 }).then(d => setProjects(d.items || [])).catch(() => {}); }, []);
 
   const loadProducts = () => {
     setLoading(true);
@@ -86,7 +88,7 @@ export default function AdminProductManager() {
       estimatedValue: p.estimatedValue != null ? String(p.estimatedValue) : '',
       sku: p.sku || '', stockQuantity: p.stockQuantity != null ? String(p.stockQuantity) : '',
       medium: p.medium || '', year: p.year || new Date().getFullYear(),
-      sdgIds: p.sdgIds || [], charityId: p.charityId || '',
+      sdgIds: p.sdgIds || [], charityId: p.charityId || '', projectId: p.projectId || '',
       autoCertificate: !!p.autoCertificate, featured: !!p.featured, tags: (p.tags || []).join(', '),
       fileFormat: p.fileFormat || '', pages: p.pages != null ? String(p.pages) : '', previewUrl: p.previewUrl || '', fileUrl: p.fileUrl || '',
       images: p.images?.length ? p.images : [{ url: '', label: 'Front View' }],
@@ -109,6 +111,7 @@ export default function AdminProductManager() {
         year: parseInt(form.year),
         pages: form.pages ? parseInt(form.pages) : undefined,
         charityId: form.charityId || null,
+        projectId: form.projectId || null,
         tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
         images: form.images.filter(img => img.url),
         fileUrl: form.fileUrl || undefined,
@@ -373,6 +376,13 @@ export default function AdminProductManager() {
                 <select className="fi fsel" value={form.charityId} onChange={e => set('charityId', e.target.value)}>
                   <option value="">— None —</option>
                   {charities.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              <div className="fg">
+                <label className="fl">Campaign <span style={{ fontWeight: 400, color: 'var(--muted)' }}>— the fundraising campaign this artwork supports</span></label>
+                <select className="fi fsel" value={form.projectId} onChange={e => set('projectId', e.target.value)}>
+                  <option value="">— None —</option>
+                  {projects.map(pr => <option key={pr.id} value={pr.id}>{pr.title} · {pr.charity?.name}{pr.status !== 'ACTIVE' ? ` (${pr.status})` : ''}</option>)}
                 </select>
               </div>
               <div style={{ marginBottom: 16 }}>
