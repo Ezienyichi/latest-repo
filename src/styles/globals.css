@@ -643,7 +643,7 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
    full restructure — so the main image renders a bit wider too, on top of
    the taller aspect-ratio set on .gallery-main itself. */
 .detail-layout{display:grid;grid-template-columns:6fr 5fr;gap:48px;align-items:start}
-@media(max-width:900px){.detail-layout{grid-template-columns:1fr;gap:24px}}
+@media(max-width:900px){.detail-layout{grid-template-columns:minmax(0,1fr);gap:24px}}
 
 /* Gallery column — sticky (image stays visible while the longer info
    column scrolls beside it) only makes sense in the desktop 2-column
