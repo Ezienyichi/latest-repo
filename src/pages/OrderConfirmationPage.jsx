@@ -43,7 +43,7 @@ export default function OrderConfirmationPage() {
           <h3 style={{ fontFamily: 'var(--fd)', fontSize: 22, marginBottom: 18 }}>Order Items</h3>
           {order.items?.map((item, i) => (
             <div key={i} style={{ display: 'flex', gap: 14, padding: '14px 0', borderBottom: i < order.items.length - 1 ? '1px solid var(--border)' : 'none' }}>
-              <div className={FRAMED_CATEGORIES.includes(item.product?.category) ? 'pf-contain' : ''} style={{ width: 68, height: 68, borderRadius: 8, overflow: 'hidden', flexShrink: 0, background: 'var(--glass)' }}>
+              <div className={`art-thumb${FRAMED_CATEGORIES.includes(item.product?.category) ? ' pf-contain' : ''}`} style={{ '--tw': '56px', borderRadius: 8 }}>
                 {item.product?.images?.[0]?.url ? <img src={item.product.images[0].url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: '#1B4332' }} />}
               </div>
               <div style={{ flex: 1 }}>

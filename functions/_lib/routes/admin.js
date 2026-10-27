@@ -444,6 +444,169 @@ admin.delete('/projects/:id/products/:productId', async (c) => {
   } catch (e) { return c.json({ error: 'Unlink failed' }, 500); }
 });
 
+// ─── Charities ──────────────────────────────────────────────────────────
+// There are no charity self-service accounts in the admin-managed model, but
+// CharityProfile.userId is required + unique, so a charity created here is
+// backed by a placeholder User: role CHARITY, NO passwordHash (login rejects
+// that outright) and an undeliverable ".invalid" address (a password-reset
+// mail can never reach it). Charities that registered themselves keep their
+// real account untouched.
+//
+// `raised` and `funderCount` are deliberately not writable: raised is the
+// derived rollup over the charity's campaigns (charityRollup.js), funderCount
+// is maintained by the funder flow.
+const PLACEHOLDER_EMAIL_DOMAIN = 'charity.fasttackle.invalid';
+
+async function parseCharityBody(prisma, body, { partial, exceptId }) {
+  const data = {};
+  const has = (k) => body[k] !== undefined;
+
+  if (has('name') || !partial) {
+    if (typeof body.name !== 'string' || !body.name.trim()) return { error: 'Name is required' };
+    const name = body.name.trim();
+    if (name.length > 140) return { error: 'Name must be 140 characters or fewer' };
+    const clash = await prisma.charityProfile.findFirst({ where: { name: { equals: name, mode: 'insensitive' }, ...(exceptId ? { NOT: { id: exceptId } } : {}) }, select: { id: true } });
+    if (clash) return { error: 'A charity with that name already exists', status: 409 };
+    data.name = name;
+  }
+  for (const [k, max] of [['mission', 5000], ['registrationNo', 60]]) {
+    if (has(k)) {
+      if (body[k] !== null && typeof body[k] !== 'string') return { error: `${k} must be text` };
+      const v = body[k] === null ? '' : body[k].trim();
+      if (v.length > max) return { error: `${k} must be ${max} characters or fewer` };
+      data[k] = v || null;
+    }
+  }
+  for (const k of ['logo', 'websiteUrl']) {
+    if (has(k)) {
+      const v = body[k] === '' || body[k] === null ? null : body[k];
+      if (v !== null && !isHttpUrl(v)) return { error: `${k} must be an http(s) URL or empty` };
+      data[k] = v;
+    }
+  }
+  if (has('sdgIds')) {
+    if (!Array.isArray(body.sdgIds) || !body.sdgIds.every(n => Number.isInteger(n) && n >= 1 && n <= 17)) return { error: 'sdgIds must be integers 1-17' };
+    data.sdgIds = [...new Set(body.sdgIds)].sort((a, b) => a - b);
+  }
+  if (has('target')) {
+    const n = Number(body.target);
+    if (body.target === '' || body.target === null || !isFinite(n) || n < 0 || n >= 1e10) return { error: 'Target must be a number 0 or greater' };
+    data.target = n.toFixed(2);
+  }
+  if (has('verified')) {
+    if (typeof body.verified !== 'boolean') return { error: 'verified must be true or false' };
+    data.verified = body.verified;
+  }
+  return { data };
+}
+
+admin.post('/charities', async (c) => {
+  const prisma = c.get('prisma');
+  try {
+    const body = await c.req.json().catch(() => ({}));
+    const { error, status, data } = await parseCharityBody(prisma, body, { partial: false });
+    if (error) return c.json({ error }, status || 400);
+    const charity = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({ data: { email: `charity-${crypto.randomUUID()}@${PLACEHOLDER_EMAIL_DOMAIN}`, role: 'CHARITY', firstName: data.name } });
+      return tx.charityProfile.create({ data: { ...data, userId: user.id } });
+    });
+    await writeAuditLog(prisma, { adminId: c.get('userId'), action: 'charity.create', targetType: 'CharityProfile', targetId: charity.id, after: toJson(charity) });
+    return c.json({ ...charity, charityRaised: 0 }, 201);
+  } catch (e) { console.error(e); return c.json({ error: 'Create failed' }, 500); }
+});
+
+admin.get('/charities', async (c) => {
+  const prisma = c.get('prisma');
+  try {
+    const q = c.req.query();
+    const page = Math.max(1, parseInt(q.page) || 1);
+    const limit = Math.min(200, Math.max(1, parseInt(q.limit) || 20));
+    const where = {};
+    if (q.verified === 'true') where.verified = true;
+    if (q.verified === 'false') where.verified = false;
+    if (q.search) where.OR = [{ name: { contains: q.search, mode: 'insensitive' } }, { registrationNo: { contains: q.search, mode: 'insensitive' } }];
+    const [items, total] = await Promise.all([
+      prisma.charityProfile.findMany({
+        where, skip: (page - 1) * limit, take: limit, orderBy: { createdAt: 'desc' },
+        include: { _count: { select: { projects: true, products: true } }, user: { select: { passwordHash: true } } },
+      }),
+      prisma.charityProfile.count({ where }),
+    ]);
+    const raised = await getCharityRaisedMap(prisma, items.map(i => i.id));
+    return c.json({
+      items: items.map(({ user, ...ch }) => ({ ...ch, hasLoginAccount: !!user?.passwordHash, charityRaised: raised[ch.id] ?? 0 })),
+      total, page, pages: Math.max(1, Math.ceil(total / limit)),
+    });
+  } catch (e) { return c.json({ error: 'Failed' }, 500); }
+});
+
+admin.get('/charities/:id', async (c) => {
+  const prisma = c.get('prisma');
+  try {
+    const id = c.req.param('id');
+    const charity = await prisma.charityProfile.findUnique({
+      where: { id },
+      include: {
+        user: { select: { email: true, passwordHash: true } },
+        projects: { orderBy: { createdAt: 'desc' }, select: { id: true, slug: true, title: true, status: true, targetAmount: true, raisedAmount: true } },
+        _count: { select: { products: true, partnerships: true, messages: true, templates: true, resources: true, funderRelations: true } },
+      },
+    });
+    if (!charity) return c.json({ error: 'Not found' }, 404);
+    const { user, ...rest } = charity;
+    const hasLoginAccount = !!user?.passwordHash;
+    return c.json({ ...rest, hasLoginAccount, accountEmail: hasLoginAccount ? user.email : null, charityRaised: await getCharityRaised(prisma, id) });
+  } catch (e) { return c.json({ error: 'Failed' }, 500); }
+});
+
+admin.patch('/charities/:id', async (c) => {
+  const prisma = c.get('prisma');
+  try {
+    const id = c.req.param('id');
+    const before = await prisma.charityProfile.findUnique({ where: { id } });
+    if (!before) return c.json({ error: 'Not found' }, 404);
+    const body = await c.req.json().catch(() => ({}));
+    const { error, status, data } = await parseCharityBody(prisma, body, { partial: true, exceptId: id });
+    if (error) return c.json({ error }, status || 400);
+    if (!Object.keys(data).length) return c.json({ error: 'Nothing to update' }, 400);
+    const charity = await prisma.charityProfile.update({ where: { id }, data });
+    await writeAuditLog(prisma, { adminId: c.get('userId'), action: 'charity.update', targetType: 'CharityProfile', targetId: id, before: toJson(before), after: toJson(charity) });
+    return c.json({ ...charity, charityRaised: await getCharityRaised(prisma, id) });
+  } catch (e) { console.error(e); return c.json({ error: 'Update failed' }, 500); }
+});
+
+admin.delete('/charities/:id', async (c) => {
+  const prisma = c.get('prisma');
+  try {
+    const id = c.req.param('id');
+    const before = await prisma.charityProfile.findUnique({
+      where: { id },
+      include: {
+        user: { select: { passwordHash: true } },
+        _count: { select: { projects: true, products: true, partnerships: true, messages: true, templates: true, resources: true, funderRelations: true } },
+      },
+    });
+    if (!before) return c.json({ error: 'Not found' }, 404);
+    // Never orphan anything. Campaigns come first (the case the admin can act
+    // on directly); the rest are FK-restricted too and would otherwise 500.
+    const n = before._count;
+    if (n.projects) return c.json({ error: `This charity has ${n.projects} campaign${n.projects > 1 ? 's' : ''} — reassign ${n.projects > 1 ? 'them' : 'it'} to another charity first (archiving a campaign doesn't detach it from its charity)`, campaigns: n.projects }, 409);
+    const blockers = [['artwork', n.products], ['artist partnership', n.partnerships], ['message', n.messages], ['message template', n.templates], ['resource', n.resources], ['funder', n.funderRelations]].filter(([, k]) => k > 0);
+    if (blockers.length) return c.json({ error: `This charity still has ${blockers.map(([w, k]) => `${k} ${w}${k > 1 ? 's' : ''}`).join(', ')} — remove or reassign them before deleting` }, 409);
+
+    const { user, _count, ...snapshot } = before;
+    const hasLogin = !!user?.passwordHash;
+    await prisma.$transaction(async (tx) => {
+      await tx.charityProfile.delete({ where: { id } });   // documents cascade
+      // Only the placeholder user we minted is removed; a charity that
+      // registered itself keeps its login.
+      if (!hasLogin) await tx.user.delete({ where: { id: before.userId } });
+    });
+    await writeAuditLog(prisma, { adminId: c.get('userId'), action: 'charity.delete', targetType: 'CharityProfile', targetId: id, before: toJson(snapshot) });
+    return c.json({ message: 'Deleted', userKept: hasLogin });
+  } catch (e) { console.error(e); return c.json({ error: 'Delete failed' }, 500); }
+});
+
 // ─── Newsletter ─────────────────────────────────────────────────────────
 admin.get('/newsletter', async (c) => {
   const prisma = c.get('prisma');

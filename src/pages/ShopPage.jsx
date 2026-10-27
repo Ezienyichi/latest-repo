@@ -238,7 +238,7 @@ export default function ShopPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {displayProducts.map(p => (
                   <div key={p.id} className="card card-h" style={{ display: 'flex', gap: 18, padding: 16, cursor: p.slug ? 'pointer' : 'default' }} onClick={() => goToProduct(p)}>
-                    <div className={FRAMED_CATEGORIES.includes(p.category) ? 'pf-contain' : ''} style={{ width: 76, height: 76, borderRadius: 'var(--r)', overflow: 'hidden', flexShrink: 0 }}>
+                    <div className={`art-thumb${FRAMED_CATEGORIES.includes(p.category) ? ' pf-contain' : ''}`} style={{ '--tw': '64px', borderRadius: 'var(--r)' }}>
                       {p.images?.[0]?.url ? <img src={p.images[0].url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: '#1B4332' }} />}
                     </div>
                     <div style={{ flex: 1 }}>
@@ -266,7 +266,7 @@ export default function ShopPage() {
             <div className="mhead"><h3 style={{ fontFamily: 'var(--fd)', fontSize: 22 }}>{qv.title}</h3><button className="mclose" onClick={() => setQv(null)}>×</button></div>
             <div className="mbody">
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22 }}>
-                <div className={FRAMED_CATEGORIES.includes(qv.category) ? 'pf-framed' : ''} style={{ aspectRatio: '1', borderRadius: 'var(--r)', overflow: 'hidden', position: 'relative' }}>
+                <div className={FRAMED_CATEGORIES.includes(qv.category) ? 'pf-framed' : ''} style={{ aspectRatio: 'var(--art-ratio)', width: '100%', maxWidth: 300, borderRadius: 'var(--r)', overflow: 'hidden', position: 'relative' }}>
                   {qv.images?.[0]?.url ? <img src={qv.images[0].url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: '#1B4332' }} />}
                 </div>
                 <div>

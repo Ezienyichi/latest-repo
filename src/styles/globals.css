@@ -20,6 +20,11 @@
   --fm:'JetBrains Mono',monospace;
   --ease:cubic-bezier(.4,0,.2,1);
   --accent:#177c1d;--accent2:#ffad00;
+  /* The ONE artwork frame ratio (width/height), used by every place an artwork
+     image is shown — cards, carousels, product page, thumbnails. Portrait-
+     leaning because most artworks are; landscape works fit inside it with the
+     matte (see .pf-framed). Change it here and the whole site follows. */
+  --art-ratio:4/5;
 }
 
 html{scroll-behavior:smooth}
@@ -65,10 +70,10 @@ body{font-family:var(--fb);background:var(--base);color:var(--txt);overflow-x:hi
    .detail-layout/.filter-layout already use elsewhere — stacks the card
    under the text instead, and caps its width so it doesn't stretch edge-
    to-edge and look oversized on tablet-width mobile viewports. */
-.hero-grid{display:grid;grid-template-columns:1fr clamp(340px,32vw,440px);gap:clamp(32px,5vw,80px);align-items:center;padding:clamp(100px,12vh,150px) clamp(24px,4vw,64px) clamp(80px,10vh,110px)}
+.hero-grid{display:grid;grid-template-columns:1fr clamp(280px,25vw,340px);gap:clamp(32px,5vw,80px);align-items:center;padding:clamp(100px,12vh,150px) clamp(24px,4vw,64px) clamp(80px,10vh,110px)}
 @media(max-width:900px){
   .hero-grid{grid-template-columns:1fr;gap:40px;padding:72px clamp(20px,4vw,40px) 56px}
-  .hero-grid .hero-card{max-width:440px;width:100%;margin:0 auto}
+  .hero-grid .hero-card{max-width:320px;width:100%;margin:0 auto}
 }
 @media(max-width:640px){.hero-grid{padding:56px 20px 40px}}
 .hero-tag{display:inline-flex;align-items:center;gap:8px;font-size:11px;color:var(--sage);font-weight:700;letter-spacing:.8px;text-transform:uppercase;animation:heroReveal .7s var(--ease) .1s both}
@@ -412,15 +417,20 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
 .breadcrumbs .current{color:var(--txt);font-weight:500}
 
 /* ═══ PRODUCT CARD ENHANCEMENTS ═══ */
-.product-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-@media(max-width:1024px){.product-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:640px){.product-grid{grid-template-columns:1fr}}
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,290px));gap:18px;justify-content:start}
+/* Phones: two compact columns (frame ~170px wide) instead of one 350px-wide
+   card per row — same 4:5 ratio, just scaled down. */
+@media(max-width:640px){.product-grid{grid-template-columns:repeat(2,minmax(0,290px));gap:12px}}
 
 .product-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;transition:all .22s var(--ease);cursor:pointer}
 .product-card:hover{transform:translateY(-3px);box-shadow:var(--sh);border-color:var(--borderl)}
 /* Taller than the previous 3/4 — same frame system (.pf-framed/.pf-contain
    below untouched), just more vertical room for the work itself. */
-.product-card-img{aspect-ratio:2/3;position:relative;overflow:hidden;background:var(--glass)}
+.product-card-img{aspect-ratio:var(--art-ratio);position:relative;overflow:hidden;background:var(--glass)}
+/* A plain <img> directly inside a frame (artist page, related items) must fill it
+   like the .imgswap ones do — otherwise it renders at its natural proportions and
+   the frame just crops it. .pf-framed switches this to contain (whole image + matte). */
+.product-card-img>img,.gallery-card-img-wrap>img{width:100%;height:100%;object-fit:cover;display:block}
 
 /* ═══ PRODUCT IMAGE HOVER-SWAP — shared between .product-card-img (Shop/
    Digitals grid) and .gallery-card-img-wrap (homepage carousels). Two
@@ -469,7 +479,7 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
    win the cascade tie and erase the matte — exactly the kind of drift this
    task exists to prevent. Some also override hardcoded inline
    object-fit:cover, which nothing but !important can beat. */
-.pf-framed{padding:14px!important;background:linear-gradient(145deg,#fff,#f0f0f0)!important;box-shadow:0 10px 24px rgba(0,0,0,.12)!important;border-radius:6px!important}
+.pf-framed{padding:clamp(6px,5%,14px)!important;background:linear-gradient(145deg,#fff,#f0f0f0)!important;box-shadow:0 10px 24px rgba(0,0,0,.12)!important;border-radius:6px!important}
 .pf-contain{background:#fff!important}
 .pf-framed img,.pf-contain img{object-fit:contain!important;background:#fff!important}
 .pf-framed img{border:1px solid rgba(0,0,0,.08)!important;border-radius:2px!important}
@@ -595,11 +605,11 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
    swipeable row, not a stacked list. */
 /* Both card width and image aspect-ratio bumped up from the previous
    clamp(160px,15vw,200px)/4:5 — same frame system, just larger. */
-.gallery-card{cursor:pointer;transition:transform .2s var(--ease);flex:0 0 clamp(185px,17vw,230px);-webkit-user-select:none;user-select:none}
-@media(max-width:640px){.gallery-card{flex-basis:68%}}
+.gallery-card{cursor:pointer;transition:transform .2s var(--ease);flex:0 0 clamp(165px,15vw,210px);-webkit-user-select:none;user-select:none}
+@media(max-width:640px){.gallery-card{flex-basis:44%}}
 .gallery-card:hover{transform:translateY(-3px)}
 .gallery-card:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-.gallery-card-img-wrap{position:relative;aspect-ratio:3/4;border-radius:var(--r);overflow:hidden;background:var(--glass)}
+.gallery-card-img-wrap{position:relative;aspect-ratio:var(--art-ratio);border-radius:var(--r);overflow:hidden;background:var(--glass)}
 /* Hover cross-fade / zoom-fallback: see the shared .imgswap rules above. */
 /* Auto-frame (mat + border): see the shared .pf-framed rule above — applied
    directly to this element via a conditional class, not a descendant
@@ -627,14 +637,15 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
 .trust-badge-text{font-size:13px;color:var(--muted);line-height:1.5}
 
 /* ═══ GALLERY / LIGHTBOX ═══ */
-.gallery-main{position:relative;border-radius:var(--rl);overflow:hidden;background:var(--glass);border:1px solid var(--border);cursor:zoom-in}
+.gallery-main{position:relative;border-radius:var(--rl);overflow:hidden;background:var(--glass);border:1px solid var(--border);cursor:zoom-in;
+  aspect-ratio:var(--art-ratio);width:100%;max-width:min(440px,calc((100vh - 140px) * .8))}
 .gallery-main img{width:100%;height:100%;object-fit:cover;display:block;animation:carouselSlide .3s ease}
 .gallery-thumbs{display:flex;gap:8px;margin-top:10px;overflow-x:auto;padding-bottom:4px}
 .gallery-thumbs::-webkit-scrollbar{height:3px}
-.gallery-thumb{width:68px;height:68px;border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:all .2s;flex-shrink:0;position:relative}
+.gallery-thumb{width:56px;aspect-ratio:var(--art-ratio);border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:all .2s;flex-shrink:0;position:relative}
 .gallery-thumb.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 .gallery-thumb img{width:100%;height:100%;object-fit:cover}
-.gallery-vert{display:flex;flex-direction:column;gap:6px;width:68px;flex-shrink:0;max-height:460px;overflow-y:auto}
+.gallery-vert{display:flex;flex-direction:column;gap:6px;width:56px;flex-shrink:0;max-height:550px;overflow-y:auto}
 .gallery-vert::-webkit-scrollbar{width:3px}
 .gallery-vert::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
@@ -642,7 +653,7 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
 /* Gallery column gets a slight edge over the info column — modest, not a
    full restructure — so the main image renders a bit wider too, on top of
    the taller aspect-ratio set on .gallery-main itself. */
-.detail-layout{display:grid;grid-template-columns:6fr 5fr;gap:48px;align-items:start}
+.detail-layout{display:grid;grid-template-columns:minmax(0,504px) minmax(0,1fr);gap:56px;align-items:start}
 @media(max-width:900px){.detail-layout{grid-template-columns:minmax(0,1fr);gap:24px}}
 
 /* Gallery column — sticky (image stays visible while the longer info
@@ -654,6 +665,8 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
    appearing "behind" the image. Static (normal flow) on mobile fixes
    that; sticky only kicks in once the 2-column layout actually exists. */
 .pdp-gallery-col{position:static}
+/* thumbs + frame sit centred in the single-column (tablet/phone) layout */
+@media(max-width:900px){.pdp-gallery-col>div{justify-content:center}}
 @media(min-width:901px){.pdp-gallery-col{position:sticky;top:86px}}
 
 /* Loading skeleton — mirrors .detail-layout's own breakpoint/stacking so
@@ -879,7 +892,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--mint);outline-offse
   .btn-sm{min-height:36px}
   .tab-btn{min-height:44px;padding:14px 16px}
   .fi{min-height:44px;font-size:16px}/* Prevents iOS zoom */
-  .gallery-thumb{width:56px;height:56px}
+  .gallery-thumb{width:48px}
+  .gallery-vert{width:48px}
 }
 
 /* ═══ IMPACT CAMPAIGNS (public) — card shell reuses .product-card/.product-grid;
@@ -957,3 +971,14 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--mint);outline-offse
 .cause-tile:hover .cause-v{color:var(--accent)}
 .cause-badge{margin-left:8px;font-size:9px;display:inline-flex;align-items:center;gap:3px;vertical-align:middle}
 .cause-note{font-size:12px;color:var(--txt2);line-height:1.5;margin-top:10px}
+
+/* ═══ ARTWORK THUMBNAIL (cart, checkout, orders, certificates, admin tables…) ═══
+   Same 4:5 frame as everywhere else, just small. --tw sets the width; add
+   .pf-contain (framed categories) to show the whole image on the matte. */
+.art-thumb{width:var(--tw,56px);aspect-ratio:var(--art-ratio);flex-shrink:0;align-self:flex-start;overflow:hidden;border-radius:6px;background:var(--glass);position:relative}
+.art-thumb>img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* Homepage hero card sits on a dark glass panel under a text scrim, so its matte
+   is dark rather than white — same 4:5 frame, same contain-fit, no muddy grey. */
+.hero-art-frame.pf-framed{background:linear-gradient(145deg,#16241b,#0b130e)!important;box-shadow:none!important}
+.hero-art-frame.pf-framed img{background:#0d1711!important;border-color:rgba(255,255,255,.1)!important}

@@ -122,7 +122,7 @@ export default function AdminOrderDetail() {
             {order.items.map(item => (
               <tr key={item.id}>
                 <td style={{ width: 48 }}>
-                  <div className={FRAMED_CATEGORIES.includes(item.product?.category) ? 'pf-contain' : ''} style={{ width: 40, height: 40, borderRadius: 6, overflow: 'hidden', background: 'var(--glass)' }}>
+                  <div className={`art-thumb${FRAMED_CATEGORIES.includes(item.product?.category) ? ' pf-contain' : ''}`} style={{ '--tw': '32px' }}>
                     {item.product?.images?.[0]?.url ? <img src={item.product.images[0].url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: '#1B4332' }} />}
                   </div>
                 </td>

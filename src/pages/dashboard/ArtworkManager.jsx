@@ -125,7 +125,7 @@ export default function ArtworkManager() {
                   {products.map(p => (
                     <tr key={p.id}>
                       <td style={{ width: 48 }}>
-                        <div className={FRAMED_CATEGORIES.includes(p.category) ? 'pf-contain' : ''} style={{ width: 40, height: 40, borderRadius: 6, overflow: 'hidden', background: 'var(--glass)' }}>
+                        <div className={`art-thumb${FRAMED_CATEGORIES.includes(p.category) ? ' pf-contain' : ''}`} style={{ '--tw': '32px' }}>
                           {p.images?.[0]?.url ? <img src={p.images[0].url.replace('w=1200', 'w=80')} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: '#1B4332', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: .4 }}><Icon icon={Palette} size="inline" /></div>}
                         </div>
                       </td>
@@ -311,7 +311,7 @@ export default function ArtworkManager() {
               {form.images.filter(i => i.url).length > 0 && (
                 <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
                   {form.images.filter(i => i.url).map((img, i) => (
-                    <div key={i} className={FRAMED_CATEGORIES.includes(form.category) ? 'pf-contain' : ''} style={{ width: 64, height: 64, borderRadius: 6, overflow: 'hidden', border: '1px solid var(--border)' }}>
+                    <div key={i} className={`art-thumb${FRAMED_CATEGORIES.includes(form.category) ? ' pf-contain' : ''}`} style={{ '--tw': '56px', border: '1px solid var(--border)' }}>
                       <img src={img.url.replace('w=1200', 'w=120')} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => e.target.style.display = 'none'} />
                     </div>
                   ))}

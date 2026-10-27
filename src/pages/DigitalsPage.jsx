@@ -133,13 +133,13 @@ export default function DigitalsPage() {
         <div style={{ marginBottom: 16, fontSize: 13, color: 'var(--muted)' }}>{products.length} product{products.length !== 1 ? 's' : ''}</div>
 
         {loading ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 18 }}>
+          <div className="product-grid">
             {[1,2,3,4,5,6,7,8].map(i => <div key={i} className="skel" style={{ height: 320, borderRadius: 'var(--rl)' }} />)}
           </div>
         ) : products.length === 0 ? (
           <div className="empty"><div className="empty-t">No digital products found</div><p style={{ color: 'var(--muted)' }}>Try a different category</p></div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 18 }}>
+          <div className="product-grid">
             {products.map(p => {
               const cat = DIGITAL_CATS.find(c => c.id === p.category);
               return (
@@ -164,7 +164,7 @@ export default function DigitalsPage() {
                     {p.comparePrice && <div className="badge b-red" style={{ position: 'absolute', top: 10, right: 10, zIndex: 3 }}>SALE</div>}
                     {/* Wishlist */}
                     <button className={`wish-btn${isWished(p.id) ? ' active' : ''}`}
-                      style={{ position: 'absolute', bottom: 10, right: 10 }}
+                      style={{ position: 'absolute', top: 'auto', bottom: 10, right: 10 }}
                       onClick={e => { e.stopPropagation(); toggleWishlist(p.id); }}><Icon icon={Heart} size="inline" fill={isWished(p.id) ? 'currentColor' : 'none'} /></button>
                     {/* Hover overlay */}
                     <div className="product-card-overlay">

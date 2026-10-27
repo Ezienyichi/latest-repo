@@ -456,7 +456,7 @@ export default function HomePage() {
           {featured[0] && (
             <div className="hero-card">
               <div className="hero-card-inner" onClick={() => navigate(`/shop/${featured[0].slug}`)} style={{ cursor: 'pointer' }}>
-                <div style={{ aspectRatio: '4/5', position: 'relative', overflow: 'hidden' }}>
+                <div className={`hero-art-frame${FRAMED_CATEGORIES.includes(featured[0].category) ? ' pf-framed' : ''}`} style={{ aspectRatio: 'var(--art-ratio)', position: 'relative', overflow: 'hidden' }}>
                   {featured[0].images?.[0]?.url ? (
                     <img src={featured[0].images[0].url} alt={featured[0].title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
@@ -578,7 +578,7 @@ export default function HomePage() {
               </div>
               <button className="btn btn-s" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => navigate('/shop')}>View All <Icon icon={ArrowRight} size="inline" /></button>
             </div>
-            <div className="g4">
+            <div className="product-grid">
               {featured.slice(0, 4).map(aw => (
                 <div key={aw.id} className="card card-h" style={{ padding: 0, overflow: 'hidden', cursor: 'pointer' }}
                   onClick={() => navigate(`/shop/${aw.slug}`)}>

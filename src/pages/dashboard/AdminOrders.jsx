@@ -6,6 +6,7 @@ import DashboardShell from './DashboardShell';
 import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
 import { cur } from '../../utils/currency';
+import { FRAMED_CATEGORIES } from '../../data/constants';
 
 // Same style map OrdersPage.jsx (buyer-facing order history) uses — the
 // most complete status treatment already in the codebase, covering every
@@ -84,7 +85,7 @@ export default function AdminOrders() {
                 return (
                   <tr key={o.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/dashboard/admin/orders/${o.id}`)}>
                     <td style={{ width: 44 }}>
-                      <div style={{ width: 36, height: 36, borderRadius: 6, overflow: 'hidden', background: 'var(--glass)' }}>
+                      <div className={`art-thumb${FRAMED_CATEGORIES.includes(first?.category) ? ' pf-contain' : ''}`} style={{ '--tw': '32px' }}>
                         {first?.images?.[0]?.url ? <img src={first.images[0].url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: '#1B4332' }} />}
                       </div>
                     </td>

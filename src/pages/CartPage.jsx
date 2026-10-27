@@ -68,7 +68,7 @@ export default function CartPage() {
           <div>
             {cart.map(item => (
               <div key={item.id} className="card" style={{ display: 'flex', gap: 18, marginBottom: 12, padding: 18, animation: 'fadeUp .3s ease' }}>
-                <div className={FRAMED_CATEGORIES.includes(item.category) ? 'pf-contain' : ''} style={{ width: 96, height: 96, borderRadius: 'var(--r)', overflow: 'hidden', flexShrink: 0, background: 'var(--glass)', cursor: 'pointer' }}
+                <div className={`art-thumb${FRAMED_CATEGORIES.includes(item.category) ? ' pf-contain' : ''}`} style={{ '--tw': '80px', borderRadius: 'var(--r)', cursor: 'pointer' }}
                   onClick={() => navigate(`/shop/${item.slug}`)}>
                   {item.image ? <img src={item.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: '#1B4332', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: .3 }}><Icon icon={Palette} size={24} /></div>}
                 </div>

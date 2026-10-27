@@ -136,6 +136,13 @@ class ApiClient {
   linkProjectProduct(id, productId) { return this.post(`/admin/projects/${id}/products`, { productId }); }
   unlinkProjectProduct(id, productId) { return this.delete(`/admin/projects/${id}/products/${productId}`); }
 
+  // Charities — admin
+  getAdminCharities(params = {}) { const qs = new URLSearchParams(params).toString(); return this.get(`/admin/charities${qs ? '?' + qs : ''}`); }
+  getAdminCharity(id) { return this.get(`/admin/charities/${id}`); }
+  createAdminCharity(data) { return this.post('/admin/charities', data); }
+  updateAdminCharity(id, data) { return this.patch(`/admin/charities/${id}`, data); }
+  deleteAdminCharity(id) { return this.delete(`/admin/charities/${id}`); }
+
   // Newsletter
   subscribeNewsletter(email, source) { return this.post('/newsletter', { email, source }); }
   getAdminNewsletter(params = {}) { const qs = new URLSearchParams(params).toString(); return this.get(`/admin/newsletter${qs ? '?' + qs : ''}`); }

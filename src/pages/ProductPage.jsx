@@ -153,9 +153,9 @@ export default function ProductPage() {
               )}
 
               {/* Main image / video */}
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <div ref={imgRef} className={`gallery-main${isFramed && !isVideoActive ? ' pf-framed' : ''}`}
-                  style={{ aspectRatio: '4/5', cursor: isVideoActive ? 'default' : 'zoom-in', overflow: 'hidden', position: 'relative' }}
+                  style={{ cursor: isVideoActive ? 'default' : 'zoom-in', overflow: 'hidden', position: 'relative' }}
                   onClick={() => !isVideoActive && images[activeImg] && setLightbox(true)}
                   onMouseMove={handleImgMouseMove}
                   onMouseLeave={() => setZoomPos(null)}>
@@ -394,7 +394,7 @@ export default function ProductPage() {
           <div style={{ marginTop: 56, paddingTop: 36, borderTop: '1px solid var(--border)' }}>
             <div className="lbl" style={{ marginBottom: 10 }}>You May Also Like</div>
             <h2 className="display" style={{ fontSize: 32, marginBottom: 22 }}>Related Artworks</h2>
-            <div className="g4" style={{ gap: 16 }}>
+            <div className="product-grid">
               {upsells.map(p => (
                 <div key={p.id} className="product-card" onClick={() => navigate(`/shop/${p.slug}`)}>
                   <div className={`product-card-img${FRAMED_CATEGORIES.includes(p.category) ? ' pf-framed' : ''}`}>

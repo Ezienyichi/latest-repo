@@ -61,7 +61,7 @@ export default function Navbar() {
                     {digCats.map(c => <div key={c.to} className="mega-item" onClick={() => { navigate(c.to); setShopHover(false); }}><Icon icon={c.icon} size="inline" />{c.label}</div>)}
                   </div>
                   <div className="mega-col mega-feat">
-                    <img src="https://images.unsplash.com/photo-1541367777708-7905fe3296c0?w=400&q=80" alt="" style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 10, marginBottom: 8 }} />
+                    <img src="https://images.unsplash.com/photo-1541367777708-7905fe3296c0?w=400&q=80" alt="" style={{ width: '100%', maxWidth: 110, aspectRatio: 'var(--art-ratio)', objectFit: 'cover', borderRadius: 10, marginBottom: 8, display: 'block' }} />
                     <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'var(--accent)' }}>Featured</div>
                     <div style={{ fontFamily: 'var(--fd)', fontSize: 15, fontWeight: 600 }}>Silent River</div>
                     <div style={{ fontSize: 11, color: 'var(--muted)' }}>Amara Diallo · {cur()}950</div>

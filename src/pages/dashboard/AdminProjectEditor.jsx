@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Save, Trash2, Link2, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
-import { SDGs } from '../../data/constants';
+import { SDGs, FRAMED_CATEGORIES } from '../../data/constants';
 import DashboardShell from './DashboardShell';
 import Uploader from '../../components/ui/Uploader';
 import Icon from '../../components/ui/Icon';
@@ -126,6 +126,7 @@ export default function AdminProjectEditor() {
             <option value="">— Choose a charity —</option>
             {charities.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
+          <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 6 }}>Charity not listed? <Link to="/dashboard/admin/charities/new" style={{ color: 'var(--accent)' }}>Add a charity</Link></div>
         </div>
         <div className="fg"><label className="fl">Story *</label><textarea className="fi" rows={8} value={form.story} onChange={e => set('story', e.target.value)} placeholder="What is this campaign, who does it help, and what will the money do?" /></div>
 
@@ -176,7 +177,7 @@ export default function AdminProjectEditor() {
               <tbody>
                 {project.products.map(p => (
                   <tr key={p.id}>
-                    <td style={{ width: 44 }}><div style={{ width: 36, height: 36, borderRadius: 6, overflow: 'hidden', background: 'var(--glass)' }}>{p.images?.[0]?.url && <img src={p.images[0].url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}</div></td>
+                    <td style={{ width: 44 }}><div className={`art-thumb${FRAMED_CATEGORIES.includes(p.category) ? ' pf-contain' : ''}`} style={{ '--tw': '32px' }}>{p.images?.[0]?.url && <img src={p.images[0].url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}</div></td>
                     <td style={{ fontSize: 13 }}>{p.title}</td>
                     <td style={{ fontSize: 12 }}>{p.artist?.displayName}</td>
                     <td><span className="badge b-muted" style={{ fontSize: 10 }}>{p.status}</span></td>

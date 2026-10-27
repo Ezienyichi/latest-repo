@@ -179,7 +179,7 @@ export default function CheckoutPage() {
                   {/* Items */}
                   {cart.map(item => (
                     <div key={item.id} style={{ display: 'flex', gap: 12, padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
-                      <div className={FRAMED_CATEGORIES.includes(item.category) ? 'pf-contain' : ''} style={{ width: 52, height: 52, borderRadius: 6, overflow: 'hidden', flexShrink: 0, background: 'var(--glass)' }}>
+                      <div className={`art-thumb${FRAMED_CATEGORIES.includes(item.category) ? ' pf-contain' : ''}`} style={{ '--tw': '44px' }}>
                         {item.image ? <img src={item.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: '#1B4332' }} />}
                       </div>
                       <div style={{ flex: 1 }}>
