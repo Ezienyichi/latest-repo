@@ -2,6 +2,7 @@ import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { CheckCircle2, Leaf, Award, Globe } from 'lucide-react';
 import { SDGs, FRAMED_CATEGORIES } from '../data/constants';
 import Icon from '../components/ui/Icon';
+import { cur } from '../utils/currency';
 
 function SdgDot({ id }) {
   const s = SDGs.find(x => x.id === id); if (!s) return null;
@@ -57,7 +58,7 @@ export default function OrderConfirmationPage() {
                 )}
               </div>
               <div style={{ fontFamily: 'var(--fd)', fontSize: 18, color: 'var(--accent)', fontWeight: 700, flexShrink: 0 }}>
-                £{Number(item.unitPrice * item.quantity).toLocaleString()}
+                {cur()}{Number(item.unitPrice * item.quantity).toLocaleString()}
               </div>
             </div>
           ))}
@@ -67,11 +68,11 @@ export default function OrderConfirmationPage() {
         <div className="card" style={{ padding: 24, marginBottom: 20 }}>
           <h3 style={{ fontFamily: 'var(--fd)', fontSize: 22, marginBottom: 16 }}>Payment Summary</h3>
           {summary && [
-            ['Subtotal', `£${summary.subtotal?.toFixed(2)}`],
-            ...(summary.discount > 0 ? [['Discount', `-£${summary.discount.toFixed(2)}`, 'var(--sage)']] : []),
-            ['Platform fee', `£${summary.platformFee?.toFixed(2)}`],
-            ['Charity contribution', `£${summary.charitySplit?.toFixed(2)}`],
-            ['Shipping', summary.shipping === 0 ? 'Free' : `£${summary.shipping?.toFixed(2)}`],
+            ['Subtotal', `${cur()}${summary.subtotal?.toFixed(2)}`],
+            ...(summary.discount > 0 ? [['Discount', `-${cur()}${summary.discount.toFixed(2)}`, 'var(--sage)']] : []),
+            ['Platform fee', `${cur()}${summary.platformFee?.toFixed(2)}`],
+            ['Charity contribution', `${cur()}${summary.charitySplit?.toFixed(2)}`],
+            ['Shipping', summary.shipping === 0 ? 'Free' : `${cur()}${summary.shipping?.toFixed(2)}`],
           ].map(([k, v, c]) => (
             <div key={k} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 14 }}>
               <span style={{ color: 'var(--muted)' }}>{k}</span><span style={{ color: c || (v === 'Free' ? 'var(--sage)' : '') }}>{v}</span>
@@ -79,7 +80,7 @@ export default function OrderConfirmationPage() {
           ))}
           <div style={{ borderTop: '2px solid var(--border)', marginTop: 10, paddingTop: 10, display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: 16 }}>
             <span>Total Paid</span>
-            <span style={{ fontFamily: 'var(--fd)', fontSize: 26, color: 'var(--accent)' }}>£{Number(order.totalAmount).toFixed(2)}</span>
+            <span style={{ fontFamily: 'var(--fd)', fontSize: 26, color: 'var(--accent)' }}>{cur()}{Number(order.totalAmount).toFixed(2)}</span>
           </div>
         </div>
 
@@ -90,7 +91,7 @@ export default function OrderConfirmationPage() {
             <div>
               <h3 style={{ fontFamily: 'var(--fd)', fontSize: 20, marginBottom: 4, color: 'var(--accent)' }}>Your Impact</h3>
               <p style={{ fontSize: 14, color: 'var(--txt2)', lineHeight: 1.6 }}>
-                <strong>£{Number(order.charitySplit).toFixed(2)}</strong> from this order goes directly to verified charity projects supporting the UN Sustainable Development Goals.
+                <strong>{cur()}{Number(order.charitySplit).toFixed(2)}</strong> from this order goes directly to verified charity projects supporting the UN Sustainable Development Goals.
               </p>
             </div>
           </div>

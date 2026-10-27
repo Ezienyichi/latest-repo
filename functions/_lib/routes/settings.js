@@ -16,8 +16,11 @@ const PUBLIC_KEYS = [
   'hero_media_type', 'hero_video_url', 'hero_poster_url', 'hero_image_url',
   // Homepage Theory of Change section — full-bleed background image, admin-editable.
   'theory_bg_image',
+  // Single platform-wide currency (NGN | USD | GBP | EUR).
+  'currency',
 ];
 const DEFAULTS = {
+  currency: 'GBP',
   charity_pct: 0.10,
   platform_pct: 0.10,
   theory_if: 'If talented creatives are provided with a trusted platform to commercialize their creative work while partnering with credible charitable organizations and community initiatives,',

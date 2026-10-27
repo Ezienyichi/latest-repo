@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { SDGs } from '../data/constants';
 import Icon from '../components/ui/Icon';
+import { cur } from '../utils/currency';
 
 export default function SetupCharityPage() {
   const { user, setupCharityProfile } = useAuth();
@@ -75,7 +76,7 @@ export default function SetupCharityPage() {
                 <input className="fi" value={form.websiteUrl} onChange={e => set('websiteUrl', e.target.value)} placeholder="https://charity.org" />
               </div>
               <div className="fg" style={{ margin: 0 }}>
-                <label className="fl">Fundraising Target (£)</label>
+                <label className="fl">Fundraising Target ({cur()})</label>
                 <input className="fi" type="number" value={form.target} onChange={e => set('target', Number(e.target.value))} min={1000} />
               </div>
             </div>

@@ -16,6 +16,7 @@ import TrustBadges from '../components/ui/TrustBadges';
 import EditionBadge, { priceLabel, priceAmount } from '../components/ui/EditionBadge';
 import api from '../utils/api';
 import { ArtistCredit } from '../components/ui/ArtistAvatar';
+import { cur } from '../utils/currency';
 
 function SdgDot({ id, sm }) {
   const s = SDGs.find(x => x.id === id); if (!s) return null;
@@ -239,9 +240,9 @@ export default function ProductPage() {
                 relabeling this number never obscures what's actually paid. */}
             {!selVar && priceLabel(product) && <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 4 }}>{priceLabel(product)}</div>}
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 22 }}>
-              <span style={{ fontFamily: 'var(--fd)', fontSize: 42, color: 'var(--accent)', fontWeight: 700 }}>£{(selVar ? price : priceAmount(product)).toLocaleString()}</span>
-              {product.comparePrice && <span style={{ fontFamily: 'var(--fd)', fontSize: 22, color: 'var(--muted)', textDecoration: 'line-through' }}>£{Number(product.comparePrice).toLocaleString()}</span>}
-              {product.comparePrice && <span className="badge b-red">SAVE £{(Number(product.comparePrice) - price).toLocaleString()}</span>}
+              <span style={{ fontFamily: 'var(--fd)', fontSize: 42, color: 'var(--accent)', fontWeight: 700 }}>{cur()}{(selVar ? price : priceAmount(product)).toLocaleString()}</span>
+              {product.comparePrice && <span style={{ fontFamily: 'var(--fd)', fontSize: 22, color: 'var(--muted)', textDecoration: 'line-through' }}>{cur()}{Number(product.comparePrice).toLocaleString()}</span>}
+              {product.comparePrice && <span className="badge b-red">SAVE {cur()}{(Number(product.comparePrice) - price).toLocaleString()}</span>}
             </div>
 
             {/* Variations */}
@@ -256,7 +257,7 @@ export default function ProductPage() {
                         <span style={{ fontSize: 14 }}>{Object.values(v.attributeCombination || {}).join(' · ')}</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontFamily: 'var(--fd)', fontSize: 18, color: 'var(--accent)', fontWeight: 700 }}>£{Number(v.price).toLocaleString()}</span>
+                        <span style={{ fontFamily: 'var(--fd)', fontSize: 18, color: 'var(--accent)', fontWeight: 700 }}>{cur()}{Number(v.price).toLocaleString()}</span>
                         {v.stockQuantity != null && <span style={{ fontSize: 10, color: v.stockQuantity > 0 ? 'var(--muted)' : '#dc2626' }}>{v.stockQuantity > 0 ? `${v.stockQuantity} in stock` : 'Sold out'}</span>}
                       </div>
                     </div>
@@ -278,7 +279,7 @@ export default function ProductPage() {
                 <button className="qty-b" onClick={() => setQty(qty + 1)}>+</button>
               </div>
               <button className="btn btn-p btn-lg" style={{ flex: 1, justifyContent: 'center' }} onClick={handleAddToCart}>
-                Add to Cart — £{(price * qty).toLocaleString()}
+                Add to Cart — {cur()}{(price * qty).toLocaleString()}
               </button>
               <button className={`btn ${isWished(product.id) ? 'btn-p' : 'btn-s'} btn-icon`} style={{ width: 48, height: 48 }}
                 onClick={() => { toggleWishlist(product.id); toast(isWished(product.id) ? 'Removed from wishlist' : 'Added to wishlist', 'ok'); }}
@@ -343,7 +344,7 @@ export default function ProductPage() {
                   <div className="alert alert-ok"><Icon icon={Download} size="inline" /><div>This is a <strong>digital product</strong>. After purchase, you'll receive instant download access via email and your account dashboard. No shipping required.</div></div>
                 ) : (
                   <>
-                    <p style={{ marginBottom: 12 }}>Free shipping on orders over £500. Standard shipping: £12.99.</p>
+                    <p style={{ marginBottom: 12 }}>Free shipping on orders over {cur()}500. Standard shipping: {cur()}12.99.</p>
                     <p style={{ marginBottom: 12 }}>All physical artworks are professionally packaged with protective crating. Delivery within 5–10 business days (UK). International shipping available.</p>
                     <p>Tracking information provided via email once dispatched.</p>
                   </>
@@ -412,7 +413,7 @@ export default function ProductPage() {
                   <div className="product-card-body">
                     <h3 style={{ fontFamily: 'var(--fd)', fontSize: 16, fontWeight: 600, marginBottom: 3 }}>{p.title}</h3>
                     <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 4 }}><ArtistCredit artist={p.artist} size={16} /></div>
-                    <span style={{ fontFamily: 'var(--fd)', fontSize: 16, color: 'var(--accent)', fontWeight: 700 }}>£{Number(p.basePrice).toLocaleString()}</span>
+                    <span style={{ fontFamily: 'var(--fd)', fontSize: 16, color: 'var(--accent)', fontWeight: 700 }}>{cur()}{Number(p.basePrice).toLocaleString()}</span>
                   </div>
                 </div>
               ))}

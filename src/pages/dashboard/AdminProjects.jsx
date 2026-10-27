@@ -6,9 +6,10 @@ import { useCart } from '../../context/CartContext';
 import DashboardShell from './DashboardShell';
 import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
+import { cur } from '../../utils/currency';
 
 export const PROJECT_STATUS_BADGE = { DRAFT: 'b-gold', ACTIVE: 'b-green', COMPLETED: 'b-blue', ARCHIVED: 'b-muted' };
-const money = (n) => `£${Number(n || 0).toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+const money = (n) => `${cur()}${Number(n || 0).toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 
 export default function AdminProjects() {
   const { user } = useAuth();

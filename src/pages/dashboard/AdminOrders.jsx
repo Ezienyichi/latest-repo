@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import DashboardShell from './DashboardShell';
 import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
+import { cur } from '../../utils/currency';
 
 // Same style map OrdersPage.jsx (buyer-facing order history) uses — the
 // most complete status treatment already in the codebase, covering every
@@ -96,7 +97,7 @@ export default function AdminOrders() {
                       <div style={{ color: 'var(--muted)' }}>{o.buyerEmail}</div>
                     </td>
                     <td>{o._count?.items || 0}</td>
-                    <td style={{ fontFamily: 'var(--fd)', fontWeight: 700, color: 'var(--accent)' }}>£{Number(o.totalAmount).toFixed(2)}</td>
+                    <td style={{ fontFamily: 'var(--fd)', fontWeight: 700, color: 'var(--accent)' }}>{cur()}{Number(o.totalAmount).toFixed(2)}</td>
                     <td><span className="badge" style={{ background: st.bg, border: `1px solid ${st.border}`, color: st.color, fontSize: 10 }}>{o.status}</span></td>
                     <td style={{ fontSize: 12 }}>{new Date(o.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}</td>
                   </tr>

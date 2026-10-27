@@ -6,6 +6,7 @@ import { useCart } from '../../context/CartContext';
 import { DIGITAL_CATS } from '../../data/constants';
 import Icon from '../ui/Icon';
 import Wordmark from '../ui/Wordmark';
+import { cur } from '../../utils/currency';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -63,7 +64,7 @@ export default function Navbar() {
                     <img src="https://images.unsplash.com/photo-1541367777708-7905fe3296c0?w=400&q=80" alt="" style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 10, marginBottom: 8 }} />
                     <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'var(--accent)' }}>Featured</div>
                     <div style={{ fontFamily: 'var(--fd)', fontSize: 15, fontWeight: 600 }}>Silent River</div>
-                    <div style={{ fontSize: 11, color: 'var(--muted)' }}>Amara Diallo · £950</div>
+                    <div style={{ fontSize: 11, color: 'var(--muted)' }}>Amara Diallo · {cur()}950</div>
                   </div>
                 </div>
               )}

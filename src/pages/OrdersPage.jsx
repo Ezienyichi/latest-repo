@@ -6,6 +6,7 @@ import { useCart } from '../context/CartContext';
 import { FRAMED_CATEGORIES } from '../data/constants';
 import api from '../utils/api';
 import Icon from '../components/ui/Icon';
+import { cur } from '../utils/currency';
 
 const STATUS_STYLES = {
   PENDING: { bg: 'rgba(255,173,0,.08)', border: 'rgba(255,173,0,.2)', color: '#b37800', label: 'Pending' },
@@ -72,7 +73,7 @@ export default function OrdersPage() {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontFamily: 'var(--fd)', fontSize: 22, color: 'var(--accent)', fontWeight: 700 }}>£{Number(order.totalAmount).toFixed(2)}</div>
+                        <div style={{ fontFamily: 'var(--fd)', fontSize: 22, color: 'var(--accent)', fontWeight: 700 }}>{cur()}{Number(order.totalAmount).toFixed(2)}</div>
                         <div className="badge" style={{ background: st.bg, border: `1px solid ${st.border}`, color: st.color, marginTop: 4 }}>{st.label}</div>
                       </div>
                       <span style={{ fontSize: 18, color: 'var(--muted)', transition: 'transform .2s', transform: isOpen ? 'rotate(180deg)' : 'rotate(0)' }}>▾</span>
@@ -99,16 +100,16 @@ export default function OrdersPage() {
                             )}
                           </div>
                           <div style={{ fontFamily: 'var(--fd)', fontSize: 16, color: 'var(--accent)', fontWeight: 700, flexShrink: 0 }}>
-                            £{(Number(item.unitPrice) * item.quantity).toFixed(2)}
+                            {cur()}{(Number(item.unitPrice) * item.quantity).toFixed(2)}
                           </div>
                         </div>
                       ))}
                       
                       {/* Order totals */}
                       <div style={{ marginTop: 14, paddingTop: 10, borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--muted)' }}>
-                        <span>Shipping: {Number(order.shippingAmount) === 0 ? 'Free' : `£${Number(order.shippingAmount).toFixed(2)}`}</span>
-                        <span>Platform: £{Number(order.platformFee).toFixed(2)}</span>
-                        <span style={{ color: 'var(--sage)' }}>Charity: £{Number(order.charitySplit).toFixed(2)}</span>
+                        <span>Shipping: {Number(order.shippingAmount) === 0 ? 'Free' : `${cur()}${Number(order.shippingAmount).toFixed(2)}`}</span>
+                        <span>Platform: {cur()}{Number(order.platformFee).toFixed(2)}</span>
+                        <span style={{ color: 'var(--sage)' }}>Charity: {cur()}{Number(order.charitySplit).toFixed(2)}</span>
                       </div>
                     </div>
                   )}

@@ -4,8 +4,9 @@ import { Flag, Check } from 'lucide-react';
 import { SDGs } from '../data/constants';
 import api from '../utils/api';
 import Icon from '../components/ui/Icon';
+import { cur } from '../utils/currency';
 
-export const money = (n) => `£${Number(n || 0).toLocaleString('en-GB', { maximumFractionDigits: 0 })}`;
+export const money = (n) => `${cur()}${Number(n || 0).toLocaleString('en-GB', { maximumFractionDigits: 0 })}`;
 export const progressPct = (p) => (Number(p.targetAmount) > 0 ? Math.min(100, Math.round((Number(p.raisedAmount) / Number(p.targetAmount)) * 100)) : 0);
 
 export function SdgDot({ id, size = 20 }) {

@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { FRAMED_CATEGORIES } from '../data/constants';
 import api from '../utils/api';
 import Icon from '../components/ui/Icon';
+import { cur } from '../utils/currency';
 
 export default function CartPage() {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ export default function CartPage() {
     try {
       const res = await api.post('/orders/validate-coupon', { code: coupon, subtotal: cartTotal });
       setDiscount(res);
-      toast(`Coupon applied! You save £${res.discount.toFixed(2)}`, 'ok');
+      toast(`Coupon applied! You save ${cur()}${res.discount.toFixed(2)}`, 'ok');
     } catch (e) { toast(e.message, 'err'); setDiscount(null); }
     finally { setCouponLoading(false); }
   };
@@ -78,7 +79,7 @@ export default function CartPage() {
                   {item.charityName && <div style={{ fontSize: 11, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 4 }}><Icon icon={Leaf} size="inline" style={{ color: 'var(--sage)' }} /> Supporting: {item.charityName}</div>}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10, flexShrink: 0 }}>
-                  <span style={{ fontFamily: 'var(--fd)', fontSize: 20, color: 'var(--accent)', fontWeight: 700 }}>£{(item.price * item.qty).toLocaleString()}</span>
+                  <span style={{ fontFamily: 'var(--fd)', fontSize: 20, color: 'var(--accent)', fontWeight: 700 }}>{cur()}{(item.price * item.qty).toLocaleString()}</span>
                   <div className="qty">
                     <button className="qty-b" onClick={() => updateQty(item.id, item.qty - 1)}>−</button>
                     <input className="qty-i" type="number" value={item.qty} min={1} readOnly />
@@ -93,7 +94,7 @@ export default function CartPage() {
             {cartTotal < 500 && cartTotal > 300 && (
               <div className="alert alert-i" style={{ marginTop: 12 }}>
                 <Icon icon={Truck} size="inline" />
-                <div>Add <strong>£{(500 - cartTotal).toFixed(2)}</strong> more for <strong>free shipping</strong>!</div>
+                <div>Add <strong>{cur()}{(500 - cartTotal).toFixed(2)}</strong> more for <strong>free shipping</strong>!</div>
               </div>
             )}
           </div>
@@ -104,11 +105,11 @@ export default function CartPage() {
               <h3 style={{ fontFamily: 'var(--fd)', fontSize: 22, fontWeight: 600, marginBottom: 20 }}>Order Summary</h3>
               
               {[
-                ['Subtotal', `£${cartTotal.toFixed(2)}`],
-                ...(discountAmt > 0 ? [['Discount (' + discount.code + ')', `-£${discountAmt.toFixed(2)}`, 'var(--sage)']] : []),
-                ['Platform fee (10%)', `£${platformFee.toFixed(2)}`],
-                ['Charity contribution (10%)', `£${charitySplit.toFixed(2)}`],
-                ['Shipping', shipping === 0 ? 'Free' : `£${shipping.toFixed(2)}`],
+                ['Subtotal', `${cur()}${cartTotal.toFixed(2)}`],
+                ...(discountAmt > 0 ? [['Discount (' + discount.code + ')', `-${cur()}${discountAmt.toFixed(2)}`, 'var(--sage)']] : []),
+                ['Platform fee (10%)', `${cur()}${platformFee.toFixed(2)}`],
+                ['Charity contribution (10%)', `${cur()}${charitySplit.toFixed(2)}`],
+                ['Shipping', shipping === 0 ? 'Free' : `${cur()}${shipping.toFixed(2)}`],
               ].map(([k, v, color]) => (
                 <div key={k} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: 14 }}>
                   <span style={{ color: 'var(--muted)' }}>{k}</span>
@@ -118,7 +119,7 @@ export default function CartPage() {
 
               <div style={{ borderTop: '2px solid var(--border)', marginTop: 14, paddingTop: 14, display: 'flex', justifyContent: 'space-between', fontWeight: 600, fontSize: 16 }}>
                 <span>Total</span>
-                <span style={{ fontFamily: 'var(--fd)', fontSize: 26, color: 'var(--accent)' }}>£{grandTotal.toFixed(2)}</span>
+                <span style={{ fontFamily: 'var(--fd)', fontSize: 26, color: 'var(--accent)' }}>{cur()}{grandTotal.toFixed(2)}</span>
               </div>
 
               {/* Coupon code */}
@@ -132,7 +133,7 @@ export default function CartPage() {
                     {couponLoading ? '...' : 'Apply'}
                   </button>
                 </div>
-                {discount && <div style={{ fontSize: 11, color: 'var(--sage)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}><Icon icon={Check} size="inline" /> {discount.code} — saving £{discount.discount.toFixed(2)}</div>}
+                {discount && <div style={{ fontSize: 11, color: 'var(--sage)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}><Icon icon={Check} size="inline" /> {discount.code} — saving {cur()}{discount.discount.toFixed(2)}</div>}
                 <div style={{ fontSize: 10, color: 'var(--subtle)', marginTop: 4 }}>Try: IMPACT10, WELCOME15, ARTFREE</div>
               </div>
 
@@ -152,7 +153,7 @@ export default function CartPage() {
             <div className="card" style={{ padding: 18, marginTop: 12, background: 'rgba(23,124,29,.04)', border: '1px solid rgba(23,124,29,.12)' }}>
               <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 5 }}><Icon icon={Leaf} size="inline" /> Your Impact</div>
               <div style={{ fontSize: 13, color: 'var(--txt2)', lineHeight: 1.65 }}>
-                This purchase directs <strong style={{ color: 'var(--accent)' }}>£{charitySplit.toFixed(2)}</strong> to verified charity projects aligned with the UN Sustainable Development Goals.
+                This purchase directs <strong style={{ color: 'var(--accent)' }}>{cur()}{charitySplit.toFixed(2)}</strong> to verified charity projects aligned with the UN Sustainable Development Goals.
               </div>
             </div>
           </div>

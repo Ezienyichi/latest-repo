@@ -5,6 +5,7 @@ import { useCart } from '../../context/CartContext';
 import DashboardShell, { StatCard } from './DashboardShell';
 import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
+import { cur } from '../../utils/currency';
 
 export default function CharityFunders() {
   const navigate = useNavigate();
@@ -38,7 +39,7 @@ export default function CharityFunders() {
             <div className="pb-fill" style={{ width: `${pct}%`, background: 'linear-gradient(90deg,var(--mint),var(--sage))', height: '100%' }} />
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--muted)' }}>
-            <span>£{stats.raised?.toLocaleString()} raised</span><span>{pct}% of £{stats.target?.toLocaleString()}</span>
+            <span>{cur()}{stats.raised?.toLocaleString()} raised</span><span>{pct}% of {cur()}{stats.target?.toLocaleString()}</span>
           </div>
         </div>
       </div>

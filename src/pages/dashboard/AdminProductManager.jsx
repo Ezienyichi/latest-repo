@@ -8,6 +8,7 @@ import DashboardShell from './DashboardShell';
 import Uploader from '../../components/ui/Uploader';
 import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
+import { cur } from '../../utils/currency';
 
 const STATUS_BADGE = { ACTIVE: 'b-green', DRAFT: 'b-gold', SOLD: 'b-muted', SUSPENDED: 'b-red' };
 const EMPTY_FORM = {
@@ -192,8 +193,8 @@ export default function AdminProductManager() {
                       <td><span className="badge b-muted" style={{ fontSize: 10, textTransform: 'capitalize' }}>{p.category?.toLowerCase()}</span></td>
                       <td style={{ fontSize: 12, textTransform: 'capitalize' }}>{p.editionType?.toLowerCase()}</td>
                       <td>
-                        <div style={{ fontFamily: 'var(--fd)', fontWeight: 700, color: 'var(--accent)' }}>£{Number(p.basePrice).toLocaleString()}</div>
-                        {p.editionType === 'ORIGINAL' && p.estimatedValue != null && <div style={{ fontSize: 10, color: 'var(--muted)' }}>Est. £{Number(p.estimatedValue).toLocaleString()}</div>}
+                        <div style={{ fontFamily: 'var(--fd)', fontWeight: 700, color: 'var(--accent)' }}>{cur()}{Number(p.basePrice).toLocaleString()}</div>
+                        {p.editionType === 'ORIGINAL' && p.estimatedValue != null && <div style={{ fontSize: 10, color: 'var(--muted)' }}>Est. {cur()}{Number(p.estimatedValue).toLocaleString()}</div>}
                       </td>
                       <td style={{ fontSize: 12 }}>{p.charity?.name || '—'}</td>
                       <td><span className={`badge ${STATUS_BADGE[p.status] || 'b-muted'}`} style={{ fontSize: 10 }}>{p.status}</span></td>
@@ -345,12 +346,12 @@ export default function AdminProductManager() {
             {step === 3 && (<>
               <h3 style={{ fontFamily: 'var(--fd)', fontSize: 20, marginBottom: 16 }}>Pricing & Inventory</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-                <div className="fg" style={{ margin: 0 }}><label className="fl">Price (£) *</label><input className="fi" type="number" step="0.01" value={form.basePrice} onChange={e => set('basePrice', e.target.value)} placeholder="0.00" required /></div>
-                <div className="fg" style={{ margin: 0 }}><label className="fl">Compare / Was Price (£)</label><input className="fi" type="number" step="0.01" value={form.comparePrice} onChange={e => set('comparePrice', e.target.value)} placeholder="Original price for sale badge" /></div>
+                <div className="fg" style={{ margin: 0 }}><label className="fl">Price ({cur()}) *</label><input className="fi" type="number" step="0.01" value={form.basePrice} onChange={e => set('basePrice', e.target.value)} placeholder="0.00" required /></div>
+                <div className="fg" style={{ margin: 0 }}><label className="fl">Compare / Was Price ({cur()})</label><input className="fi" type="number" step="0.01" value={form.comparePrice} onChange={e => set('comparePrice', e.target.value)} placeholder="Original price for sale badge" /></div>
               </div>
               {form.editionType === 'ORIGINAL' && (
                 <div className="fg" style={{ marginTop: 14 }}>
-                  <label className="fl">Estimated Value (£) <span style={{ fontWeight: 400, color: 'var(--muted)' }}>— appraised value shown to buyers for this one-of-a-kind piece</span></label>
+                  <label className="fl">Estimated Value ({cur()}) <span style={{ fontWeight: 400, color: 'var(--muted)' }}>— appraised value shown to buyers for this one-of-a-kind piece</span></label>
                   <input className="fi" type="number" step="0.01" value={form.estimatedValue} onChange={e => set('estimatedValue', e.target.value)} placeholder="0.00" />
                 </div>
               )}
@@ -401,8 +402,8 @@ export default function AdminProductManager() {
               <h3 style={{ fontFamily: 'var(--fd)', fontSize: 20, marginBottom: 16 }}>Review & Publish</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 {[
-                  ['Title', form.title], ['Category', form.category], ['Edition', form.editionType], ['Price', `£${form.basePrice}`],
-                  ...(form.editionType === 'ORIGINAL' && form.estimatedValue ? [['Estimated Value', `£${form.estimatedValue}`]] : []),
+                  ['Title', form.title], ['Category', form.category], ['Edition', form.editionType], ['Price', `${cur()}${form.basePrice}`],
+                  ...(form.editionType === 'ORIGINAL' && form.estimatedValue ? [['Estimated Value', `${cur()}${form.estimatedValue}`]] : []),
                   ['Charity', charities.find(c => c.id === form.charityId)?.name || 'None'],
                   ['Medium', form.medium || '—'], ['SKU', form.sku || '—'], ['Stock', form.stockQuantity || '∞'],
                   ['Certificate', form.autoCertificate ? 'Auto-generated' : 'None'], ['SDGs', form.sdgIds.length ? form.sdgIds.join(', ') : 'None'],

@@ -6,6 +6,7 @@ import DashboardShell, { StatCard } from './DashboardShell';
 import Icon from '../../components/ui/Icon';
 import CharityLogo from '../../components/ui/CharityLogo';
 import api from '../../utils/api';
+import { cur } from '../../utils/currency';
 
 export default function BuyerOverview() {
   const navigate = useNavigate();
@@ -26,8 +27,8 @@ export default function BuyerOverview() {
     <DashboardShell title="Overview">
       <div className="g4" style={{ marginBottom: 28 }}>
         <StatCard icon={Package} label="Total Orders" value={stats.totalOrders} sub="All time" />
-        <StatCard icon={Wallet} label="Total Spent" value={`£${stats.totalSpent.toLocaleString()}`} sub="Across all orders" />
-        <StatCard icon={Leaf} label="Charity Impact" value={`£${stats.charityContributed.toLocaleString()}`} sub="Directed to charities" color="var(--sage)" />
+        <StatCard icon={Wallet} label="Total Spent" value={`${cur()}${stats.totalSpent.toLocaleString()}`} sub="Across all orders" />
+        <StatCard icon={Leaf} label="Charity Impact" value={`${cur()}${stats.charityContributed.toLocaleString()}`} sub="Directed to charities" color="var(--sage)" />
         <StatCard icon={Handshake} label="Charities Supported" value={stats.charitiesSupported} sub="As a funder" />
       </div>
 
@@ -76,7 +77,7 @@ export default function BuyerOverview() {
                   <td style={{ fontSize: 13 }}>{o.items?.[0]?.product?.title}{o.items?.length > 1 ? ` +${o.items.length - 1} more` : ''}</td>
                   <td style={{ fontSize: 12 }}>{new Date(o.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</td>
                   <td><span className={`badge ${o.status === 'DELIVERED' ? 'b-green' : o.status === 'SHIPPED' ? 'b-purple' : o.status === 'PROCESSING' ? 'b-blue' : 'b-gold'}`} style={{ fontSize: 10 }}>{o.status}</span></td>
-                  <td style={{ fontFamily: 'var(--fd)', fontWeight: 700, color: 'var(--accent)' }}>£{Number(o.totalAmount).toFixed(2)}</td>
+                  <td style={{ fontFamily: 'var(--fd)', fontWeight: 700, color: 'var(--accent)' }}>{cur()}{Number(o.totalAmount).toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>

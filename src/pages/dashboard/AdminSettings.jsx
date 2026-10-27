@@ -7,6 +7,7 @@ import DashboardShell from './DashboardShell';
 import Uploader from '../../components/ui/Uploader';
 import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
+import { CURRENCIES, currencyCode, setCurrency } from '../../utils/currency';
 
 const EMPTY_HERO = { hero_media_type: 'video', hero_video_url: '', hero_poster_url: '', hero_image_url: '' };
 const VIDEO_URL_RE = /^https?:\/\/.+\.(mp4|webm|ogg)(\?.*)?$/i;
@@ -30,6 +31,8 @@ export default function AdminSettings() {
   const [theoryBg, setTheoryBg] = useState('');
   const [theoryBgPreviewError, setTheoryBgPreviewError] = useState(false);
   const [savingTheoryBg, setSavingTheoryBg] = useState(false);
+  const [currency, setCurrencyState] = useState(currencyCode());
+  const [savingCurrency, setSavingCurrency] = useState(false);
 
   useEffect(() => { if (user && user.role !== 'ADMIN') navigate('/'); }, [user]);
 
@@ -42,6 +45,7 @@ export default function AdminSettings() {
         hero_image_url: s.hero_image_url || '',
       });
       setTheoryBg(s.theory_bg_image || '');
+      if (CURRENCIES[s.currency]) setCurrencyState(s.currency);
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
@@ -61,6 +65,17 @@ export default function AdminSettings() {
     finally { setSaving(false); }
   };
 
+  const saveCurrency = async () => {
+    setSavingCurrency(true);
+    try {
+      await api.updateAdminSetting('currency', currency);
+      toast(`Platform currency set to ${currency} — every price on the site now uses ${CURRENCIES[currency].symbol}`, 'ok');
+      setCurrency(currency);
+      window.dispatchEvent(new Event('ft-currency-changed'));
+    } catch (e) { toast(e.message, 'err'); }
+    finally { setSavingCurrency(false); }
+  };
+
   const saveTheoryBg = async () => {
     setSavingTheoryBg(true);
     try {
@@ -74,6 +89,22 @@ export default function AdminSettings() {
 
   return (
     <DashboardShell title="Settings">
+      <div className="card" style={{ padding: 28, maxWidth: 640, marginBottom: 24 }}>
+        <h3 style={{ fontFamily: 'var(--fd)', fontSize: 20, marginBottom: 6 }}>Platform Currency</h3>
+        <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 20 }}>One currency for the whole platform: artwork prices, estimated values, campaign targets, cart and order totals, splits and charity totals. It is a single site-wide choice, never per item.</p>
+        <div className="fg">
+          <label className="fl">Currency</label>
+          <select className="fi" value={currency} onChange={e => setCurrencyState(e.target.value)}>
+            {Object.entries(CURRENCIES).map(([code, c]) => <option key={code} value={code}>{c.symbol}  {code} — {c.name}</option>)}
+          </select>
+        </div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>
+          <Icon icon={Info} size="inline" />
+          <span>Changing this relabels existing amounts — it does not convert them. Switch before listing real prices, or re-enter amounts if you change it later.</span>
+        </div>
+        <button className="btn btn-p btn-lg" style={{ display: "inline-flex", alignItems: "center", gap: 6 }} onClick={saveCurrency} disabled={savingCurrency}><Icon icon={Save} size="inline" /> {savingCurrency ? 'Saving…' : 'Save Currency'}</button>
+      </div>
+
       <div className="card" style={{ padding: 28, maxWidth: 640 }}>
         <h3 style={{ fontFamily: 'var(--fd)', fontSize: 20, marginBottom: 6 }}>Homepage Hero Background</h3>
         <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 20 }}>Choose whether the homepage hero plays a video or shows a still image. Changes go live immediately, no redeploy.</p>

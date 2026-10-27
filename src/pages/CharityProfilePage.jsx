@@ -7,6 +7,7 @@ import { useCart } from '../context/CartContext';
 import api from '../utils/api';
 import Icon from '../components/ui/Icon';
 import CharityLogo from '../components/ui/CharityLogo';
+import { cur } from '../utils/currency';
 
 function SdgDot({ id }) {
   const s = SDGs.find(x => x.id === id); if (!s) return null;
@@ -72,7 +73,7 @@ export default function CharityProfilePage() {
       {/* Stats bar */}
       <div style={{ background: 'var(--panel)', borderBottom: '1px solid var(--border)' }}>
         <div className="wrap" style={{ padding: '16px 48px', display: 'flex', gap: 44, flexWrap: 'wrap' }}>
-          {[['Funders', (charity.funderCount || 0).toLocaleString()], ['Raised', `£${Number(charity.raised).toLocaleString()}`], ['SDGs', charity.sdgIds?.length], ['Target', `£${Number(charity.target).toLocaleString()}`]].map(([l, v]) => (
+          {[['Funders', (charity.funderCount || 0).toLocaleString()], ['Raised', `${cur()}${Number(charity.raised).toLocaleString()}`], ['SDGs', charity.sdgIds?.length], ['Target', `${cur()}${Number(charity.target).toLocaleString()}`]].map(([l, v]) => (
             <div key={l}><div className="display" style={{ fontSize: 26, color: 'var(--accent)' }}>{v}</div><div style={{ fontSize: 10, color: 'var(--muted)' }}>{l}</div></div>
           ))}
         </div>
@@ -93,7 +94,7 @@ export default function CharityProfilePage() {
               <div className="lbl" style={{ marginBottom: 10 }}>Fundraising Progress</div>
               <div className="pb"><div className="pb-fill" style={{ width: `${pct}%`, background: 'linear-gradient(90deg,var(--mint),var(--sage))' }} /></div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--muted)', marginTop: 6 }}>
-                <span>£{Number(charity.raised).toLocaleString()} raised ({pct}%)</span><span>£{Number(charity.target).toLocaleString()} target</span>
+                <span>{cur()}{Number(charity.raised).toLocaleString()} raised ({pct}%)</span><span>{cur()}{Number(charity.target).toLocaleString()} target</span>
               </div>
             </div>
 

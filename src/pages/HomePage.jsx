@@ -10,6 +10,7 @@ import CharityLogo from '../components/ui/CharityLogo';
 import TrustBadges from '../components/ui/TrustBadges';
 import EditionBadge, { priceLabel, priceAmount } from '../components/ui/EditionBadge';
 import PartnersCarousel from '../components/ui/PartnersCarousel';
+import { cur } from '../utils/currency';
 
 function SdgDot({ id, sm }) {
   const s = SDGs.find(x => x.id === id);
@@ -92,7 +93,7 @@ function GalleryCard({ item, onClick, onCharityClick }) {
         <div className="gallery-card-foot">
           <span>
             {label && <span className="gallery-card-est-lbl">{label}</span>}
-            <span className="gallery-card-price">£{priceAmount(item).toLocaleString()}</span>
+            <span className="gallery-card-price">{cur()}{priceAmount(item).toLocaleString()}</span>
           </span>
           {item.charityId ? (
             <span className="gallery-card-charity" onClick={e => { e.stopPropagation(); onCharityClick(item.charityId); }}>
@@ -445,7 +446,7 @@ export default function HomePage() {
               </button>
             </div>
             <div className="hero-stats">
-              {[['2,847', 'Artworks Sold'], ['£184k', 'Funds Raised'], ['63', 'Charities Supported']].map(([v, l]) => (
+              {[['2,847', 'Artworks Sold'], [cur() + '184k', 'Funds Raised'], ['63', 'Charities Supported']].map(([v, l]) => (
                 <div key={l}><div className="hero-stat-val">{v}</div><div className="hero-stat-lbl">{l}</div></div>
               ))}
             </div>
@@ -468,7 +469,7 @@ export default function HomePage() {
                   <div className="img-text" style={{ position: 'absolute', bottom: 16, left: 16, right: 16 }}>
                     <div style={{ fontFamily: 'var(--fd)', fontSize: 22, color: '#fff', fontWeight: 600, marginBottom: 4 }}>{featured[0].title}</div>
                     <div style={{ fontSize: 12, color: 'rgba(255,255,255,.88)' }}><ArtistCredit artist={featured[0].artist} prefix="by " size={22} /></div>
-                    <div style={{ fontFamily: 'var(--fd)', fontSize: 28, color: 'var(--gold)', fontWeight: 700, marginTop: 8 }}>£{Number(featured[0].basePrice).toLocaleString()}</div>
+                    <div style={{ fontFamily: 'var(--fd)', fontSize: 28, color: 'var(--gold)', fontWeight: 700, marginTop: 8 }}>{cur()}{Number(featured[0].basePrice).toLocaleString()}</div>
                   </div>
                 </div>
               </div>
@@ -600,7 +601,7 @@ export default function HomePage() {
                     <h3 style={{ fontFamily: 'var(--fd)', fontSize: 18, fontWeight: 600, marginBottom: 3 }}>{aw.title}</h3>
                     <p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 9 }}><ArtistCredit artist={aw.artist} prefix="by " /> · {aw.charity?.name}</p>
                     {priceLabel(aw) && <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--muted)' }}>{priceLabel(aw)}</div>}
-                    <div style={{ fontFamily: 'var(--fd)', fontSize: 18, color: 'var(--accent)', fontWeight: 700 }}>£{priceAmount(aw).toLocaleString()}</div>
+                    <div style={{ fontFamily: 'var(--fd)', fontSize: 18, color: 'var(--accent)', fontWeight: 700 }}>{cur()}{priceAmount(aw).toLocaleString()}</div>
                   </div>
                 </div>
               ))}
@@ -622,7 +623,7 @@ export default function HomePage() {
           </div>
           <div className="g3" style={{ gap: 24 }}>
             {[
-              { q: 'The platform perfectly bridges art and impact. My watercolour series has raised over £18,000 for girls\' education.', n: 'Yemi Adebayo', r: 'Artist, Lagos' },
+              { q: `The platform perfectly bridges art and impact. My watercolour series has raised over ${cur()}18,000 for girls' education.`, n: 'Yemi Adebayo', r: 'Artist, Lagos' },
               { q: 'We\'ve received more sustained donor engagement through art sales than from traditional fundraising campaigns.', n: 'WaterAid UK', r: 'Charity Partner' },
               { q: 'Knowing my purchase funds real change makes collecting art feel like an act of purpose. The certificates are beautiful.', n: 'Sarah Mitchell', r: 'Collector, London' },
             ].map(t => (

@@ -7,6 +7,7 @@ import api from '../utils/api';
 import { ArtistCredit } from '../components/ui/ArtistAvatar';
 import Icon from '../components/ui/Icon';
 import EditionBadge, { priceLabel, priceAmount } from '../components/ui/EditionBadge';
+import { cur } from '../utils/currency';
 
 function SdgDot({ id }) {
   const s = SDGs.find(x => x.id === id); if (!s) return null;
@@ -184,7 +185,7 @@ export default function ShopPage() {
                 </div>
               </div>
               <div>
-                <div className="fl">Max Price: £{maxPrice.toLocaleString()}</div>
+                <div className="fl">Max Price: {cur()}{maxPrice.toLocaleString()}</div>
                 <input type="range" min={0} max={3000} step={50} value={maxPrice} onChange={e => setMaxPrice(Number(e.target.value))} style={{ width: '100%', marginTop: 8 }} />
               </div>
             </div>
@@ -225,7 +226,7 @@ export default function ShopPage() {
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <span>
                           {priceLabel(p) && <span style={{ display: 'block', fontSize: 9, fontWeight: 700, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--muted)' }}>{priceLabel(p)}</span>}
-                          <span style={{ fontFamily: 'var(--fd)', fontSize: 18, color: 'var(--accent)', fontWeight: 700 }}>£{priceAmount(p).toLocaleString()}</span>
+                          <span style={{ fontFamily: 'var(--fd)', fontSize: 18, color: 'var(--accent)', fontWeight: 700 }}>{cur()}{priceAmount(p).toLocaleString()}</span>
                         </span>
                         <span className="badge b-muted" style={{ fontSize: 9, textTransform: 'capitalize' }}>{p.productType?.toLowerCase()}</span>
                       </div>
@@ -247,7 +248,7 @@ export default function ShopPage() {
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
                       {priceLabel(p) && <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--muted)' }}>{priceLabel(p)}</div>}
-                      <div style={{ fontFamily: 'var(--fd)', fontSize: 20, color: 'var(--accent)', fontWeight: 700, marginBottom: 8 }}>£{priceAmount(p).toLocaleString()}</div>
+                      <div style={{ fontFamily: 'var(--fd)', fontSize: 20, color: 'var(--accent)', fontWeight: 700, marginBottom: 8 }}>{cur()}{priceAmount(p).toLocaleString()}</div>
                       <button className="btn btn-p btn-sm" onClick={e => addPlaceholderAware(e, p)}>Add to Cart</button>
                     </div>
                   </div>
@@ -272,7 +273,7 @@ export default function ShopPage() {
                   <div style={{ display: 'flex', gap: 3, marginBottom: 8, alignItems: 'center' }}>{qv.sdgIds?.map(id => <SdgDot key={id} id={id} />)}<EditionBadge editionType={qv.editionType} /></div>
                   <p style={{ fontSize: 13, color: 'var(--txt2)', lineHeight: 1.7, marginBottom: 14 }}>{qv.description?.slice(0, 180)}…</p>
                   {priceLabel(qv) && <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--muted)' }}>{priceLabel(qv)}</div>}
-                  <div style={{ fontFamily: 'var(--fd)', fontSize: 26, color: 'var(--accent)', fontWeight: 700, marginBottom: 14 }}>£{priceAmount(qv).toLocaleString()}</div>
+                  <div style={{ fontFamily: 'var(--fd)', fontSize: 26, color: 'var(--accent)', fontWeight: 700, marginBottom: 14 }}>{cur()}{priceAmount(qv).toLocaleString()}</div>
                   <button className="btn btn-p" style={{ width: '100%', justifyContent: 'center' }} onClick={() => { if (!qv.slug) { toast('This is a placeholder — real products coming soon', 'info'); return; } addToCart(qv); setQv(null); }}>Add to Cart</button>
                   {qv.slug && <button className="btn btn-g" style={{ width: '100%', justifyContent: 'center', marginTop: 7, display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => { navigate(`/shop/${qv.slug}`); setQv(null); }}>Full Details <Icon icon={ArrowRight} size="inline" /></button>}
                 </div>

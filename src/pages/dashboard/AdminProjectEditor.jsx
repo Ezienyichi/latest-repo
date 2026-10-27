@@ -8,10 +8,11 @@ import DashboardShell from './DashboardShell';
 import Uploader from '../../components/ui/Uploader';
 import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
+import { cur } from '../../utils/currency';
 
 const EMPTY = { title: '', charityId: '', story: '', headerImage: '', campaignVideo: '', targetAmount: '', status: 'DRAFT', sdgIds: [], startDate: '', endDate: '' };
 const toDateInput = (d) => (d ? new Date(d).toISOString().slice(0, 10) : '');
-const money = (n) => `£${Number(n || 0).toLocaleString('en-GB', { maximumFractionDigits: 2 })}`;
+const money = (n) => `${cur()}${Number(n || 0).toLocaleString('en-GB', { maximumFractionDigits: 2 })}`;
 
 export default function AdminProjectEditor() {
   const { id } = useParams();
@@ -141,7 +142,7 @@ export default function AdminProjectEditor() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
-          <div className="fg"><label className="fl">Target Amount (£) *</label><input className="fi" type="number" min="1" step="0.01" value={form.targetAmount} onChange={e => set('targetAmount', e.target.value)} /></div>
+          <div className="fg"><label className="fl">Target Amount ({cur()}) *</label><input className="fi" type="number" min="1" step="0.01" value={form.targetAmount} onChange={e => set('targetAmount', e.target.value)} /></div>
           <div className="fg">
             <label className="fl">Status</label>
             <select className="fi fsel" value={form.status} onChange={e => set('status', e.target.value)}>

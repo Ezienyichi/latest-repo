@@ -7,6 +7,7 @@ import { FRAMED_CATEGORIES } from '../../data/constants';
 import DashboardShell from './DashboardShell';
 import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
+import { cur } from '../../utils/currency';
 
 const STATUS_STYLES = {
   PENDING: { bg: 'rgba(255,173,0,.08)', border: 'rgba(255,173,0,.2)', color: '#b37800' },
@@ -72,7 +73,7 @@ export default function AdminOrderDetail() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 14, marginBottom: 20 }}>
         <div>
           <div style={{ fontFamily: 'var(--fm)', fontSize: 12, color: 'var(--muted)' }}>{order.id}</div>
-          <div style={{ fontFamily: 'var(--fd)', fontSize: 26, fontWeight: 700, marginTop: 4 }}>£{Number(order.totalAmount).toFixed(2)}</div>
+          <div style={{ fontFamily: 'var(--fd)', fontSize: 26, fontWeight: 700, marginTop: 4 }}>{cur()}{Number(order.totalAmount).toFixed(2)}</div>
           <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>Placed {new Date(order.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
         </div>
         <div className="card" style={{ padding: 16, minWidth: 260 }}>
@@ -130,11 +131,11 @@ export default function AdminOrderDetail() {
                   <div style={{ fontSize: 11, color: 'var(--muted)' }}>{item.product?.artist?.displayName} · {item.product?.charity?.name || 'Unaffiliated'}</div>
                 </td>
                 <td>{item.quantity}</td>
-                <td>£{Number(item.unitPrice).toFixed(2)}</td>
-                <td style={{ fontWeight: 600 }}>£{Number(item.lineTotal).toFixed(2)}</td>
-                <td style={{ color: 'var(--sage)' }}>£{Number(item.charitySplitAmt).toFixed(2)}</td>
-                <td style={{ color: 'var(--gold)' }}>£{Number(item.platformFeeAmt).toFixed(2)}</td>
-                <td style={{ color: 'var(--accent)', fontWeight: 600 }}>£{Number(item.artistPayout).toFixed(2)}</td>
+                <td>{cur()}{Number(item.unitPrice).toFixed(2)}</td>
+                <td style={{ fontWeight: 600 }}>{cur()}{Number(item.lineTotal).toFixed(2)}</td>
+                <td style={{ color: 'var(--sage)' }}>{cur()}{Number(item.charitySplitAmt).toFixed(2)}</td>
+                <td style={{ color: 'var(--gold)' }}>{cur()}{Number(item.platformFeeAmt).toFixed(2)}</td>
+                <td style={{ color: 'var(--accent)', fontWeight: 600 }}>{cur()}{Number(item.artistPayout).toFixed(2)}</td>
               </tr>
             ))}
           </tbody>
@@ -144,10 +145,10 @@ export default function AdminOrderDetail() {
       <div className="card" style={{ padding: 20, maxWidth: 360, marginLeft: 'auto' }}>
         <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 14 }}>Order Totals</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: 'var(--muted)' }}>Shipping</span><span>{Number(order.shippingAmount) === 0 ? 'Free' : `£${Number(order.shippingAmount).toFixed(2)}`}</span></div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: 'var(--muted)' }}>Platform Fee</span><span>£{Number(order.platformFee).toFixed(2)}</span></div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: 'var(--sage)' }}>Charity Split</span><span style={{ color: 'var(--sage)' }}>£{Number(order.charitySplit).toFixed(2)}</span></div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 8, borderTop: '1px solid var(--border)', fontFamily: 'var(--fd)', fontWeight: 700, fontSize: 16 }}><span>Total</span><span style={{ color: 'var(--accent)' }}>£{Number(order.totalAmount).toFixed(2)}</span></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: 'var(--muted)' }}>Shipping</span><span>{Number(order.shippingAmount) === 0 ? 'Free' : `${cur()}${Number(order.shippingAmount).toFixed(2)}`}</span></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: 'var(--muted)' }}>Platform Fee</span><span>{cur()}{Number(order.platformFee).toFixed(2)}</span></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: 'var(--sage)' }}>Charity Split</span><span style={{ color: 'var(--sage)' }}>{cur()}{Number(order.charitySplit).toFixed(2)}</span></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 8, borderTop: '1px solid var(--border)', fontFamily: 'var(--fd)', fontWeight: 700, fontSize: 16 }}><span>Total</span><span style={{ color: 'var(--accent)' }}>{cur()}{Number(order.totalAmount).toFixed(2)}</span></div>
         </div>
       </div>
     </DashboardShell>

@@ -6,6 +6,7 @@ import { useCart } from '../../context/CartContext';
 import DashboardShell, { StatCard } from './DashboardShell';
 import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
+import { cur } from '../../utils/currency';
 
 // The URL is the single source of truth for which tab is active, so the
 // DashboardShell sidebar (real navigate() calls to /dashboard/users etc.)
@@ -86,11 +87,11 @@ export default function AdminDashboard() {
           <StatCard icon={Users} label="Total Users" value={s.users || 0} />
           <StatCard icon={Palette} label="Active Products" value={s.products || 0} />
           <StatCard icon={Package} label="Total Orders" value={s.orders || 0} />
-          <StatCard icon={Wallet} label="Total Revenue" value={`£${(s.revenue || 0).toLocaleString()}`} />
+          <StatCard icon={Wallet} label="Total Revenue" value={`${cur()}${(s.revenue || 0).toLocaleString()}`} />
         </div>
         <div className="g3" style={{ marginBottom: 28 }}>
-          <StatCard icon={Landmark} label="Platform Revenue" value={`£${(s.platformRevenue || 0).toLocaleString()}`} sub="10% commission" color="var(--gold)" />
-          <StatCard icon={Leaf} label="Charity Impact" value={`£${(s.charityTotal || 0).toLocaleString()}`} sub="Directed to charities" color="var(--sage)" />
+          <StatCard icon={Landmark} label="Platform Revenue" value={`${cur()}${(s.platformRevenue || 0).toLocaleString()}`} sub="10% commission" color="var(--gold)" />
+          <StatCard icon={Leaf} label="Charity Impact" value={`${cur()}${(s.charityTotal || 0).toLocaleString()}`} sub="Directed to charities" color="var(--sage)" />
           <StatCard icon={Search} label="Pending Review" value={(moderation?.pendingArtists?.length || 0) + (moderation?.pendingCharities?.length || 0)} sub="Artists + charities" color="#3b82f6" />
         </div>
 
@@ -105,7 +106,7 @@ export default function AdminDashboard() {
                   <td style={{ fontFamily: 'var(--fm)', fontSize: 11 }}>{o.id.slice(0, 10)}</td>
                   <td>{o.buyer?.firstName || o.buyer?.email?.split('@')[0]}</td>
                   <td>{o._count?.items || o.items?.length || 0}</td>
-                  <td style={{ fontFamily: 'var(--fd)', fontWeight: 700, color: 'var(--accent)' }}>£{Number(o.totalAmount).toFixed(2)}</td>
+                  <td style={{ fontFamily: 'var(--fd)', fontWeight: 700, color: 'var(--accent)' }}>{cur()}{Number(o.totalAmount).toFixed(2)}</td>
                   <td><span className={`badge ${o.status === 'DELIVERED' ? 'b-green' : o.status === 'PROCESSING' ? 'b-blue' : 'b-gold'}`} style={{ fontSize: 10 }}>{o.status}</span></td>
                   <td style={{ fontSize: 12 }}>{new Date(o.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</td>
                 </tr>
@@ -257,7 +258,7 @@ export default function AdminDashboard() {
                 <span className={`badge ${o.status === 'DELIVERED' ? 'b-green' : o.status === 'PROCESSING' ? 'b-blue' : o.status === 'SHIPPED' ? 'b-purple' : 'b-gold'}`}>{o.status}</span>
                 <div style={{ textAlign: 'right' }}>
                   <span style={{ fontFamily: 'var(--fd)', fontWeight: 700 }}>{o._count}</span>
-                  <span style={{ fontSize: 11, color: 'var(--muted)', marginLeft: 8 }}>£{Number(o._sum?.totalAmount || 0).toLocaleString()}</span>
+                  <span style={{ fontSize: 11, color: 'var(--muted)', marginLeft: 8 }}>{cur()}{Number(o._sum?.totalAmount || 0).toLocaleString()}</span>
                 </div>
               </div>
             ))}
@@ -275,7 +276,7 @@ export default function AdminDashboard() {
                   {a.verified && <span style={{ color: 'var(--sage)', marginLeft: 4 }}><Icon icon={Check} size="inline" /></span>}
                   <div style={{ fontSize: 11, color: 'var(--muted)' }}>{a.artworkCount} works</div>
                 </div>
-                <span style={{ fontFamily: 'var(--fd)', fontWeight: 700, color: 'var(--accent)' }}>£{Number(a.totalSold).toLocaleString()}</span>
+                <span style={{ fontFamily: 'var(--fd)', fontWeight: 700, color: 'var(--accent)' }}>{cur()}{Number(a.totalSold).toLocaleString()}</span>
               </div>
             ))}
           </div>
@@ -289,7 +290,7 @@ export default function AdminDashboard() {
                   <span style={{ fontWeight: 500 }}>{c.name}</span>
                   <div style={{ fontSize: 11, color: 'var(--muted)' }}>{c.funderCount} funders</div>
                 </div>
-                <span style={{ fontFamily: 'var(--fd)', fontWeight: 700, color: 'var(--sage)' }}>£{Number(c.raised).toLocaleString()}</span>
+                <span style={{ fontFamily: 'var(--fd)', fontWeight: 700, color: 'var(--sage)' }}>{cur()}{Number(c.raised).toLocaleString()}</span>
               </div>
             ))}
           </div>

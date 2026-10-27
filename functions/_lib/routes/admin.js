@@ -3,6 +3,7 @@ import { authenticate, requireRole } from '../auth.js';
 import { writeAuditLog } from '../audit.js';
 import { slugify } from '../helpers.js';
 import { getCharityRaised, getCharityRaisedMap } from '../charityRollup.js';
+import { CURRENCIES } from '../currency.js';
 
 const admin = new Hono();
 admin.use('*', authenticate, requireRole('ADMIN'));
@@ -25,6 +26,7 @@ const SETTING_VALIDATORS = {
     if (value + other > 1) return `charity_pct + platform_pct cannot exceed 1 (charity_pct is currently ${other}) — the artist share would go negative`;
     return null;
   },
+  currency: async (value) => (typeof value === 'string' && Object.hasOwn(CURRENCIES, value)) ? null : `Must be one of ${Object.keys(CURRENCIES).join(', ')}`,
   site_name: async (value) => (typeof value === 'string' && value.trim()) ? null : 'Must be a non-empty string',
   tagline: async (value) => (typeof value === 'string' && value.trim()) ? null : 'Must be a non-empty string',
   footer_copyright: async (value) => (typeof value === 'string' && value.trim()) ? null : 'Must be a non-empty string',

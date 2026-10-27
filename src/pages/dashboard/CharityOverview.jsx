@@ -5,6 +5,7 @@ import { useCart } from '../../context/CartContext';
 import DashboardShell, { StatCard } from './DashboardShell';
 import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
+import { cur } from '../../utils/currency';
 
 export default function CharityOverview() {
   const navigate = useNavigate();
@@ -34,7 +35,7 @@ export default function CharityOverview() {
       {/* Stats */}
       <div className="g4" style={{ marginBottom: 28 }}>
         <StatCard icon={Handshake} label="Funders" value={stats.funderCount.toLocaleString()} sub="Anonymous supporters" />
-        <StatCard icon={Wallet} label="Funds Raised" value={`£${stats.raised.toLocaleString()}`} sub={`${pct}% of £${stats.target.toLocaleString()} target`} />
+        <StatCard icon={Wallet} label="Funds Raised" value={`${cur()}${stats.raised.toLocaleString()}`} sub={`${pct}% of ${cur()}${stats.target.toLocaleString()} target`} />
         <StatCard icon={Mail} label="Messages Sent" value={stats.messagesSent} sub="Funder communications" />
         <StatCard icon={Palette} label="Artist Partners" value={stats.partnerCount} sub="Active collaborations" color="var(--gold)" />
       </div>
@@ -49,8 +50,8 @@ export default function CharityOverview() {
           <div className="pb-fill" style={{ width: `${pct}%`, background: 'linear-gradient(90deg,var(--mint),var(--sage))', height: '100%' }} />
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--muted)' }}>
-          <span>£{stats.raised.toLocaleString()} raised</span>
-          <span>£{stats.target.toLocaleString()} target</span>
+          <span>{cur()}{stats.raised.toLocaleString()} raised</span>
+          <span>{cur()}{stats.target.toLocaleString()} target</span>
         </div>
       </div>
 
@@ -73,7 +74,7 @@ export default function CharityOverview() {
               {p.artist.avatarUrl ? <img src={p.artist.avatarUrl} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} /> : <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--glass)' }} />}
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 500 }}>{p.artist.displayName}</div>
-                <div style={{ fontSize: 11, color: 'var(--muted)' }}>£{Number(p.artist.totalSold || 0).toLocaleString()} raised</div>
+                <div style={{ fontSize: 11, color: 'var(--muted)' }}>{cur()}{Number(p.artist.totalSold || 0).toLocaleString()} raised</div>
               </div>
             </div>
           )) : <div style={{ fontSize: 13, color: 'var(--muted)' }}>No artist partners yet</div>}

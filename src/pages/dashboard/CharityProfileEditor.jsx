@@ -6,6 +6,7 @@ import DashboardShell from './DashboardShell';
 import Uploader from '../../components/ui/Uploader';
 import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
+import { cur } from '../../utils/currency';
 
 const DOC_BADGE = { PENDING: 'b-gold', APPROVED: 'b-green', REJECTED: 'b-red' };
 
@@ -91,7 +92,7 @@ export default function CharityProfileEditor() {
         <div className="fg"><label className="fl">Mission Statement</label><textarea className="fi fta" value={form.mission} onChange={e => set('mission', e.target.value)} rows={5} /></div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <div className="fg" style={{ margin: 0 }}><label className="fl">Website</label><input className="fi" value={form.websiteUrl} onChange={e => set('websiteUrl', e.target.value)} placeholder="https://..." /></div>
-          <div className="fg" style={{ margin: 0 }}><label className="fl">Fundraising Target (£)</label><input className="fi" type="number" value={form.target} onChange={e => set('target', Number(e.target.value))} /></div>
+          <div className="fg" style={{ margin: 0 }}><label className="fl">Fundraising Target ({cur()})</label><input className="fi" type="number" value={form.target} onChange={e => set('target', Number(e.target.value))} /></div>
         </div>
         <div className="fg" style={{ marginTop: 14 }}>
           <label className="fl">SDG Alignment</label>

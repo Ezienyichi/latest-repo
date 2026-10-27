@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { authenticate, requireRole, optionalAuth } from '../auth.js';
 import { createPayment } from '../payment.js';
 import { getSplitRates, computeSplit } from '../split.js';
+import { getCurrencySymbol } from '../currency.js';
 
 const orders = new Hono();
 
@@ -19,7 +20,7 @@ orders.post('/validate-coupon', optionalAuth, async (c) => {
     const { code, subtotal } = await c.req.json();
     const coupon = COUPONS[code?.toUpperCase()];
     if (!coupon) return c.json({ error: 'Invalid coupon code' }, 400);
-    if (subtotal < coupon.minOrder) return c.json({ error: `Minimum order £${coupon.minOrder} required` }, 400);
+    if (subtotal < coupon.minOrder) return c.json({ error: `Minimum order ${await getCurrencySymbol(c.get('prisma'))}${coupon.minOrder} required` }, 400);
     const discount = coupon.type === 'percent' ? subtotal * (coupon.value / 100) : coupon.value;
     return c.json({ code: code.toUpperCase(), discount: Math.min(discount, subtotal), type: coupon.type, value: coupon.value });
   } catch (e) { return c.json({ error: 'Validation failed' }, 500); }
@@ -130,7 +131,7 @@ orders.post('/', optionalAuth, async (c) => {
         // icon is a semantic key, not an emoji — nothing renders real
         // Notification rows yet (the navbar bell is still mock data), so
         // this maps to a lucide icon whenever that UI gets built.
-        data: { userId, icon: 'package', title: 'Order placed', body: `Order ${order.id.slice(0, 12)} — £${totalAmount.toFixed(2)}`, link: `/orders/${order.id}` },
+        data: { userId, icon: 'package', title: 'Order placed', body: `Order ${order.id.slice(0, 12)} — ${await getCurrencySymbol(prisma)}${totalAmount.toFixed(2)}`, link: `/orders/${order.id}` },
       }).catch(() => {});
     }
 

@@ -6,6 +6,7 @@ import DashboardShell, { StatCard } from './DashboardShell';
 import Icon from '../../components/ui/Icon';
 import CharityLogo from '../../components/ui/CharityLogo';
 import api from '../../utils/api';
+import { cur } from '../../utils/currency';
 
 export default function ArtistOverview() {
   const navigate = useNavigate();
@@ -28,8 +29,8 @@ export default function ArtistOverview() {
       <div className="g4" style={{ marginBottom: 28 }}>
         <StatCard icon={Palette} label="Active Listings" value={stats.activeListings} sub={`${stats.draftListings} drafts`} />
         <StatCard icon={Package} label="Total Orders" value={stats.totalOrders} sub={`${stats.pendingOrders} pending`} />
-        <StatCard icon={Wallet} label="Net Earnings" value={`£${stats.netEarnings.toLocaleString()}`} sub={`Gross: £${stats.grossRevenue.toLocaleString()}`} />
-        <StatCard icon={Leaf} label="Charity Impact" value={`£${stats.charityContributed.toLocaleString()}`} sub="Directed to charities" color="var(--sage)" />
+        <StatCard icon={Wallet} label="Net Earnings" value={`${cur()}${stats.netEarnings.toLocaleString()}`} sub={`Gross: ${cur()}${stats.grossRevenue.toLocaleString()}`} />
+        <StatCard icon={Leaf} label="Charity Impact" value={`${cur()}${stats.charityContributed.toLocaleString()}`} sub="Directed to charities" color="var(--sage)" />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginBottom: 28 }}>
@@ -46,7 +47,7 @@ export default function ArtistOverview() {
               return (
                 <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                   <div style={{ fontSize: 10, fontFamily: 'var(--fm)', color: 'var(--accent)', fontWeight: 600 }}>
-                    {m.revenue > 0 ? `£${m.revenue.toLocaleString()}` : '—'}
+                    {m.revenue > 0 ? `${cur()}${m.revenue.toLocaleString()}` : '—'}
                   </div>
                   <div style={{ width: '100%', height: `${Math.max(h, 4)}%`, background: 'linear-gradient(to top, var(--mint), var(--sage))', borderRadius: '4px 4px 0 0', transition: 'height .5s ease', minHeight: 4 }} />
                   <div style={{ fontSize: 9, color: 'var(--muted)', fontFamily: 'var(--fm)' }}>{m.month}</div>
@@ -104,7 +105,7 @@ export default function ArtistOverview() {
                   <td style={{ fontWeight: 500, fontSize: 13 }}>{oi.product?.title}</td>
                   <td style={{ fontSize: 12 }}>{new Date(oi.order.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</td>
                   <td><span className={`badge ${oi.order.status === 'DELIVERED' ? 'b-green' : oi.order.status === 'SHIPPED' ? 'b-purple' : oi.order.status === 'PROCESSING' ? 'b-blue' : 'b-gold'}`} style={{ fontSize: 10 }}>{oi.order.status}</span></td>
-                  <td style={{ fontFamily: 'var(--fd)', fontWeight: 700, color: 'var(--accent)' }}>£{Number(oi.unitPrice).toFixed(2)}</td>
+                  <td style={{ fontFamily: 'var(--fd)', fontWeight: 700, color: 'var(--accent)' }}>{cur()}{Number(oi.unitPrice).toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>

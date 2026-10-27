@@ -5,6 +5,7 @@ import { SDGs } from '../data/constants';
 import api from '../utils/api';
 import Icon from '../components/ui/Icon';
 import ArtistAvatar, { ARTIST_BANNER_PLACEHOLDER } from '../components/ui/ArtistAvatar';
+import { cur } from '../utils/currency';
 
 function SdgDot({ id }) {
   const s = SDGs.find(x => x.id === id); if (!s) return null;
@@ -49,7 +50,7 @@ export default function ArtistsPage() {
                   <div style={{ display: 'flex', gap: 3, marginBottom: 8 }}>{a.sdgIds?.slice(0, 5).map(id => <SdgDot key={id} id={id} />)}</div>
                   <p style={{ fontSize: 12, color: 'var(--muted)', lineHeight: 1.6, marginBottom: 10, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{a.artistStatement}</p>
                   <div style={{ display: 'flex', gap: 16, fontSize: 12 }}>
-                    <span><strong style={{ color: 'var(--accent)' }}>£{Number(a.totalSold || 0).toLocaleString()}</strong> <span style={{ color: 'var(--muted)' }}>raised</span></span>
+                    <span><strong style={{ color: 'var(--accent)' }}>{cur()}{Number(a.totalSold || 0).toLocaleString()}</strong> <span style={{ color: 'var(--muted)' }}>raised</span></span>
                     <span><strong>{a.artworkCount}</strong> <span style={{ color: 'var(--muted)' }}>works</span></span>
                   </div>
                 </div>

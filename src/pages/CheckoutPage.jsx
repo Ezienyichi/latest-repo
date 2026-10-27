@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { FRAMED_CATEGORIES } from '../data/constants';
 import api from '../utils/api';
 import Icon from '../components/ui/Icon';
+import { cur } from '../utils/currency';
 
 // Matches the backend fallback in functions/_lib/split.js — used only until
 // the real rates load, so the numbers never visibly jump for the common
@@ -185,7 +186,7 @@ export default function CheckoutPage() {
                         <div style={{ fontSize: 14, fontWeight: 500 }}>{item.title}</div>
                         <div style={{ fontSize: 11, color: 'var(--muted)' }}>by {item.artist} × {item.qty}</div>
                       </div>
-                      <div style={{ fontFamily: 'var(--fd)', fontSize: 16, color: 'var(--accent)', fontWeight: 700 }}>£{(item.price * item.qty).toLocaleString()}</div>
+                      <div style={{ fontFamily: 'var(--fd)', fontSize: 16, color: 'var(--accent)', fontWeight: 700 }}>{cur()}{(item.price * item.qty).toLocaleString()}</div>
                     </div>
                   ))}
                 </div>
@@ -193,7 +194,7 @@ export default function CheckoutPage() {
                 <div style={{ display: 'flex', gap: 10 }}>
                   <button className="btn btn-s btn-lg" style={{ flex: 1, justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => setStep(2)}><Icon icon={ArrowLeft} size="inline" /> Back</button>
                   <button className="btn btn-p btn-lg" style={{ flex: 2, justifyContent: 'center' }} onClick={placeOrder} disabled={loading}>
-                    {loading ? 'Processing...' : `Place Order — £${grandTotal.toFixed(2)}`}
+                    {loading ? 'Processing...' : `Place Order — ${cur()}${grandTotal.toFixed(2)}`}
                   </button>
                 </div>
               </div>
@@ -206,11 +207,11 @@ export default function CheckoutPage() {
               <h4 style={{ fontFamily: 'var(--fd)', fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Summary</h4>
               <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 6 }}>{cart.length} item{cart.length !== 1 ? 's' : ''}</div>
               {[
-                ['Subtotal', `£${cartTotal.toFixed(2)}`],
-                ...(discountAmt > 0 ? [[`Discount (${couponCode})`, `-£${discountAmt.toFixed(2)}`, 'var(--sage)']] : []),
-                [`Platform (${Math.round(rates.platform_pct * 100)}%)`, `£${platformFee.toFixed(2)}`],
-                [`Charity (${Math.round(rates.charity_pct * 100)}%)`, `£${charitySplit.toFixed(2)}`],
-                ['Shipping', shippingCost === 0 ? 'Free' : `£${shippingCost.toFixed(2)}`],
+                ['Subtotal', `${cur()}${cartTotal.toFixed(2)}`],
+                ...(discountAmt > 0 ? [[`Discount (${couponCode})`, `-${cur()}${discountAmt.toFixed(2)}`, 'var(--sage)']] : []),
+                [`Platform (${Math.round(rates.platform_pct * 100)}%)`, `${cur()}${platformFee.toFixed(2)}`],
+                [`Charity (${Math.round(rates.charity_pct * 100)}%)`, `${cur()}${charitySplit.toFixed(2)}`],
+                ['Shipping', shippingCost === 0 ? 'Free' : `${cur()}${shippingCost.toFixed(2)}`],
               ].map(([k, v, c]) => (
                 <div key={k} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7, fontSize: 13 }}>
                   <span style={{ color: 'var(--muted)' }}>{k}</span><span style={{ color: c || (v === 'Free' ? 'var(--sage)' : '') }}>{v}</span>
@@ -218,7 +219,7 @@ export default function CheckoutPage() {
               ))}
               <div style={{ borderTop: '2px solid var(--border)', marginTop: 10, paddingTop: 10, display: 'flex', justifyContent: 'space-between', fontWeight: 600 }}>
                 <span>Total</span>
-                <span style={{ fontFamily: 'var(--fd)', fontSize: 22, color: 'var(--accent)' }}>£{grandTotal.toFixed(2)}</span>
+                <span style={{ fontFamily: 'var(--fd)', fontSize: 22, color: 'var(--accent)' }}>{cur()}{grandTotal.toFixed(2)}</span>
               </div>
             </div>
           </div>

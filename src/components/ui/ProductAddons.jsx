@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Check } from 'lucide-react';
 import Icon from './Icon';
+import { cur } from '../../utils/currency';
 
 // Renders all product add-on fields dynamically based on type
 // Supports: text, textarea, select, radio, checkbox, color_swatch, date, number, file, heading, note
@@ -42,7 +43,7 @@ export default function ProductAddons({ addons = [], values, onChange, condition
               <label className="fl">{ao.label} {ao.required && <span style={{ color: '#dc2626' }}>*</span>}</label>
               <input className="fi" value={values[ao.id] || ''} onChange={e => set(ao.id, e.target.value)}
                 placeholder={ao.options?.placeholder || ''} required={ao.required} />
-              {ao.priceModifier && <div style={{ fontSize: 11, color: 'var(--accent)', marginTop: 3 }}>+£{Number(ao.priceModifier).toFixed(2)}</div>}
+              {ao.priceModifier && <div style={{ fontSize: 11, color: 'var(--accent)', marginTop: 3 }}>+{cur()}{Number(ao.priceModifier).toFixed(2)}</div>}
             </div>
           )}
 
@@ -152,7 +153,7 @@ export default function ProductAddons({ addons = [], values, onChange, condition
             <div className="fg" style={{ margin: 0 }}>
               <label className="fl">{ao.label}</label>
               <input className="fi" type="number" value={values[ao.id] || ''} onChange={e => set(ao.id, e.target.value)} min={0} />
-              {ao.priceModifier && <div style={{ fontSize: 11, color: 'var(--accent)', marginTop: 3 }}>×£{Number(ao.priceModifier).toFixed(2)} per unit</div>}
+              {ao.priceModifier && <div style={{ fontSize: 11, color: 'var(--accent)', marginTop: 3 }}>×{cur()}{Number(ao.priceModifier).toFixed(2)} per unit</div>}
             </div>
           )}
 

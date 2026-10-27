@@ -8,6 +8,7 @@ import CharityLogo from '../components/ui/CharityLogo';
 import EditionBadge, { priceLabel, priceAmount } from '../components/ui/EditionBadge';
 import { ArtistCredit } from '../components/ui/ArtistAvatar';
 import { CampaignProgress, SdgDot, money } from './CampaignsPage';
+import { cur } from '../utils/currency';
 
 const fmtDate = (d) => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
@@ -129,7 +130,7 @@ export default function CampaignDetailPage() {
                     <h3 style={{ fontFamily: 'var(--fd)', fontSize: 18, fontWeight: 600, marginBottom: 3 }}>{a.title}</h3>
                     <p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 8 }}><ArtistCredit artist={a.artist} prefix="by " /></p>
                     {priceLabel(a) && <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--muted)' }}>{priceLabel(a)}</div>}
-                    <div style={{ fontFamily: 'var(--fd)', fontSize: 18, color: 'var(--accent)', fontWeight: 700 }}>£{priceAmount(a).toLocaleString()}</div>
+                    <div style={{ fontFamily: 'var(--fd)', fontSize: 18, color: 'var(--accent)', fontWeight: 700 }}>{cur()}{priceAmount(a).toLocaleString()}</div>
                   </div>
                 </div>
               ))}

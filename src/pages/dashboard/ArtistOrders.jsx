@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useCart } from '../../context/CartContext';
 import DashboardShell from './DashboardShell';
 import api from '../../utils/api';
+import { cur } from '../../utils/currency';
 
 const SB = { PENDING: 'b-gold', PROCESSING: 'b-blue', SHIPPED: 'b-purple', DELIVERED: 'b-green', CANCELLED: 'b-red' };
 
@@ -37,7 +38,7 @@ export default function ArtistOrders() {
                       <td style={{ fontFamily: 'var(--fm)', fontSize: 11 }}>{oi.order.id.slice(0, 12)}</td>
                       <td style={{ fontWeight: 500, fontSize: 13 }}>{oi.product?.title}</td>
                       <td>{oi.quantity}</td>
-                      <td style={{ fontFamily: 'var(--fd)', fontWeight: 700, color: 'var(--accent)' }}>£{Number(oi.unitPrice).toFixed(2)}</td>
+                      <td style={{ fontFamily: 'var(--fd)', fontWeight: 700, color: 'var(--accent)' }}>{cur()}{Number(oi.unitPrice).toFixed(2)}</td>
                       <td><span className={`badge ${SB[oi.order.status] || 'b-muted'}`} style={{ fontSize: 10 }}>{oi.order.status}</span></td>
                       <td style={{ fontSize: 12 }}>{new Date(oi.order.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}</td>
                     </tr>

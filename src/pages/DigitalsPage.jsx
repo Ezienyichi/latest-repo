@@ -6,6 +6,7 @@ import { SDGs, DIGITAL_CATS, FRAMED_CATEGORIES } from '../data/constants';
 import api from '../utils/api';
 import { ArtistCredit } from '../components/ui/ArtistAvatar';
 import Icon from '../components/ui/Icon';
+import { cur } from '../utils/currency';
 
 // Shown in the hero when no specific category tab is active — a free
 // commercial-use Pexels placeholder (same CDN pattern as DIGITAL_CATS'
@@ -169,7 +170,7 @@ export default function DigitalsPage() {
                     <div className="product-card-overlay">
                       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
                         <button className="btn btn-p btn-sm" style={{ width: '100%', justifyContent: 'center' }}
-                          onClick={e => { e.stopPropagation(); addToCart(p); }}>Add to Cart — £{Number(p.basePrice).toFixed(2)}</button>
+                          onClick={e => { e.stopPropagation(); addToCart(p); }}>Add to Cart — {cur()}{Number(p.basePrice).toFixed(2)}</button>
                       </div>
                     </div>
                     {/* Format badge at bottom-left */}
@@ -189,8 +190,8 @@ export default function DigitalsPage() {
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
-                        <span style={{ fontFamily: 'var(--fd)', fontSize: 17, color: 'var(--accent)', fontWeight: 700 }}>£{Number(p.basePrice).toFixed(2)}</span>
-                        {p.comparePrice && <span style={{ fontFamily: 'var(--fd)', fontSize: 12, color: 'var(--muted)', textDecoration: 'line-through', marginLeft: 6 }}>£{Number(p.comparePrice).toFixed(2)}</span>}
+                        <span style={{ fontFamily: 'var(--fd)', fontSize: 17, color: 'var(--accent)', fontWeight: 700 }}>{cur()}{Number(p.basePrice).toFixed(2)}</span>
+                        {p.comparePrice && <span style={{ fontFamily: 'var(--fd)', fontSize: 12, color: 'var(--muted)', textDecoration: 'line-through', marginLeft: 6 }}>{cur()}{Number(p.comparePrice).toFixed(2)}</span>}
                       </div>
                       {p.avgRating && <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: 'var(--gold)' }}><Icon icon={Star} size="inline" fill="currentColor" /> {p.avgRating}</div>}
                     </div>

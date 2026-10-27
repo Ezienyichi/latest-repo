@@ -6,6 +6,7 @@ import { useCart } from '../context/CartContext';
 import api from '../utils/api';
 import Icon from '../components/ui/Icon';
 import ArtistAvatar, { ARTIST_BANNER_PLACEHOLDER } from '../components/ui/ArtistAvatar';
+import { cur } from '../utils/currency';
 
 function SdgDot({ id }) {
   const s = SDGs.find(x => x.id === id); if (!s) return null;
@@ -52,7 +53,7 @@ export default function ArtistProfilePage() {
             </div>
           </div>
           <div style={{ display: 'flex', gap: 36, marginTop: 24, paddingTop: 18, borderTop: '1px solid rgba(255,255,255,.1)' }}>
-            {[['£' + Number(artist.totalSold || 0).toLocaleString(), 'Raised'], [artist.artworkCount || 0, 'Works'], [artist.sdgIds?.length || 0, 'SDGs']].map(([v, l]) => (
+            {[[cur() + Number(artist.totalSold || 0).toLocaleString(), 'Raised'], [artist.artworkCount || 0, 'Works'], [artist.sdgIds?.length || 0, 'SDGs']].map(([v, l]) => (
               <div key={l}><div style={{ fontFamily: 'var(--fd)', fontSize: 24, color: 'var(--sage)', fontWeight: 700 }}>{v}</div><div style={{ fontSize: 10, color: 'rgba(255,255,255,.78)', letterSpacing: 1, textTransform: 'uppercase' }}>{l}</div></div>
             ))}
           </div>
@@ -77,7 +78,7 @@ export default function ArtistProfilePage() {
                 <div className="product-card-body">
                   <h3 style={{ fontFamily: 'var(--fd)', fontSize: 17, fontWeight: 600, marginBottom: 4 }}>{p.title}</h3>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontFamily: 'var(--fd)', fontSize: 16, color: 'var(--accent)', fontWeight: 700 }}>£{Number(p.basePrice).toLocaleString()}</span>
+                    <span style={{ fontFamily: 'var(--fd)', fontSize: 16, color: 'var(--accent)', fontWeight: 700 }}>{cur()}{Number(p.basePrice).toLocaleString()}</span>
                     {p.charity?.name && <span style={{ fontSize: 10, color: 'var(--muted)' }}>{p.charity.name}</span>}
                   </div>
                 </div>

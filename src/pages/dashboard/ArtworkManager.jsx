@@ -7,6 +7,7 @@ import DashboardShell from './DashboardShell';
 import Uploader from '../../components/ui/Uploader';
 import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
+import { cur } from '../../utils/currency';
 
 const STATUS_BADGE = { ACTIVE: 'b-green', DRAFT: 'b-gold', SOLD: 'b-muted', SUSPENDED: 'b-red' };
 
@@ -130,7 +131,7 @@ export default function ArtworkManager() {
                       </td>
                       <td style={{ fontWeight: 500 }}>{p.title}</td>
                       <td><span className="badge b-muted" style={{ fontSize: 10, textTransform: 'capitalize' }}>{p.category?.toLowerCase()}</span></td>
-                      <td style={{ fontFamily: 'var(--fd)', fontWeight: 700, color: 'var(--accent)' }}>£{Number(p.basePrice).toLocaleString()}</td>
+                      <td style={{ fontFamily: 'var(--fd)', fontWeight: 700, color: 'var(--accent)' }}>{cur()}{Number(p.basePrice).toLocaleString()}</td>
                       <td>{p.stockQuantity != null ? p.stockQuantity : '∞'}</td>
                       <td><span className={`badge ${STATUS_BADGE[p.status] || 'b-muted'}`} style={{ fontSize: 10 }}>{p.status}</span></td>
                       <td>{p._count?.orderItems || 0}</td>
@@ -268,8 +269,8 @@ export default function ArtworkManager() {
             {step === 3 && (<>
               <h3 style={{ fontFamily: 'var(--fd)', fontSize: 20, marginBottom: 16 }}>Pricing & Inventory</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-                <div className="fg" style={{ margin: 0 }}><label className="fl">Price (£) *</label><input className="fi" type="number" step="0.01" value={form.basePrice} onChange={e => set('basePrice', e.target.value)} placeholder="0.00" required /></div>
-                <div className="fg" style={{ margin: 0 }}><label className="fl">Compare / Was Price (£)</label><input className="fi" type="number" step="0.01" value={form.comparePrice} onChange={e => set('comparePrice', e.target.value)} placeholder="Original price for sale badge" /></div>
+                <div className="fg" style={{ margin: 0 }}><label className="fl">Price ({cur()}) *</label><input className="fi" type="number" step="0.01" value={form.basePrice} onChange={e => set('basePrice', e.target.value)} placeholder="0.00" required /></div>
+                <div className="fg" style={{ margin: 0 }}><label className="fl">Compare / Was Price ({cur()})</label><input className="fi" type="number" step="0.01" value={form.comparePrice} onChange={e => set('comparePrice', e.target.value)} placeholder="Original price for sale badge" /></div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginTop: 14 }}>
                 <div className="fg" style={{ margin: 0 }}><label className="fl">SKU</label><input className="fi" value={form.sku} onChange={e => set('sku', e.target.value)} placeholder="Unique product code" /></div>
@@ -303,7 +304,7 @@ export default function ArtworkManager() {
             {step === 5 && (<>
               <h3 style={{ fontFamily: 'var(--fd)', fontSize: 20, marginBottom: 16 }}>Review & Publish</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                {[['Title', form.title], ['Category', form.category], ['Type', form.productType], ['Price', `£${form.basePrice}`], ['Medium', form.medium || '—'], ['SKU', form.sku || '—'], ['Stock', form.stockQuantity || '∞'], ['Certificate', form.autoCertificate ? 'Auto-generated' : 'None'], ['SDGs', form.sdgIds.length ? form.sdgIds.join(', ') : 'None']].map(([k, v]) => (
+                {[['Title', form.title], ['Category', form.category], ['Type', form.productType], ['Price', `${cur()}${form.basePrice}`], ['Medium', form.medium || '—'], ['SKU', form.sku || '—'], ['Stock', form.stockQuantity || '∞'], ['Certificate', form.autoCertificate ? 'Auto-generated' : 'None'], ['SDGs', form.sdgIds.length ? form.sdgIds.join(', ') : 'None']].map(([k, v]) => (
                   <div key={k}><div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 2 }}>{k}</div><div style={{ fontSize: 14 }}>{v}</div></div>
                 ))}
               </div>
