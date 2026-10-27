@@ -148,6 +148,7 @@ model CharityProfile {
   funderCount     Int                        @default(0)
   websiteUrl      String?
   products        Product[]
+  projects        Project[]
   partnerships    ArtistCharityPartnership[]
   messages        CharityMessage[]
   templates       MessageTemplate[]
@@ -176,6 +177,8 @@ model Product {
   artist          ArtistProfile      @relation(fields: [artistId], references: [id])
   charityId       String?
   charity         CharityProfile?    @relation(fields: [charityId], references: [id])
+  projectId       String?
+  project         Project?           @relation(fields: [projectId], references: [id], onDelete: SetNull)
   title           String
   slug            String             @unique
   description     String?            @db.Text
@@ -213,6 +216,8 @@ model Product {
   wishlistItems   WishlistItem[]
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
+
+  @@index([projectId])
 }
 
 model ProductVariation {
@@ -470,4 +475,38 @@ model NewsletterSubscriber {
   createdAt DateTime         @default(now())
 
   @@index([createdAt])
+}
+
+enum ProjectStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+// A fundraising campaign run by a charity. Artworks link to it via
+// Product.projectId. Charity-level "raised" is derived from the sum of its
+// projects' raisedAmount (see functions/_lib/charityRollup.js) rather than
+// stored on CharityProfile, which can drift.
+model Project {
+  id            String         @id @default(cuid())
+  charityId     String
+  charity       CharityProfile @relation(fields: [charityId], references: [id])
+  title         String
+  slug          String         @unique
+  story         String         @db.Text
+  headerImage   String?
+  campaignVideo String?
+  targetAmount  Decimal        @db.Decimal(12, 2)
+  raisedAmount  Decimal        @default(0) @db.Decimal(12, 2)
+  status        ProjectStatus  @default(DRAFT)
+  sdgIds        Int[]          @default([])
+  startDate     DateTime?
+  endDate       DateTime?
+  products      Product[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([charityId])
+  @@index([status])
 }
