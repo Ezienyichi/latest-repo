@@ -5,6 +5,7 @@ import { SDGs, FRAMED_CATEGORIES } from '../data/constants';
 import { useCart } from '../context/CartContext';
 import api from '../utils/api';
 import Icon from '../components/ui/Icon';
+import ArtistAvatar, { ARTIST_BANNER_PLACEHOLDER } from '../components/ui/ArtistAvatar';
 
 function SdgDot({ id }) {
   const s = SDGs.find(x => x.id === id); if (!s) return null;
@@ -33,8 +34,7 @@ export default function ArtistProfilePage() {
       {/* Header */}
       <div className="profile-header">
         <div className="profile-header-bg">
-          {artist.avatarUrl && <img src={artist.avatarUrl} alt="" />}
-          {!artist.avatarUrl && <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg,#1B4332,#0d2318)' }} />}
+          <img src={artist.bannerUrl || ARTIST_BANNER_PLACEHOLDER} alt="" style={{ filter: 'brightness(.6) saturate(1.1)' }} />
         </div>
         <div className="profile-header-content wrap">
           <div className="breadcrumbs" style={{ marginBottom: 14 }}>
@@ -43,7 +43,7 @@ export default function ArtistProfilePage() {
             <span style={{ color: '#fff' }}>{artist.displayName}</span>
           </div>
           <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
-            {artist.avatarUrl && <img src={artist.avatarUrl} alt="" style={{ width: 80, height: 80, borderRadius: '50%', border: '3px solid rgba(255,255,255,.2)', objectFit: 'cover' }} />}
+            <ArtistAvatar artist={artist} size={96} style={{ border: '3px solid rgba(255,255,255,.35)', boxShadow: '0 6px 24px rgba(0,0,0,.35)' }} />
             <div>
               <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>{artist.sdgIds?.map(id => <SdgDot key={id} id={id} />)}{artist.verified && <span className="badge b-green" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Icon icon={Check} size="inline" /> Verified</span>}</div>
               <h1 style={{ fontFamily: 'var(--fd)', fontSize: 40, color: '#fff', fontWeight: 600 }}>{artist.displayName}</h1>

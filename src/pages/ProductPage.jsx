@@ -15,6 +15,7 @@ import CharityLogo from '../components/ui/CharityLogo';
 import TrustBadges from '../components/ui/TrustBadges';
 import EditionBadge, { priceLabel, priceAmount } from '../components/ui/EditionBadge';
 import api from '../utils/api';
+import { ArtistCredit } from '../components/ui/ArtistAvatar';
 
 function SdgDot({ id, sm }) {
   const s = SDGs.find(x => x.id === id); if (!s) return null;
@@ -224,7 +225,7 @@ export default function ProductPage() {
             {/* Title */}
             <h1 className="display" style={{ fontSize: 42, marginBottom: 8 }}>{product.title}</h1>
             <p style={{ fontSize: 15, color: 'var(--txt2)', marginBottom: 6 }}>
-              by <span style={{ color: 'var(--accent)', cursor: 'pointer', fontWeight: 500 }} onClick={() => navigate(`/artists/${product.artist?.id}`)}>{product.artist?.displayName}</span>
+              <ArtistCredit artist={product.artist} prefix="by " size={26} nameStyle={{ color: 'var(--accent)', cursor: 'pointer', fontWeight: 500 }} onNameClick={() => navigate(`/artists/${product.artist?.id}`)} />
               {product.medium && <> · {product.medium}</>}
               {product.year && <> · {product.year}</>}
             </p>
@@ -410,7 +411,7 @@ export default function ProductPage() {
                   </div>
                   <div className="product-card-body">
                     <h3 style={{ fontFamily: 'var(--fd)', fontSize: 16, fontWeight: 600, marginBottom: 3 }}>{p.title}</h3>
-                    <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 4 }}>{p.artist?.displayName}</div>
+                    <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 4 }}><ArtistCredit artist={p.artist} size={16} /></div>
                     <span style={{ fontFamily: 'var(--fd)', fontSize: 16, color: 'var(--accent)', fontWeight: 700 }}>£{Number(p.basePrice).toLocaleString()}</span>
                   </div>
                 </div>

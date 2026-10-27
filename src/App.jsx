@@ -44,6 +44,7 @@ import AdminOrderDetail from './pages/dashboard/AdminOrderDetail';
 import AdminSettings from './pages/dashboard/AdminSettings';
 import AdminNewsletter from './pages/dashboard/AdminNewsletter';
 import AdminProjects from './pages/dashboard/AdminProjects';
+import AdminArtists from './pages/dashboard/AdminArtists';
 import AdminProjectEditor from './pages/dashboard/AdminProjectEditor';
 import VerifyCertificatePage from './pages/VerifyCertificatePage';
 import MyCertificatesPage from './pages/MyCertificatesPage';
@@ -123,6 +124,7 @@ function WithLayout() {
         <Route path="/dashboard/admin/orders" element={<AdminOrders />} />
         <Route path="/dashboard/admin/orders/:id" element={<AdminOrderDetail />} />
         <Route path="/dashboard/admin/newsletter" element={<AdminNewsletter />} />
+        <Route path="/dashboard/admin/artists" element={<AdminArtists />} />
         <Route path="/dashboard/admin/projects" element={<AdminProjects />} />
         <Route path="/dashboard/admin/projects/new" element={<AdminProjectEditor />} />
         <Route path="/dashboard/admin/projects/:id" element={<AdminProjectEditor />} />

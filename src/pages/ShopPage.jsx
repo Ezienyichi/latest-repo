@@ -4,6 +4,7 @@ import { Heart, ArrowRight, Palette } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { SDGs, FRAMED_CATEGORIES, DIGITAL_CATS } from '../data/constants';
 import api from '../utils/api';
+import { ArtistCredit } from '../components/ui/ArtistAvatar';
 import Icon from '../components/ui/Icon';
 import EditionBadge, { priceLabel, priceAmount } from '../components/ui/EditionBadge';
 
@@ -220,7 +221,7 @@ export default function ShopPage() {
                     <div className="product-card-body">
                       <div style={{ display: 'flex', gap: 3, marginBottom: 6 }}>{p.sdgIds?.map(id => <SdgDot key={id} id={id} />)}</div>
                       <h3 style={{ fontFamily: 'var(--fd)', fontSize: 18, fontWeight: 600, marginBottom: 3 }}>{p.title}</h3>
-                      <p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 8 }}>by {p.artist?.displayName} · {p.charity?.name}</p>
+                      <p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 8 }}><ArtistCredit artist={p.artist} prefix="by " /> · {p.charity?.name}</p>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <span>
                           {priceLabel(p) && <span style={{ display: 'block', fontSize: 9, fontWeight: 700, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--muted)' }}>{priceLabel(p)}</span>}
@@ -242,7 +243,7 @@ export default function ShopPage() {
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', gap: 3, marginBottom: 4, alignItems: 'center' }}>{p.sdgIds?.map(id => <SdgDot key={id} id={id} />)}<EditionBadge editionType={p.editionType} /></div>
                       <h3 style={{ fontFamily: 'var(--fd)', fontSize: 18, fontWeight: 600, marginBottom: 2 }}>{p.title}</h3>
-                      <p style={{ fontSize: 11, color: 'var(--muted)' }}>{p.artist?.displayName} · {p.medium} · {p.charity?.name}</p>
+                      <p style={{ fontSize: 11, color: 'var(--muted)' }}><ArtistCredit artist={p.artist} /> · {p.medium} · {p.charity?.name}</p>
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
                       {priceLabel(p) && <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--muted)' }}>{priceLabel(p)}</div>}

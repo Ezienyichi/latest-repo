@@ -107,6 +107,48 @@ admin.post('/verify-artist/:id', async (c) => {
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
 });
 
+// ─── Artist images (profile picture + banner) ───────────────────────────
+admin.get('/artists', async (c) => {
+  const prisma = c.get('prisma');
+  try {
+    const q = c.req.query();
+    const page = Math.max(1, parseInt(q.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(q.limit) || 20));
+    const where = q.search ? { displayName: { contains: q.search, mode: 'insensitive' } } : {};
+    const [items, total] = await Promise.all([
+      prisma.artistProfile.findMany({
+        where, skip: (page - 1) * limit, take: limit, orderBy: { displayName: 'asc' },
+        select: { id: true, displayName: true, avatarUrl: true, bannerUrl: true, location: true, verified: true, user: { select: { email: true } }, _count: { select: { products: true } } },
+      }),
+      prisma.artistProfile.count({ where }),
+    ]);
+    return c.json({ items, total, page, pages: Math.max(1, Math.ceil(total / limit)) });
+  } catch (e) { return c.json({ error: 'Failed' }, 500); }
+});
+
+// Empty string / null clears an image (public pages then show the generated
+// placeholder); anything else must be an http(s) URL.
+admin.patch('/artists/:id/images', async (c) => {
+  const prisma = c.get('prisma');
+  try {
+    const id = c.req.param('id');
+    const body = await c.req.json().catch(() => ({}));
+    const data = {};
+    for (const k of ['avatarUrl', 'bannerUrl']) {
+      if (body[k] === undefined) continue;
+      const v = body[k] === '' ? null : body[k];
+      if (v !== null && !(typeof v === 'string' && /^https?:\/\/\S+$/.test(v))) return c.json({ error: `${k} must be an http(s) URL or empty` }, 400);
+      data[k] = v;
+    }
+    if (!Object.keys(data).length) return c.json({ error: 'Nothing to update' }, 400);
+    const before = await prisma.artistProfile.findUnique({ where: { id }, select: { avatarUrl: true, bannerUrl: true } });
+    if (!before) return c.json({ error: 'Not found' }, 404);
+    const profile = await prisma.artistProfile.update({ where: { id }, data, select: { id: true, displayName: true, avatarUrl: true, bannerUrl: true } });
+    await writeAuditLog(prisma, { adminId: c.get('userId'), action: 'artist.update_images', targetType: 'ArtistProfile', targetId: id, before, after: { avatarUrl: profile.avatarUrl, bannerUrl: profile.bannerUrl } });
+    return c.json(profile);
+  } catch (e) { return c.json({ error: 'Update failed' }, 500); }
+});
+
 admin.post('/verify-charity/:id', async (c) => {
   const prisma = c.get('prisma');
   try {

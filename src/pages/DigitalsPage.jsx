@@ -4,6 +4,7 @@ import { Package, Heart, Star } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { SDGs, DIGITAL_CATS, FRAMED_CATEGORIES } from '../data/constants';
 import api from '../utils/api';
+import { ArtistCredit } from '../components/ui/ArtistAvatar';
 import Icon from '../components/ui/Icon';
 
 // Shown in the hero when no specific category tab is active — a free
@@ -182,7 +183,7 @@ export default function DigitalsPage() {
                     <div style={{ display: 'flex', gap: 3, marginBottom: 4 }}>{p.sdgIds?.slice(0, 3).map(id => <SdgDot key={id} id={id} />)}</div>
                     <h3 style={{ fontFamily: 'var(--fd)', fontSize: 16, fontWeight: 600, marginBottom: 2, lineHeight: 1.3 }}>{p.title}</h3>
                     <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 6, display: 'flex', justifyContent: 'space-between' }}>
-                      <span>{p.artist?.displayName}</span>
+                      <ArtistCredit artist={p.artist} />
                       <span>{p.charity?.name}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

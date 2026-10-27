@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Palette, Package, Wallet, User, Handshake, Mail, Folder, Users, Search, BarChart3, Settings, Flag, ArrowRight, ArrowLeft, Check } from 'lucide-react';
+import { LayoutDashboard, Palette, Package, Wallet, User, Handshake, Mail, Folder, Users, Search, BarChart3, Settings, Flag, Brush, ArrowRight, ArrowLeft, Check } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Icon from '../../components/ui/Icon';
 
@@ -28,6 +28,7 @@ const ADMIN_NAV = [
   { id: 'overview', icon: LayoutDashboard, label: 'Overview', path: '/dashboard/admin' },
   { id: 'products', icon: Palette, label: 'Products', path: '/dashboard/products' },
   { id: 'orders', icon: Package, label: 'Orders', path: '/dashboard/admin/orders' },
+  { id: 'artists', icon: Brush, label: 'Artists', path: '/dashboard/admin/artists' },
   { id: 'projects', icon: Flag, label: 'Campaigns', path: '/dashboard/admin/projects' },
   { id: 'users', icon: Users, label: 'Users', path: '/dashboard/users' },
   { id: 'newsletter', icon: Mail, label: 'Newsletter', path: '/dashboard/admin/newsletter' },

@@ -119,6 +119,10 @@ class ApiClient {
   getAdminSettings() { return this.get('/admin/settings'); }
   updateAdminSetting(key, value) { return this.put(`/admin/settings/${key}`, { value }); }
 
+  // Artist images — admin
+  getAdminArtists(params = {}) { const qs = new URLSearchParams(params).toString(); return this.get(`/admin/artists${qs ? '?' + qs : ''}`); }
+  updateArtistImages(id, data) { return this.patch(`/admin/artists/${id}/images`, data); }
+
   // Projects (campaigns) — admin
   getAdminProjects(params = {}) { const qs = new URLSearchParams(params).toString(); return this.get(`/admin/projects${qs ? '?' + qs : ''}`); }
   getAdminProject(id) { return this.get(`/admin/projects/${id}`); }

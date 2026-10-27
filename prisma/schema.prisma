@@ -116,6 +116,7 @@ model ArtistProfile {
   user            User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
   displayName     String
   avatarUrl       String?
+  bannerUrl       String?
   artistStatement String?                    @db.Text
   biography       String?                    @db.Text
   location        String?

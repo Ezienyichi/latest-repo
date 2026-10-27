@@ -4,6 +4,7 @@ import { ArrowRight, Palette, Check, ImageOff } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { SDGs, FRAMED_CATEGORIES } from '../data/constants';
 import api from '../utils/api';
+import { ArtistCredit } from '../components/ui/ArtistAvatar';
 import Icon from '../components/ui/Icon';
 import CharityLogo from '../components/ui/CharityLogo';
 import TrustBadges from '../components/ui/TrustBadges';
@@ -87,7 +88,7 @@ function GalleryCard({ item, onClick, onCharityClick }) {
       </div>
       <div className="gallery-card-body">
         <h3 className="gallery-card-title">{item.title}</h3>
-        <p className="gallery-card-artist">by {item.artist}</p>
+        <p className="gallery-card-artist"><ArtistCredit artist={{ avatarUrl: item.artistAvatar }} name={item.artist} prefix="by " /></p>
         <div className="gallery-card-foot">
           <span>
             {label && <span className="gallery-card-est-lbl">{label}</span>}
@@ -227,7 +228,7 @@ function GalleryRow({ label, heading, real, placeholders, subcats, browsePath, o
   const isDigitalRow = subcats === DIGITAL_SUBCATS;
 
   const realMapped = real.map(p => ({
-    id: p.id, slug: p.slug, title: p.title, artist: p.artist?.displayName || 'Unknown Artist',
+    id: p.id, slug: p.slug, title: p.title, artist: p.artist?.displayName || 'Unknown Artist', artistAvatar: p.artist?.avatarUrl,
     price: p.basePrice, category: p.category, img: p.images?.[0]?.url, img2: p.images?.[1]?.url,
     editionType: p.editionType, estimatedValue: p.estimatedValue,
     subcat: isDigitalRow ? p.category : (p.medium || '').toLowerCase(),
@@ -287,7 +288,7 @@ const TOPSELLER_PLACEHOLDERS = [...CROSS_CATEGORY_PLACEHOLDERS].reverse().slice(
 
 function mapProduct(p) {
   return {
-    id: p.id, slug: p.slug, title: p.title, artist: p.artist?.displayName || 'Unknown Artist',
+    id: p.id, slug: p.slug, title: p.title, artist: p.artist?.displayName || 'Unknown Artist', artistAvatar: p.artist?.avatarUrl,
     price: p.basePrice, category: p.category, img: p.images?.[0]?.url, img2: p.images?.[1]?.url,
     editionType: p.editionType, estimatedValue: p.estimatedValue,
     charityId: p.charity?.id, charityName: p.charity?.name || 'Unaffiliated', charityLogo: p.charity?.logo,
@@ -466,7 +467,7 @@ export default function HomePage() {
                   </div>
                   <div style={{ position: 'absolute', bottom: 16, left: 16, right: 16 }}>
                     <div style={{ fontFamily: 'var(--fd)', fontSize: 22, color: '#fff', fontWeight: 600, marginBottom: 4 }}>{featured[0].title}</div>
-                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,.6)' }}>by {featured[0].artist?.displayName}</div>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,.6)' }}><ArtistCredit artist={featured[0].artist} prefix="by " size={22} /></div>
                     <div style={{ fontFamily: 'var(--fd)', fontSize: 28, color: 'var(--gold)', fontWeight: 700, marginTop: 8 }}>£{Number(featured[0].basePrice).toLocaleString()}</div>
                   </div>
                 </div>
@@ -597,7 +598,7 @@ export default function HomePage() {
                   <div style={{ padding: 14 }}>
                     <div style={{ display: 'flex', gap: 3, marginBottom: 6 }}>{aw.sdgIds?.map(id => <SdgDot key={id} id={id} sm />)}</div>
                     <h3 style={{ fontFamily: 'var(--fd)', fontSize: 18, fontWeight: 600, marginBottom: 3 }}>{aw.title}</h3>
-                    <p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 9 }}>by {aw.artist?.displayName} · {aw.charity?.name}</p>
+                    <p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 9 }}><ArtistCredit artist={aw.artist} prefix="by " /> · {aw.charity?.name}</p>
                     {priceLabel(aw) && <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--muted)' }}>{priceLabel(aw)}</div>}
                     <div style={{ fontFamily: 'var(--fd)', fontSize: 18, color: 'var(--accent)', fontWeight: 700 }}>£{priceAmount(aw).toLocaleString()}</div>
                   </div>
