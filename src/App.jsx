@@ -42,6 +42,7 @@ import AdminProductManager from './pages/dashboard/AdminProductManager';
 import AdminOrders from './pages/dashboard/AdminOrders';
 import AdminOrderDetail from './pages/dashboard/AdminOrderDetail';
 import AdminSettings from './pages/dashboard/AdminSettings';
+import AdminNewsletter from './pages/dashboard/AdminNewsletter';
 import VerifyCertificatePage from './pages/VerifyCertificatePage';
 import MyCertificatesPage from './pages/MyCertificatesPage';
 
@@ -119,6 +120,7 @@ function WithLayout() {
         <Route path="/dashboard/products" element={<AdminProductManager />} />
         <Route path="/dashboard/admin/orders" element={<AdminOrders />} />
         <Route path="/dashboard/admin/orders/:id" element={<AdminOrderDetail />} />
+        <Route path="/dashboard/admin/newsletter" element={<AdminNewsletter />} />
         <Route path="/dashboard/settings" element={<AdminSettings />} />
         <Route path="/dashboard/moderation" element={<AdminDashboard />} />
         <Route path="/dashboard/users" element={<AdminDashboard />} />

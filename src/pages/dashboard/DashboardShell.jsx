@@ -29,6 +29,7 @@ const ADMIN_NAV = [
   { id: 'products', icon: Palette, label: 'Products', path: '/dashboard/products' },
   { id: 'orders', icon: Package, label: 'Orders', path: '/dashboard/admin/orders' },
   { id: 'users', icon: Users, label: 'Users', path: '/dashboard/users' },
+  { id: 'newsletter', icon: Mail, label: 'Newsletter', path: '/dashboard/admin/newsletter' },
   { id: 'moderation', icon: Search, label: 'Moderation', path: '/dashboard/moderation' },
   { id: 'analytics', icon: BarChart3, label: 'Analytics', path: '/dashboard/analytics' },
   { id: 'settings', icon: Settings, label: 'Settings', path: '/dashboard/settings' },

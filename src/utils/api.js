@@ -118,6 +118,24 @@ class ApiClient {
   getAdminAnalytics() { return this.get('/admin/analytics'); }
   getAdminSettings() { return this.get('/admin/settings'); }
   updateAdminSetting(key, value) { return this.put(`/admin/settings/${key}`, { value }); }
+
+  // Newsletter
+  subscribeNewsletter(email, source) { return this.post('/newsletter', { email, source }); }
+  getAdminNewsletter(params = {}) { const qs = new URLSearchParams(params).toString(); return this.get(`/admin/newsletter${qs ? '?' + qs : ''}`); }
+  // The export needs the Bearer header, so a plain <a href> can't be used —
+  // fetch the CSV as a blob and hand it to the browser as a download.
+  async downloadNewsletterCsv() {
+    const token = this.getToken();
+    const res = await fetch(`${this.base}/admin/newsletter/export`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+    if (!res.ok) throw new Error(`Export failed (${res.status})`);
+    const blob = await res.blob();
+    const name = /filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') || '')?.[1] || 'newsletter-subscribers.csv';
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
 }
 
 export const api = new ApiClient();

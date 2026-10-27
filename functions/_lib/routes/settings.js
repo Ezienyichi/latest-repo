@@ -35,8 +35,8 @@ const DEFAULTS = {
   social_twitter_url: '#',
   trustpilot_url: '#',
   google_review_url: '#',
-  // Unset by default — the hero falls back to the existing hardcoded
-  // video until admin explicitly picks a mode and sets a URL.
+  // Unset by default — the hero shows a solid background until admin
+  // explicitly picks a mode and sets a URL (there is no built-in media).
   hero_media_type: null,
   hero_video_url: null,
   hero_poster_url: null,

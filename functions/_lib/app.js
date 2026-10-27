@@ -13,6 +13,7 @@ import adminRoutes from './routes/admin.js';
 import settingsRoutes from './routes/settings.js';
 import uploadsRoutes from './routes/uploads.js';
 import contentRoutes from './routes/content.js';
+import newsletterRoutes from './routes/newsletter.js';
 
 const app = new Hono();
 
@@ -35,6 +36,7 @@ app.route('/api/admin', adminRoutes);
 app.route('/api/settings', settingsRoutes);
 app.route('/api/uploads', uploadsRoutes);
 app.route('/api/content', contentRoutes);
+app.route('/api/newsletter', newsletterRoutes);
 
 app.onError((err, c) => {
   console.error('API Error:', err.message);

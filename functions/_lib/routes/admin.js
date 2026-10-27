@@ -209,6 +209,45 @@ admin.put('/settings/:key', async (c) => {
   } catch (e) { return c.json({ error: 'Update failed' }, 500); }
 });
 
+// ─── Newsletter ─────────────────────────────────────────────────────────
+admin.get('/newsletter', async (c) => {
+  const prisma = c.get('prisma');
+  try {
+    const q = c.req.query();
+    const page = Math.max(1, parseInt(q.page) || 1);
+    const limit = Math.min(200, Math.max(1, parseInt(q.limit) || 25));
+    const [items, total] = await Promise.all([
+      prisma.newsletterSubscriber.findMany({ skip: (page - 1) * limit, take: limit, orderBy: { createdAt: 'desc' } }),
+      prisma.newsletterSubscriber.count(),
+    ]);
+    return c.json({ items, total, page, pages: Math.max(1, Math.ceil(total / limit)) });
+  } catch (e) { return c.json({ error: 'Failed' }, 500); }
+});
+
+// Emails are validated at signup, but a leading = + - @ would still be
+// evaluated as a formula if the CSV is opened in a spreadsheet, so such
+// cells are prefixed with a single quote.
+const csvCell = (v) => {
+  let s = String(v ?? '');
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+};
+
+admin.get('/newsletter/export', async (c) => {
+  const prisma = c.get('prisma');
+  try {
+    const rows = await prisma.newsletterSubscriber.findMany({ orderBy: { createdAt: 'desc' } });
+    const lines = ['email,source,date', ...rows.map(r => [r.email, r.source, r.createdAt.toISOString()].map(csvCell).join(','))];
+    const stamp = new Date().toISOString().slice(0, 10);
+    return new Response(lines.join('\r\n') + '\r\n', {
+      headers: {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': `attachment; filename="newsletter-subscribers-${stamp}.csv"`,
+      },
+    });
+  } catch (e) { return c.json({ error: 'Export failed' }, 500); }
+});
+
 // ─── Orders ─────────────────────────────────────────────────────────────
 // GET /orders and GET /orders/:id in orders.js are hard-scoped to the
 // requesting buyer (buyerId in the where clause) — there's no way for an

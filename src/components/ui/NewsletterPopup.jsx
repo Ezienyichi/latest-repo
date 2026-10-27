@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Check } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import Icon from './Icon';
+import api from '../../utils/api';
 
 // In-memory only, deliberately not localStorage (per spec — not supported
 // here) — module scope survives client-side route changes within the same
@@ -49,9 +50,11 @@ export default function NewsletterPopup() {
 
   const subscribe = () => {
     if (!email.includes('@')) { toast('Enter a valid email', 'err'); return; }
-    setSubbed(true);
-    toast('Welcome! Check your inbox for updates.', 'ok');
-    setTimeout(close, 1800);
+    api.subscribeNewsletter(email, 'popup').then(() => {
+      setSubbed(true);
+      toast('Welcome! Check your inbox for updates.', 'ok');
+      setTimeout(close, 1800);
+    }).catch(e => toast(e.message || 'Could not subscribe — please try again', 'err'));
   };
 
   if (!open) return null;
