@@ -5,7 +5,7 @@ import Wordmark from '../ui/Wordmark';
 export default function Footer() {
   const navigate = useNavigate();
   const sections = [
-    ['Platform', [['Discover Art', '/shop'], ['Digital Store', '/digitals'], ['Browse Artists', '/artists'], ['Charities', '/charities'], ['About Us', '/about']]],
+    ['Platform', [['Discover Art', '/shop'], ['Digital Store', '/digitals'], ['Browse Artists', '/artists'], ['Impact Campaigns', '/campaigns'], ['About Us', '/about']]],
     ['Support', [['Privacy Policy', '/'], ['Contact Us', '/'], ['Documentation', '/']]],
   ];
 

@@ -33,14 +33,14 @@ export default function ArtistsPage() {
           <div className="g3" style={{ gap: 24 }}>
             {artists.map(a => (
               <div key={a.id} className="card card-h" style={{ padding: 0, overflow: 'hidden', cursor: 'pointer' }} onClick={() => navigate(`/artists/${a.id}`)}>
-                <div style={{ height: 200, overflow: 'hidden', position: 'relative' }}>
+                <div className="artist-card-cover" style={{ height: 200, overflow: 'hidden', position: 'relative' }}>
                   <img src={a.bannerUrl || ARTIST_BANNER_PLACEHOLDER} alt="" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 60%)' }} />
-                  <div style={{ position: 'absolute', bottom: 14, left: 14, right: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div className="scrim scrim-bottom" />
+                  <div className="img-text" style={{ position: 'absolute', bottom: 14, left: 14, right: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
                     <ArtistAvatar artist={a} size={52} style={{ border: '2px solid rgba(255,255,255,.7)' }} />
                     <div style={{ minWidth: 0 }}>
                       <h3 style={{ fontFamily: 'var(--fd)', fontSize: 22, color: '#fff', fontWeight: 600 }}>{a.displayName}</h3>
-                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,.6)' }}>{a.location}</div>
+                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,.88)' }}>{a.location}</div>
                     </div>
                   </div>
                   {a.verified && <div className="badge b-green" style={{ position: 'absolute', top: 12, right: 12, display: 'inline-flex', alignItems: 'center', gap: 4 }}><Icon icon={Check} size="inline" /> Verified</div>}

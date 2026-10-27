@@ -3,7 +3,7 @@
 // there is no third-party image or licence involved when an admin hasn't
 // set a picture yet.
 
-const PALETTE = [['#1B4332', '#2D6A4F'], ['#177c1d', '#2dba35'], ['#14532d', '#22a829'], ['#1a3a2a', '#40916c']];
+const PALETTE = [['#0d2318', '#1B4332'], ['#14532d', '#177c1d'], ['#1a3a2a', '#2D6A4F'], ['#12452c', '#1e7a3c']];
 
 const initials = (name = '') => name.trim().split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase() || '').join('') || '?';
 const pickColors = (name = '') => PALETTE[[...name].reduce((n, ch) => n + ch.charCodeAt(0), 0) % PALETTE.length];

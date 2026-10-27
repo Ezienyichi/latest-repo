@@ -34,12 +34,13 @@ export default function ArtistProfilePage() {
       {/* Header */}
       <div className="profile-header">
         <div className="profile-header-bg">
-          <img src={artist.bannerUrl || ARTIST_BANNER_PLACEHOLDER} alt="" style={{ filter: 'brightness(.6) saturate(1.1)' }} />
+          <img src={artist.bannerUrl || ARTIST_BANNER_PLACEHOLDER} alt="" />
+          <div className="scrim scrim-left" />
         </div>
         <div className="profile-header-content wrap">
           <div className="breadcrumbs" style={{ marginBottom: 14 }}>
-            <Link to="/" style={{ color: 'rgba(255,255,255,.5)' }}>Home</Link><span className="sep" style={{ color: 'rgba(255,255,255,.3)' }}>›</span>
-            <Link to="/artists" style={{ color: 'rgba(255,255,255,.5)' }}>Artists</Link><span className="sep" style={{ color: 'rgba(255,255,255,.3)' }}>›</span>
+            <Link to="/" style={{ color: 'rgba(255,255,255,.82)' }}>Home</Link><span className="sep" style={{ color: 'rgba(255,255,255,.75)' }}>›</span>
+            <Link to="/artists" style={{ color: 'rgba(255,255,255,.82)' }}>Artists</Link><span className="sep" style={{ color: 'rgba(255,255,255,.75)' }}>›</span>
             <span style={{ color: '#fff' }}>{artist.displayName}</span>
           </div>
           <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
@@ -47,12 +48,12 @@ export default function ArtistProfilePage() {
             <div>
               <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>{artist.sdgIds?.map(id => <SdgDot key={id} id={id} />)}{artist.verified && <span className="badge b-green" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Icon icon={Check} size="inline" /> Verified</span>}</div>
               <h1 style={{ fontFamily: 'var(--fd)', fontSize: 40, color: '#fff', fontWeight: 600 }}>{artist.displayName}</h1>
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,.55)' }}>{artist.location}</div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,.85)' }}>{artist.location}</div>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 36, marginTop: 24, paddingTop: 18, borderTop: '1px solid rgba(255,255,255,.1)' }}>
             {[['£' + Number(artist.totalSold || 0).toLocaleString(), 'Raised'], [artist.artworkCount || 0, 'Works'], [artist.sdgIds?.length || 0, 'SDGs']].map(([v, l]) => (
-              <div key={l}><div style={{ fontFamily: 'var(--fd)', fontSize: 24, color: 'var(--accent)', fontWeight: 700 }}>{v}</div><div style={{ fontSize: 10, color: 'rgba(255,255,255,.4)', letterSpacing: 1, textTransform: 'uppercase' }}>{l}</div></div>
+              <div key={l}><div style={{ fontFamily: 'var(--fd)', fontSize: 24, color: 'var(--sage)', fontWeight: 700 }}>{v}</div><div style={{ fontSize: 10, color: 'rgba(255,255,255,.78)', letterSpacing: 1, textTransform: 'uppercase' }}>{l}</div></div>
             ))}
           </div>
         </div>

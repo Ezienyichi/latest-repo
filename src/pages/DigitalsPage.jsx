@@ -50,19 +50,20 @@ export default function DigitalsPage() {
     <div style={{ minHeight: '100vh', background: 'var(--base)' }}>
       {/* Hero — category-specific background photo, or the default banner
           above when no tab is active — under a gradient scrim for legibility */}
-      <div style={{ background: '#0a0a1a', padding: '48px 0 36px', position: 'relative', overflow: 'hidden' }}>
+      <div className="digitals-hero" style={{ background: '#0a0a1a', padding: '48px 0 36px', position: 'relative', overflow: 'hidden' }}>
         <img src={heroBg} alt="" aria-hidden="true" loading="lazy"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
         <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(135deg,${heroTint}e6 0%,${heroAccent}59 50%,#041525f2 100%)` }} />
+        <div className="scrim scrim-left" />
         {/* Ambient glow */}
         <div style={{ position: 'absolute', top: '20%', right: '10%', width: 300, height: 300, borderRadius: '50%', background: `${activeCatData?.color || '#9B72CF'}15`, filter: 'blur(80px)', pointerEvents: 'none' }} />
         {/* position:relative so this paints above the absolutely-positioned
             image/scrim/glow layers above (which would otherwise stack on
             top of it regardless of DOM order, since it's non-positioned) */}
-        <div className="wrap" style={{ position: 'relative' }}>
+        <div className="wrap img-text" style={{ position: 'relative' }}>
           <div className="breadcrumbs" style={{ marginBottom: 10 }}>
-            <Link to="/" style={{ color: 'rgba(255,255,255,.5)' }}>Home</Link>
-            <span className="sep" style={{ color: 'rgba(255,255,255,.3)' }}>›</span>
+            <Link to="/" style={{ color: 'rgba(255,255,255,.82)' }}>Home</Link>
+            <span className="sep" style={{ color: 'rgba(255,255,255,.6)' }}>›</span>
             <span style={{ color: '#fff' }}>Digital Store</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 20 }}>
@@ -73,7 +74,7 @@ export default function DigitalsPage() {
               <h1 style={{ fontFamily: 'var(--fd)', fontSize: 48, color: '#fff', fontWeight: 600, lineHeight: 1.1 }}>
                 {activeCatData ? activeCatData.label : 'Creative Digital Works'}
               </h1>
-              <p style={{ fontSize: 14, color: 'rgba(255,255,255,.5)', marginTop: 8, maxWidth: 400 }}>
+              <p style={{ fontSize: 14, color: 'rgba(255,255,255,.82)', marginTop: 8, maxWidth: 400 }}>
                 {activeCat === 'MUSIC' ? 'Original albums, EPs & soundscapes by impact artists'
                   : activeCat === 'GRAPHIC' ? 'Vector packs, icon sets & design assets with purpose'
                   : 'Music & Graphics — every purchase funds change'}
@@ -106,7 +107,7 @@ export default function DigitalsPage() {
           {/* SDG filter — combines with the category tabs above (both apply
               together, same AND semantics as ShopPage's category+SDG filter). */}
           <div style={{ display: 'flex', gap: 6, marginTop: 16, flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,.45)', marginRight: 2 }}>SDG</span>
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,.82)', marginRight: 2 }}>SDG</span>
             <button onClick={() => setSdgF(null)}
               style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 20, cursor: 'pointer', background: !sdgF ? 'rgba(255,255,255,.18)' : 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.15)', color: '#fff' }}>
               All

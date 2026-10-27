@@ -421,7 +421,7 @@ export default function HomePage() {
         ) : null}
 
         {/* Gradient overlays */}
-        <div style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none', background: 'linear-gradient(108deg,rgba(5,12,8,.97) 0%,rgba(8,18,11,.88) 32%,rgba(12,24,15,.55) 58%,rgba(6,14,9,.78) 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none', background: 'linear-gradient(108deg,rgba(5,12,8,.97) 0%,rgba(8,18,11,.9) 34%,rgba(10,20,13,.62) 60%,rgba(6,14,9,.66) 100%)' }} />
         <div style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none', background: 'radial-gradient(ellipse 55% 70% at 12% 20%,rgba(23,124,29,.22) 0%,transparent 65%)' }} />
         <div style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none', background: 'radial-gradient(ellipse 50% 60% at 88% 82%,rgba(255,173,0,.1) 0%,transparent 60%)' }} />
 
@@ -433,8 +433,8 @@ export default function HomePage() {
               SDG-Aligned Art Commerce · 17 UN Goals
             </div>
             <h1 className="hero-h1">
-              Where <em style={{ color: 'var(--gold)', fontStyle: 'italic', textShadow: '0 0 60px rgba(255,173,0,.35)' }}>Art</em><br />
-              Funds <span style={{ color: 'var(--accent)', textShadow: '0 0 40px rgba(23,124,29,.4)' }}>Change</span>
+              Where <em style={{ color: 'var(--gold)', fontStyle: 'italic', textShadow: '0 1px 2px rgba(0,0,0,.6), 0 0 60px rgba(255,173,0,.35)' }}>Art</em><br />
+              Funds <span style={{ color: 'var(--sage)', textShadow: '0 1px 2px rgba(0,0,0,.6), 0 0 40px rgba(23,124,29,.4)' }}>Change</span>
             </h1>
             <p className="hero-sub">
               Connect with extraordinary artists, support verified charities. Every purchase carries a premium certificate of authenticity and funds a real sustainable development project.
@@ -461,13 +461,13 @@ export default function HomePage() {
                   ) : (
                     <div style={{ width: '100%', height: '100%', background: 'linear-gradient(145deg,#1B4332,#2D6A4F)' }} />
                   )}
-                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,.92) 0%,rgba(0,0,0,.14) 45%,transparent 100%)' }} />
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(4,9,6,.94) 0%,rgba(4,9,6,.7) 38%,rgba(4,9,6,.2) 66%,transparent 100%)' }} />
                   <div style={{ position: 'absolute', top: 14, left: 14, display: 'flex', gap: 5 }}>
                     {featured[0].sdgIds?.map(id => <SdgDot key={id} id={id} sm />)}
                   </div>
-                  <div style={{ position: 'absolute', bottom: 16, left: 16, right: 16 }}>
+                  <div className="img-text" style={{ position: 'absolute', bottom: 16, left: 16, right: 16 }}>
                     <div style={{ fontFamily: 'var(--fd)', fontSize: 22, color: '#fff', fontWeight: 600, marginBottom: 4 }}>{featured[0].title}</div>
-                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,.6)' }}><ArtistCredit artist={featured[0].artist} prefix="by " size={22} /></div>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,.88)' }}><ArtistCredit artist={featured[0].artist} prefix="by " size={22} /></div>
                     <div style={{ fontFamily: 'var(--fd)', fontSize: 28, color: 'var(--gold)', fontWeight: 700, marginTop: 8 }}>£{Number(featured[0].basePrice).toLocaleString()}</div>
                   </div>
                 </div>

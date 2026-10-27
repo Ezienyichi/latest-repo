@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAuth } from './context/AuthContext';
 import { useCart } from './context/CartContext';
@@ -15,7 +15,8 @@ import ProductPage from './pages/ProductPage';
 import DigitalsPage from './pages/DigitalsPage';
 import ArtistsPage from './pages/ArtistsPage';
 import ArtistProfilePage from './pages/ArtistProfilePage';
-import CharitiesPage from './pages/CharitiesPage';
+import CampaignsPage from './pages/CampaignsPage';
+import CampaignDetailPage from './pages/CampaignDetailPage';
 import CharityProfilePage from './pages/CharityProfilePage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
@@ -101,7 +102,9 @@ function WithLayout() {
         <Route path="/digitals" element={<DigitalsPage />} />
         <Route path="/artists" element={<ArtistsPage />} />
         <Route path="/artists/:id" element={<ArtistProfilePage />} />
-        <Route path="/charities" element={<CharitiesPage />} />
+        <Route path="/campaigns" element={<CampaignsPage />} />
+        <Route path="/campaigns/:slug" element={<CampaignDetailPage />} />
+        <Route path="/charities" element={<Navigate to="/campaigns" replace />} />
         <Route path="/charities/:id" element={<CharityProfilePage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />

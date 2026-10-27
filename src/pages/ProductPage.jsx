@@ -175,13 +175,13 @@ export default function ProductPage() {
                   {cat && !isVideoActive && <div style={{ position: 'absolute', top: 10, left: 10, background: `${cat.color}dd`, color: '#fff', fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', padding: '3px 10px', borderRadius: 20, zIndex: 3, display: 'flex', alignItems: 'center', gap: 4 }}><Icon icon={cat.icon} size="inline" /> {cat.label}</div>}
 
                   {/* Zoom hint — framed (contain, no crop) categories skip hover-zoom, so the hint just points at the lightbox */}
-                  {!isVideoActive && !zoomPos && <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,.45)', color: 'rgba(255,255,255,.8)', fontSize: 10, padding: '3px 9px', borderRadius: 20, pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: 4 }}><Icon icon={ZoomIn} size="inline" /> {isFramed ? 'Click for lightbox' : 'Hover to zoom · Click for lightbox'}</div>}
+                  {!isVideoActive && !zoomPos && <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,.62)', color: '#fff', fontSize: 10, padding: '3px 9px', borderRadius: 20, pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: 4 }}><Icon icon={ZoomIn} size="inline" /> {isFramed ? 'Click for lightbox' : 'Hover to zoom · Click for lightbox'}</div>}
 
                   {/* Counter */}
-                  {totalSlides > 1 && <div style={{ position: 'absolute', bottom: 10, right: 10, background: 'rgba(0,0,0,.52)', color: '#fff', fontSize: 11, fontFamily: 'var(--fm)', padding: '3px 9px', borderRadius: 20, pointerEvents: 'none' }}>{isVideoActive ? '▶ Video' : `${activeImg + 1} / ${images.length}`}</div>}
+                  {totalSlides > 1 && <div style={{ position: 'absolute', bottom: 10, right: 10, background: 'rgba(0,0,0,.64)', color: '#fff', fontSize: 11, fontFamily: 'var(--fm)', padding: '3px 9px', borderRadius: 20, pointerEvents: 'none' }}>{isVideoActive ? '▶ Video' : `${activeImg + 1} / ${images.length}`}</div>}
 
                   {/* Label pill */}
-                  {!isVideoActive && images[activeImg]?.label && <div style={{ position: 'absolute', bottom: 10, left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,.55)', color: '#fff', fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', padding: '3px 12px', borderRadius: 20, whiteSpace: 'nowrap', pointerEvents: 'none' }}>{images[activeImg].label}</div>}
+                  {!isVideoActive && images[activeImg]?.label && <div style={{ position: 'absolute', bottom: 10, left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,.66)', color: '#fff', fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', padding: '3px 12px', borderRadius: 20, whiteSpace: 'nowrap', pointerEvents: 'none' }}>{images[activeImg].label}</div>}
 
                   {/* Nav arrows */}
                   {totalSlides > 1 && <>

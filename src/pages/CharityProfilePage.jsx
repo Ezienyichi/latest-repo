@@ -55,7 +55,7 @@ export default function CharityProfilePage() {
         <div className="wrap">
           <div className="breadcrumbs" style={{ marginBottom: 14 }}>
             <Link to="/" style={{ color: 'rgba(255,255,255,.5)' }}>Home</Link><span className="sep" style={{ color: 'rgba(255,255,255,.3)' }}>›</span>
-            <Link to="/charities" style={{ color: 'rgba(255,255,255,.5)' }}>Charities</Link><span className="sep" style={{ color: 'rgba(255,255,255,.3)' }}>›</span>
+            <Link to="/campaigns" style={{ color: 'rgba(255,255,255,.5)' }}>Campaigns</Link><span className="sep" style={{ color: 'rgba(255,255,255,.3)' }}>›</span>
             <span style={{ color: '#fff' }}>{charity.name}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 20, flexWrap: 'wrap' }}>

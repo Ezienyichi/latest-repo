@@ -71,13 +71,13 @@ body{font-family:var(--fb);background:var(--base);color:var(--txt);overflow-x:hi
   .hero-grid .hero-card{max-width:440px;width:100%;margin:0 auto}
 }
 @media(max-width:640px){.hero-grid{padding:56px 20px 40px}}
-.hero-tag{display:inline-flex;align-items:center;gap:8px;font-size:11px;color:var(--accent);font-weight:700;letter-spacing:.8px;text-transform:uppercase;animation:heroReveal .7s var(--ease) .1s both}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;font-size:11px;color:var(--sage);font-weight:700;letter-spacing:.8px;text-transform:uppercase;animation:heroReveal .7s var(--ease) .1s both}
 .hero-h1{font-family:var(--fd);font-size:clamp(52px,6.5vw,84px);font-weight:600;line-height:1.02;letter-spacing:-1.5px;color:#fff;animation:heroReveal .8s var(--ease) .22s both;margin:22px 0 24px}
 .hero-sub{font-size:clamp(14px,1.3vw,18px);color:rgba(255,255,255,.76);line-height:1.82;max-width:480px;animation:heroReveal .7s var(--ease) .38s both;margin-bottom:38px}
 .hero-ctas{display:flex;gap:14px;flex-wrap:wrap;animation:heroReveal .7s var(--ease) .5s both}
 .hero-stats{display:flex;gap:48px;margin-top:52px;padding-top:32px;border-top:1px solid rgba(255,255,255,.1);animation:heroReveal .7s var(--ease) .62s both}
 .hero-stat-val{font-family:var(--fd);font-size:40px;color:var(--accent);font-weight:700;line-height:1}
-.hero-stat-lbl{font-size:10px;color:rgba(255,255,255,.45);letter-spacing:.8px;margin-top:4px;text-transform:uppercase}
+.hero-stat-lbl{font-size:10px;color:rgba(255,255,255,.72);letter-spacing:.8px;margin-top:4px;text-transform:uppercase}
 .hero-card{animation:heroReveal .9s var(--ease) .3s both;position:relative}
 .hero-card-inner{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:22px;overflow:hidden;cursor:pointer;backdrop-filter:blur(14px);box-shadow:0 40px 100px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06);transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
 .hero-card-inner:hover{transform:translateY(-6px) scale(1.015);box-shadow:0 56px 120px rgba(0,0,0,.7),0 0 40px rgba(23,124,29,.2)}
@@ -483,13 +483,14 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
 /* ═══ ABOUT PAGE ═══ */
 .about-hero{position:relative;height:clamp(320px,46vw,540px);display:flex;align-items:center;justify-content:center;overflow:hidden}
 .about-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-.about-hero-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.55))}
+.about-hero-scrim{position:absolute;inset:0;background:radial-gradient(ellipse 80% 90% at 50% 50%,rgba(4,9,6,.82) 0%,rgba(4,9,6,.7) 55%,rgba(4,9,6,.42) 100%),linear-gradient(to top,rgba(4,9,6,.4),transparent 55%)}
 .about-hero-content{position:relative;z-index:1;padding:0 24px;text-align:center}
-.about-hero-content h1{font-family:var(--fd);font-size:clamp(30px,5.4vw,60px);font-weight:700;color:#fff;line-height:1.1;text-shadow:0 2px 24px rgba(0,0,0,.35)}
+.about-hero-content h1{font-family:var(--fd);font-size:clamp(30px,5.4vw,60px);font-weight:700;color:#fff;line-height:1.1;text-shadow:0 1px 2px rgba(0,0,0,.6),0 2px 18px rgba(0,0,0,.5)}
 
 .newsletter-section{position:relative;overflow:hidden}
 .newsletter-bg-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-.newsletter-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,8,8,.74),rgba(8,8,8,.84))}
+.newsletter-scrim{position:absolute;inset:0;background:radial-gradient(ellipse 80% 90% at 50% 50%,rgba(4,9,6,.86) 0%,rgba(4,9,6,.76) 55%,rgba(4,9,6,.5) 100%)}
+.newsletter-section .display,.newsletter-section p,.newsletter-section .lbl{text-shadow:0 1px 2px rgba(0,0,0,.6),0 2px 16px rgba(0,0,0,.5)}
 
 .about-theory-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
 @media(max-width:900px){.about-theory-grid{grid-template-columns:1fr;gap:40px}}
@@ -552,9 +553,10 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
    shorter box. */
 .toc-full{position:relative;overflow:hidden;min-height:360px;display:flex;align-items:center;padding:44px 0}
 .toc-full-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-.toc-full-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,10,7,.72),rgba(6,10,7,.82))}
+.toc-full-scrim{position:absolute;inset:0;background:radial-gradient(ellipse 80% 90% at 50% 50%,rgba(4,9,6,.86) 0%,rgba(4,9,6,.76) 55%,rgba(4,9,6,.5) 100%)}
+.toc-full-content .lbl{text-shadow:0 1px 2px rgba(0,0,0,.6),0 2px 16px rgba(0,0,0,.5)}
 .toc-full-content{position:relative;z-index:1;max-width:760px;margin:0 auto;text-align:center}
-.toc-full-text{font-family:var(--fb);font-size:clamp(15px,1.7vw,18px);line-height:1.65;color:rgba(255,255,255,.94);text-shadow:0 2px 20px rgba(0,0,0,.35)}
+.toc-full-text{font-family:var(--fb);font-size:clamp(15px,1.7vw,18px);line-height:1.65;color:rgba(255,255,255,.96);text-shadow:0 1px 2px rgba(0,0,0,.6),0 2px 18px rgba(0,0,0,.5)}
 @media(max-width:900px){.toc-full{min-height:300px;padding:36px 0}.toc-full-content{max-width:520px}}
 @media(max-width:560px){.toc-full{min-height:260px;padding:28px 0}.toc-full-text{font-size:14px;line-height:1.6}}
 
@@ -668,8 +670,9 @@ nav.cag-nav .nav-link.active{color:var(--accent);font-weight:600}
 /* ═══ ARTIST / CHARITY CARDS ═══ */
 .profile-header{position:relative;padding:56px 48px 32px;border-bottom:1px solid var(--border)}
 .profile-header-bg{position:absolute;inset:0;overflow:hidden}
-.profile-header-bg img{width:100%;height:100%;object-fit:cover;filter:brightness(.35) saturate(1.2)}
-.profile-header-content{position:relative;z-index:2}
+.profile-header-bg img{width:100%;height:100%;object-fit:cover;display:block}
+.profile-header-bg .scrim{z-index:1}
+.profile-header-content{position:relative;z-index:2;text-shadow:0 1px 2px rgba(0,0,0,.6),0 2px 16px rgba(0,0,0,.5)}
 
 /* ═══ TABS ═══ */
 .tabs-container{display:flex;border-bottom:2px solid var(--border);gap:2px;overflow-x:auto;margin-bottom:28px}
@@ -878,3 +881,41 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--mint);outline-offse
   .fi{min-height:44px;font-size:16px}/* Prevents iOS zoom */
   .gallery-thumb{width:56px;height:56px}
 }
+
+/* ═══ IMPACT CAMPAIGNS (public) — card shell reuses .product-card/.product-grid;
+   the image frame is a fixed 16:10 box (object-fit:cover) so a campaign's
+   header image can never resize its card, same principle as .product-card-img ═══ */
+.campaign-card-img{aspect-ratio:16/10;position:relative;overflow:hidden;background:var(--glass)}
+.campaign-card-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s var(--ease)}
+.product-card:hover .campaign-card-img img{transform:scale(1.04)}
+.campaign-banner{position:relative;height:clamp(200px,32vw,400px);overflow:hidden;background:linear-gradient(135deg,#0d2318,#2D6A4F)}
+.campaign-banner img{width:100%;height:100%;object-fit:cover;display:block}
+.campaign-banner::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.45),transparent 55%)}
+.campaign-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,340px);gap:40px;align-items:start}
+@media(max-width:900px){.campaign-layout{grid-template-columns:minmax(0,1fr);gap:28px}}
+.campaign-video{width:100%;aspect-ratio:16/9;background:#000;border-radius:var(--rl);display:block}
+.campaign-story{font-size:15px;line-height:1.85;color:var(--txt2);white-space:pre-wrap;overflow-wrap:anywhere}
+
+/* ═══ IMAGE-OVERLAY LEGIBILITY — shared by every banner/hero/cover that puts
+   text over an admin-chosen image. Three layers, so a bright or busy photo
+   can never beat the text: (1) a directional gradient scrim anchored where the
+   text sits, so the rest of the image stays visible; (2) a soft text-shadow;
+   (3) brand-dark rgb(4,9,6) rather than pure black so it blends with the
+   site's greens. Locations: homepage hero + featured card, Theory of Change,
+   newsletter, artist header + listing cards, About hero, Digitals hero. ═══ */
+.scrim{position:absolute;inset:0;pointer-events:none}
+.scrim-left{background:linear-gradient(90deg,rgba(4,9,6,.9) 0%,rgba(4,9,6,.72) 42%,rgba(4,9,6,.3) 100%),linear-gradient(to top,rgba(4,9,6,.55) 0%,transparent 45%)}
+/* On narrow screens the text spans the full width, so the scrim evens out */
+@media(max-width:900px){.scrim-left{background:linear-gradient(90deg,rgba(4,9,6,.84) 0%,rgba(4,9,6,.66) 100%),linear-gradient(to top,rgba(4,9,6,.55) 0%,transparent 45%)}}
+.scrim-bottom{background:linear-gradient(to top,rgba(4,9,6,.94) 0%,rgba(4,9,6,.7) 38%,rgba(4,9,6,.2) 68%,transparent 100%)}
+.img-text{text-shadow:0 1px 2px rgba(0,0,0,.6),0 2px 16px rgba(0,0,0,.5)}
+.hero-tag,.hero-h1,.hero-sub,.hero-stat-lbl,.hero-stat-val{text-shadow:0 1px 2px rgba(0,0,0,.6),0 2px 16px rgba(0,0,0,.5)}
+
+/* Overlay zones sit on dark scrims, but the site's outline-green button and
+   green badge are designed for light surfaces (green-on-near-black is ~2:1).
+   Inside these zones they switch to the pale brand green (--pale). */
+.hero-section .btn-p,.digitals-hero .btn-p,.profile-header .btn-p{color:var(--pale);border-color:var(--pale)}
+.hero-section .btn-p:hover,.digitals-hero .btn-p:hover,.profile-header .btn-p:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.hero-section .badge.b-green,.digitals-hero .badge.b-green,.profile-header .badge.b-green,.artist-card-cover .badge.b-green{background:rgba(6,30,10,.84);border-color:rgba(168,237,172,.55);color:var(--pale)}
+.hero-scroll-txt{color:rgba(255,255,255,.72)}
+.hero-stat-val{color:var(--sage)}

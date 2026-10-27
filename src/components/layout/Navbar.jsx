@@ -23,7 +23,7 @@ export default function Navbar() {
     { to: '/shop', label: 'Shop', mega: true },
     { to: '/digitals', label: 'Digital Store' },
     { to: '/artists', label: 'Artists' },
-    { to: '/charities', label: 'Charities' },
+    { to: '/campaigns', label: 'Campaigns' },
     { to: '/about', label: 'About' },
   ];
 
