@@ -3,11 +3,13 @@ import { Check } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import Icon from './Icon';
 import api from '../../utils/api';
+import { isSubscribed, markSubscribed } from '../../utils/newsletter';
 
-// In-memory only, deliberately not localStorage (per spec — not supported
-// here) — module scope survives client-side route changes within the same
-// SPA session but resets on a real page reload, which is exactly "once per
-// visitor per session" without any persistence layer.
+// Dismissals stay in-memory: module scope survives client-side route changes
+// within the same SPA session but resets on a real page reload, i.e. "once
+// per session" for visitors who close it without subscribing. Subscribers are
+// different — they're remembered persistently (utils/newsletter.js) and never
+// see the popup again.
 let shownThisSession = false;
 
 const TRIGGER_DELAY_MS = 20000;
@@ -20,10 +22,12 @@ export default function NewsletterPopup() {
   const dialogRef = useRef(null);
 
   useEffect(() => {
-    if (shownThisSession) return;
+    if (shownThisSession || isSubscribed()) return;
 
+    // Re-checked at fire time: they may have subscribed via the homepage form
+    // after this effect ran.
     const trigger = () => {
-      if (shownThisSession) return;
+      if (shownThisSession || isSubscribed()) return;
       shownThisSession = true;
       setOpen(true);
     };
@@ -51,6 +55,7 @@ export default function NewsletterPopup() {
   const subscribe = () => {
     if (!email.includes('@')) { toast('Enter a valid email', 'err'); return; }
     api.subscribeNewsletter(email, 'popup').then(() => {
+      markSubscribed();
       setSubbed(true);
       toast('Welcome! Check your inbox for updates.', 'ok');
       setTimeout(close, 1800);

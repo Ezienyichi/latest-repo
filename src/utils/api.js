@@ -5,16 +5,21 @@ class ApiClient {
     this.base = API;
   }
 
+  // localStorage can throw (blocked site data, some private modes). The token
+  // then lives in memory for the page session, so the app keeps working —
+  // a login just won't survive a reload.
   getToken() {
-    return localStorage.getItem('cag_token');
+    try { return localStorage.getItem('cag_token') ?? this._memToken ?? null; } catch { return this._memToken ?? null; }
   }
 
   setToken(token) {
-    localStorage.setItem('cag_token', token);
+    this._memToken = token;
+    try { localStorage.setItem('cag_token', token); } catch { /* memory fallback */ }
   }
 
   clearToken() {
-    localStorage.removeItem('cag_token');
+    this._memToken = null;
+    try { localStorage.removeItem('cag_token'); } catch { /* nothing stored */ }
   }
 
   async request(path, options = {}) {

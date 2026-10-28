@@ -4,6 +4,7 @@ import { ArrowRight, Palette, Check, ImageOff } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { SDGs, FRAMED_CATEGORIES } from '../data/constants';
 import api from '../utils/api';
+import { markSubscribed } from '../utils/newsletter';
 import { ArtistCredit } from '../components/ui/ArtistAvatar';
 import Icon from '../components/ui/Icon';
 import CharityLogo from '../components/ui/CharityLogo';
@@ -397,6 +398,7 @@ export default function HomePage() {
   const sub = () => {
     if (!email.includes('@')) { toast('Enter a valid email', 'err'); return; }
     api.subscribeNewsletter(email, 'homepage').then(() => {
+      markSubscribed();
       setSubbed(true);
       toast(`Welcome to the ${theory?.site_name || 'FastTackle Africa'} community!`, 'ok');
     }).catch(e => toast(e.message || 'Could not subscribe — please try again', 'err'));
