@@ -1,13 +1,17 @@
 import { Hono } from 'hono';
 import { authenticate, optionalAuth } from '../auth.js';
+import { getCharityRaised, getCharityRaisedMap } from '../charityRollup.js';
 
 const charities = new Hono();
 
 charities.get('/', async (c) => {
   const prisma = c.get('prisma');
   try {
-    const list = await prisma.charityProfile.findMany({ include: { resources: { where: { visibility: 'PUBLIC' } } }, orderBy: { raised: 'desc' } });
-    return c.json(list);
+    const list = await prisma.charityProfile.findMany({ include: { resources: { where: { visibility: 'PUBLIC' } } } });
+    // The public `raised` is the derived rollup over the charity's campaigns
+    // (the same number the campaign pages add up), not the stored column.
+    const raised = await getCharityRaisedMap(prisma, list.map(ch => ch.id));
+    return c.json(list.map(ch => ({ ...ch, raised: raised[ch.id] ?? 0 })).sort((a, b) => b.raised - a.raised));
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
 });
 
@@ -36,7 +40,7 @@ charities.get('/:id', optionalAuth, async (c) => {
     }
     if (!seeFundersOnly) charity.resources = charity.resources.filter(r => r.visibility === 'PUBLIC');
 
-    return c.json(charity);
+    return c.json({ ...charity, raised: await getCharityRaised(prisma, id) });
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
 });
 

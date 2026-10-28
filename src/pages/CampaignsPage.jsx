@@ -28,7 +28,7 @@ export function CampaignProgress({ project }) {
   );
 }
 
-function CampaignCard({ p, onOpen }) {
+export function CampaignCard({ p, onOpen }) {
   const funded = p.status === 'COMPLETED';
   return (
     <div className="product-card" onClick={onOpen} role="link" tabIndex={0}

@@ -8,6 +8,7 @@ import api from '../utils/api';
 import Icon from '../components/ui/Icon';
 import CharityLogo from '../components/ui/CharityLogo';
 import { cur } from '../utils/currency';
+import { CampaignCard } from './CampaignsPage';
 
 function SdgDot({ id }) {
   const s = SDGs.find(x => x.id === id); if (!s) return null;
@@ -24,7 +25,16 @@ export default function CharityProfilePage() {
   const [tab, setTab] = useState('overview');
   const [email, setEmail] = useState('');
 
+  const [campaigns, setCampaigns] = useState([]);
+
   useEffect(() => { api.getCharity(id).then(setCharity).catch(() => {}).finally(() => setLoading(false)); }, [id]);
+  // The public projects endpoint only ever returns ACTIVE (default) or
+  // COMPLETED campaigns, so drafts/archived can't leak here. A failure just
+  // hides the section — the rest of the charity page is unaffected.
+  useEffect(() => {
+    setCampaigns([]);
+    api.getProjects({ charityId: id, limit: 50 }).then(d => setCampaigns(d.items || [])).catch(() => {});
+  }, [id]);
 
   if (loading) return <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="skel" style={{ width: 200, height: 24 }} /></div>;
   if (!charity) return <div className="wrap" style={{ padding: 80, textAlign: 'center' }}><h2>Charity not found</h2></div>;
@@ -116,6 +126,16 @@ export default function CharityProfilePage() {
                   <button className="btn btn-p" onClick={() => { toast('Sign in or register to become a funder', 'info'); navigate('/register'); }}>Support</button>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {tab === 'overview' && campaigns.length > 0 && (
+          <div id="campaigns" style={{ paddingBottom: 60 }}>
+            <div className="lbl" style={{ marginBottom: 8 }}>What we're running</div>
+            <h2 className="display" style={{ fontSize: 30, marginBottom: 18 }}>Active Campaigns <span style={{ fontSize: 16, color: 'var(--muted)', fontFamily: 'var(--fb)' }}>({campaigns.length})</span></h2>
+            <div className="product-grid">
+              {campaigns.map(p => <CampaignCard key={p.id} p={p} onOpen={() => navigate(`/campaigns/${p.slug}`)} />)}
             </div>
           </div>
         )}
