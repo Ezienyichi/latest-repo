@@ -78,6 +78,18 @@ enum CouponType {
   FIXED
 }
 
+enum SubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum SubmissionType {
+  CHARITY
+  CAMPAIGN
+  ARTWORK
+}
+
 enum ReviewStatus {
   PENDING
   APPROVED
@@ -135,30 +147,31 @@ model ArtistProfile {
 }
 
 model CharityProfile {
-  id              String                     @id @default(cuid())
-  userId          String                     @unique
-  user            User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name            String
-  logo            String?
-  mission         String?                    @db.Text
-  registrationNo  String?
-  sdgIds          Int[]                      @default([])
-  verified        Boolean                    @default(false)
-  raised          Decimal                    @default(0) @db.Decimal(12, 2)
-  target          Decimal                    @default(0) @db.Decimal(12, 2)
-  funderCount     Int                        @default(0)
-  websiteUrl      String?
-  images          Json                       @default("[]")
-  products        Product[]
-  projects        Project[]
-  partnerships    ArtistCharityPartnership[]
-  messages        CharityMessage[]
-  templates       MessageTemplate[]
-  documents       CharityDocument[]
-  resources       CharityResource[]
-  funderRelations FunderRelationship[]
-  createdAt       DateTime                   @default(now())
-  updatedAt       DateTime                   @updatedAt
+  id               String                     @id @default(cuid())
+  userId           String                     @unique
+  user             User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name             String
+  logo             String?
+  mission          String?                    @db.Text
+  registrationNo   String?
+  sdgIds           Int[]                      @default([])
+  verified         Boolean                    @default(false)
+  raised           Decimal                    @default(0) @db.Decimal(12, 2)
+  target           Decimal                    @default(0) @db.Decimal(12, 2)
+  funderCount      Int                        @default(0)
+  websiteUrl       String?
+  images           Json                       @default("[]")
+  submissionStatus SubmissionStatus           @default(APPROVED)
+  products         Product[]
+  projects         Project[]
+  partnerships     ArtistCharityPartnership[]
+  messages         CharityMessage[]
+  templates        MessageTemplate[]
+  documents        CharityDocument[]
+  resources        CharityResource[]
+  funderRelations  FunderRelationship[]
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
 }
 
 model ArtistCharityPartnership {
@@ -174,50 +187,51 @@ model ArtistCharityPartnership {
 }
 
 model Product {
-  id              String             @id @default(cuid())
-  artistId        String
-  artist          ArtistProfile      @relation(fields: [artistId], references: [id])
-  charityId       String?
-  charity         CharityProfile?    @relation(fields: [charityId], references: [id])
-  projectId       String?
-  project         Project?           @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  title           String
-  slug            String             @unique
-  description     String?            @db.Text
-  productType     ProductType        @default(SIMPLE)
-  category        ProductCategory    @default(ARTWORK)
-  editionType     EditionType        @default(ORIGINAL)
-  basePrice       Decimal            @db.Decimal(10, 2)
-  comparePrice    Decimal?           @db.Decimal(10, 2)
-  estimatedValue  Decimal?           @db.Decimal(10, 2)
-  status          ProductStatus      @default(DRAFT)
-  sku             String?            @unique
-  stockQuantity   Int?
-  medium          String?
-  year            Int?
-  dimensions      String?
-  fileUrl         String?
-  fileFormat      String?
-  previewUrl      String?
-  pages           Int?
-  certificateUrl  String?
-  autoCertificate Boolean            @default(false)
-  certificateId   String?            @unique
-  sdgIds          Int[]              @default([])
-  images          Json[]             @default([])
-  gallery         Json?
-  videoUrl        String?
-  tags            String[]           @default([])
-  featured        Boolean            @default(false)
-  upsellIds       String[]           @default([])
-  crossSellIds    String[]           @default([])
-  variations      ProductVariation[]
-  addons          ProductAddon[]
-  orderItems      OrderItem[]
-  reviews         Review[]
-  wishlistItems   WishlistItem[]
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  id               String             @id @default(cuid())
+  artistId         String
+  artist           ArtistProfile      @relation(fields: [artistId], references: [id])
+  charityId        String?
+  charity          CharityProfile?    @relation(fields: [charityId], references: [id])
+  projectId        String?
+  project          Project?           @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  submissionStatus SubmissionStatus   @default(APPROVED)
+  title            String
+  slug             String             @unique
+  description      String?            @db.Text
+  productType      ProductType        @default(SIMPLE)
+  category         ProductCategory    @default(ARTWORK)
+  editionType      EditionType        @default(ORIGINAL)
+  basePrice        Decimal            @db.Decimal(10, 2)
+  comparePrice     Decimal?           @db.Decimal(10, 2)
+  estimatedValue   Decimal?           @db.Decimal(10, 2)
+  status           ProductStatus      @default(DRAFT)
+  sku              String?            @unique
+  stockQuantity    Int?
+  medium           String?
+  year             Int?
+  dimensions       String?
+  fileUrl          String?
+  fileFormat       String?
+  previewUrl       String?
+  pages            Int?
+  certificateUrl   String?
+  autoCertificate  Boolean            @default(false)
+  certificateId    String?            @unique
+  sdgIds           Int[]              @default([])
+  images           Json[]             @default([])
+  gallery          Json?
+  videoUrl         String?
+  tags             String[]           @default([])
+  featured         Boolean            @default(false)
+  upsellIds        String[]           @default([])
+  crossSellIds     String[]           @default([])
+  variations       ProductVariation[]
+  addons           ProductAddon[]
+  orderItems       OrderItem[]
+  reviews          Review[]
+  wishlistItems    WishlistItem[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
 
   @@index([projectId])
 }
@@ -381,6 +395,23 @@ model TCAcceptance {
   acceptedAt DateTime @default(now())
 }
 
+// Private details of a public invite-link submission. Kept OFF the entities
+// (CharityProfile / Project / Product) so a contact email can never leak
+// through a public response that serialises the whole row.
+model Submission {
+  id           String         @id @default(cuid())
+  type         SubmissionType
+  entityId     String
+  contact      Json // { name, email, phone? }
+  extra        Json? // campaign: { charity: {...} } · artwork: { artist: {...} }
+  reviewNote   String?
+  reviewedAt   DateTime?
+  reviewedById String?
+  createdAt    DateTime       @default(now())
+
+  @@unique([type, entityId])
+}
+
 model SiteSetting {
   key       String   @unique
   value     Json
@@ -491,24 +522,25 @@ enum ProjectStatus {
 // projects' raisedAmount (see functions/_lib/charityRollup.js) rather than
 // stored on CharityProfile, which can drift.
 model Project {
-  id            String         @id @default(cuid())
-  charityId     String
-  charity       CharityProfile @relation(fields: [charityId], references: [id])
-  title         String
-  slug          String         @unique
-  story         String         @db.Text
-  headerImage   String?
-  campaignVideo String?
-  images        Json           @default("[]")
-  targetAmount  Decimal        @db.Decimal(12, 2)
-  raisedAmount  Decimal        @default(0) @db.Decimal(12, 2)
-  status        ProjectStatus  @default(DRAFT)
-  sdgIds        Int[]          @default([])
-  startDate     DateTime?
-  endDate       DateTime?
-  products      Product[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  id               String           @id @default(cuid())
+  charityId        String?
+  charity          CharityProfile?  @relation(fields: [charityId], references: [id])
+  submissionStatus SubmissionStatus @default(APPROVED)
+  title            String
+  slug             String           @unique
+  story            String           @db.Text
+  headerImage      String?
+  campaignVideo    String?
+  images           Json             @default("[]")
+  targetAmount     Decimal          @db.Decimal(12, 2)
+  raisedAmount     Decimal          @default(0) @db.Decimal(12, 2)
+  status           ProjectStatus    @default(DRAFT)
+  sdgIds           Int[]            @default([])
+  startDate        DateTime?
+  endDate          DateTime?
+  products         Product[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
   @@index([charityId])
   @@index([status])

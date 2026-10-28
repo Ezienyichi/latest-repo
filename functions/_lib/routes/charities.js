@@ -7,7 +7,7 @@ const charities = new Hono();
 charities.get('/', async (c) => {
   const prisma = c.get('prisma');
   try {
-    const list = await prisma.charityProfile.findMany({ include: { resources: { where: { visibility: 'PUBLIC' } } } });
+    const list = await prisma.charityProfile.findMany({ where: { submissionStatus: 'APPROVED' }, include: { resources: { where: { visibility: 'PUBLIC' } } } });
     // The public `raised` is the derived rollup over the charity's campaigns
     // (the same number the campaign pages add up), not the stored column.
     const raised = await getCharityRaisedMap(prisma, list.map(ch => ch.id));
@@ -31,7 +31,8 @@ charities.get('/:id', optionalAuth, async (c) => {
       where: { id },
       include: { resources: true, partnerships: { include: { artist: { select: { displayName: true, avatarUrl: true, id: true } } } }, templates: { where: { isSystem: false } } },
     });
-    if (!charity) return c.json({ error: 'Not found' }, 404);
+    // Pending / rejected submissions are not public.
+    if (!charity || charity.submissionStatus !== 'APPROVED') return c.json({ error: 'Not found' }, 404);
 
     let seeFundersOnly = userRole === 'ADMIN' || charity.userId === userId;
     if (!seeFundersOnly && userId) {
@@ -47,6 +48,8 @@ charities.get('/:id', optionalAuth, async (c) => {
 charities.post('/:id/funder', authenticate, async (c) => {
   const prisma = c.get('prisma');
   try {
+    const target = await prisma.charityProfile.findUnique({ where: { id: c.req.param('id') }, select: { submissionStatus: true } });
+    if (!target || target.submissionStatus !== 'APPROVED') return c.json({ error: 'Not found' }, 404);
     await prisma.funderRelationship.upsert({
       where: { userId_charityId: { userId: c.get('userId'), charityId: c.req.param('id') } },
       update: {},

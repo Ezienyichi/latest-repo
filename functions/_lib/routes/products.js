@@ -10,7 +10,7 @@ products.get('/', optionalAuth, async (c) => {
     const q = c.req.query();
     const { category, editionType, sdg, charityId, artistId, minPrice, maxPrice, search, sort, type, featured } = q;
     const page = q.page || 1, limit = q.limit || 12;
-    const where = { status: 'ACTIVE' };
+    const where = { status: 'ACTIVE', submissionStatus: 'APPROVED' };
     if (category) where.category = category.toUpperCase();
     if (editionType) where.editionType = editionType.toUpperCase();
     if (sdg) where.sdgIds = { hasSome: [parseInt(sdg)] };
@@ -42,10 +42,11 @@ products.get('/', optionalAuth, async (c) => {
 products.get('/:slug', optionalAuth, async (c) => {
   const prisma = c.get('prisma');
   try {
-    const product = await prisma.product.findUnique({ where: { slug: c.req.param('slug') }, include: { artist: true, charity: true, project: { select: { id: true, slug: true, title: true, status: true, charity: { select: { id: true, name: true, logo: true } } } }, variations: true, addons: { orderBy: { sortOrder: 'asc' } }, reviews: { include: { user: { select: { firstName: true, lastName: true, avatarUrl: true } } }, orderBy: { createdAt: 'desc' } } } });
-    if (!product) return c.json({ error: 'Not found' }, 404);
+    const product = await prisma.product.findUnique({ where: { slug: c.req.param('slug') }, include: { artist: true, charity: true, project: { select: { id: true, slug: true, title: true, status: true, submissionStatus: true, charity: { select: { id: true, name: true, logo: true } } } }, variations: true, addons: { orderBy: { sortOrder: 'asc' } }, reviews: { include: { user: { select: { firstName: true, lastName: true, avatarUrl: true } } }, orderBy: { createdAt: 'desc' } } } });
+    if (!product || product.submissionStatus !== 'APPROVED') return c.json({ error: 'Not found' }, 404);
     // Only a public campaign (ACTIVE, or COMPLETED shown as funded) is surfaced — DRAFT/ARCHIVED stay private even if linked.
-    if (product.project && !['ACTIVE', 'COMPLETED'].includes(product.project.status)) product.project = null;
+    if (product.project && (!['ACTIVE', 'COMPLETED'].includes(product.project.status) || product.project.submissionStatus !== 'APPROVED')) product.project = null;
+    if (product.project) delete product.project.submissionStatus;
     return c.json(product);
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
 });
@@ -84,6 +85,7 @@ products.delete('/:id', authenticate, requireRole('ARTIST', 'ADMIN'), async (c) 
     if (!p) return c.json({ error: 'Not found' }, 404);
     if (c.get('userRole') !== 'ADMIN' && p.artist.userId !== c.get('userId')) return c.json({ error: 'Not yours' }, 403);
     await prisma.product.delete({ where: { id: c.req.param('id') } });
+    await prisma.submission.deleteMany({ where: { type: 'ARTWORK', entityId: c.req.param('id') } });
     return c.json({ message: 'Deleted' });
   } catch (e) { return c.json({ error: 'Delete failed' }, 500); }
 });

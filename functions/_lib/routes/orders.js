@@ -42,7 +42,7 @@ orders.post('/', optionalAuth, async (c) => {
     const orderItems = [];
     for (const item of items) {
       const product = await prisma.product.findUnique({ where: { id: item.productId }, include: { variations: true } });
-      if (!product) return c.json({ error: `Product ${item.productId} not found` }, 400);
+      if (!product || product.submissionStatus !== 'APPROVED') return c.json({ error: `Product ${item.productId} not found` }, 400);
       const price = item.variationId
         ? Number(product.variations.find(v => v.id === item.variationId)?.price || product.basePrice)
         : Number(product.basePrice);

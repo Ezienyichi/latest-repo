@@ -4,9 +4,12 @@ import { writeAuditLog } from '../audit.js';
 import { slugify } from '../helpers.js';
 import { getCharityRaised, getCharityRaisedMap } from '../charityRollup.js';
 import { CURRENCIES } from '../currency.js';
+import adminSubmissions from './adminSubmissions.js';
 
 const admin = new Hono();
 admin.use('*', authenticate, requireRole('ADMIN'));
+// Invite-link submission review queue (guarded by the middleware above).
+admin.route('/submissions', adminSubmissions);
 
 // Known SiteSetting keys and their validators. PUT rejects anything not
 // listed here — a typo'd key should fail loudly, not silently create a
@@ -295,7 +298,8 @@ async function parseProjectBody(prisma, body, { partial }) {
     data.story = body.story;
   }
   if (has('charityId') || need('charityId')) {
-    if (typeof body.charityId !== 'string' || !(await prisma.charityProfile.findUnique({ where: { id: body.charityId }, select: { id: true } }))) return { error: 'Choose a valid charity' };
+    // Must be a live charity: linking a pending/rejected one would show its name on a public campaign page.
+    if (typeof body.charityId !== 'string' || !(await prisma.charityProfile.findFirst({ where: { id: body.charityId, submissionStatus: 'APPROVED' }, select: { id: true } }))) return { error: 'Choose a valid charity' };
     data.charityId = body.charityId;
   }
   if (has('targetAmount') || need('targetAmount')) {
@@ -377,8 +381,8 @@ admin.get('/projects', async (c) => {
     ]);
     // Derived charity total (sum of ALL that charity's projects, not just
     // this page/filter) — the same figure the public side will use.
-    const raisedByCharity = await getCharityRaisedMap(prisma, [...new Set(items.map(p => p.charityId))]);
-    return c.json({ items: items.map(p => ({ ...p, charityRaised: raisedByCharity[p.charityId] ?? 0 })), total, page, pages: Math.max(1, Math.ceil(total / limit)) });
+    const raisedByCharity = await getCharityRaisedMap(prisma, [...new Set(items.map(p => p.charityId).filter(Boolean))]);
+    return c.json({ items: items.map(p => ({ ...p, charityRaised: p.charityId ? (raisedByCharity[p.charityId] ?? 0) : 0 })), total, page, pages: Math.max(1, Math.ceil(total / limit)) });
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
 });
 
@@ -393,7 +397,7 @@ admin.get('/projects/:id', async (c) => {
       },
     });
     if (!project) return c.json({ error: 'Not found' }, 404);
-    return c.json({ ...project, charityRaised: await getCharityRaised(prisma, project.charityId) });
+    return c.json({ ...project, charityRaised: project.charityId ? await getCharityRaised(prisma, project.charityId) : 0 });
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
 });
 
@@ -429,6 +433,7 @@ admin.delete('/projects/:id', async (c) => {
     // Product.projectId is ON DELETE SET NULL, so linked artworks survive
     // and are simply unlinked.
     await prisma.project.delete({ where: { id } });
+    await prisma.submission.deleteMany({ where: { type: 'CAMPAIGN', entityId: id } });
     await writeAuditLog(prisma, { adminId: c.get('userId'), action: 'project.delete', targetType: 'Project', targetId: id, before: toJson(before) });
     return c.json({ message: 'Deleted', unlinkedProducts: before._count.products });
   } catch (e) { return c.json({ error: 'Delete failed' }, 500); }
@@ -551,6 +556,7 @@ admin.get('/charities', async (c) => {
     const where = {};
     if (q.verified === 'true') where.verified = true;
     if (q.verified === 'false') where.verified = false;
+    if (['PENDING', 'APPROVED', 'REJECTED'].includes(q.submission)) where.submissionStatus = q.submission;
     if (q.search) where.OR = [{ name: { contains: q.search, mode: 'insensitive' } }, { registrationNo: { contains: q.search, mode: 'insensitive' } }];
     const [items, total] = await Promise.all([
       prisma.charityProfile.findMany({
@@ -625,6 +631,7 @@ admin.delete('/charities/:id', async (c) => {
     const hasLogin = !!user?.passwordHash;
     await prisma.$transaction(async (tx) => {
       await tx.charityProfile.delete({ where: { id } });   // documents cascade
+      await tx.submission.deleteMany({ where: { type: 'CHARITY', entityId: id } });
       // Only the placeholder user we minted is removed; a charity that
       // registered itself keeps its login.
       if (!hasLogin) await tx.user.delete({ where: { id: before.userId } });

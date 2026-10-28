@@ -72,7 +72,10 @@ export default function AdminCharities() {
                     {c.hasLoginAccount && <div style={{ color: 'var(--muted)', fontSize: 11, fontWeight: 400 }}>has its own login</div>}
                   </td>
                   <td style={{ fontSize: 12 }}>{c.registrationNo || '—'}</td>
-                  <td><span className={`badge ${c.verified ? 'b-green' : 'b-gold'}`} style={{ fontSize: 10 }}>{c.verified ? 'VERIFIED' : 'UNVERIFIED'}</span></td>
+                  <td>
+                    <span className={`badge ${c.verified ? 'b-green' : 'b-gold'}`} style={{ fontSize: 10 }}>{c.verified ? 'VERIFIED' : 'UNVERIFIED'}</span>
+                    {c.submissionStatus && c.submissionStatus !== 'APPROVED' && <span className={`badge ${c.submissionStatus === 'PENDING' ? 'b-blue' : 'b-muted'}`} style={{ fontSize: 10, marginLeft: 6 }}>{c.submissionStatus === 'PENDING' ? 'SUBMITTED · PENDING' : 'REJECTED'}</span>}
+                  </td>
                   <td style={{ fontSize: 12 }}>{c._count?.projects ?? 0}</td>
                   <td style={{ fontFamily: 'var(--fd)', fontWeight: 700, color: 'var(--accent)' }}>{money(c.charityRaised)}</td>
                   <td style={{ fontSize: 12 }}>{Number(c.target) > 0 ? money(c.target) : '—'}</td>

@@ -26,7 +26,7 @@ projects.get('/', async (c) => {
     if (!PUBLIC_STATUSES.includes(status)) return c.json({ error: 'status must be ACTIVE or COMPLETED' }, 400);
     const page = Math.max(1, parseInt(q.page) || 1);
     const limit = Math.min(50, Math.max(1, parseInt(q.limit) || 12));
-    const where = { status };
+    const where = { status, submissionStatus: 'APPROVED' };
     if (q.charityId) where.charityId = q.charityId;
     const sdg = parseInt(q.sdg);
     if (sdg >= 1 && sdg <= 17) where.sdgIds = { has: sdg };
@@ -38,7 +38,7 @@ projects.get('/', async (c) => {
           id: true, slug: true, title: true, story: true, headerImage: true, targetAmount: true, raisedAmount: true,
           status: true, sdgIds: true, startDate: true, endDate: true,
           charity: { select: CHARITY_CARD },
-          _count: { select: { products: { where: { status: 'ACTIVE' } } } },
+          _count: { select: { products: { where: { status: 'ACTIVE', submissionStatus: 'APPROVED' } } } },
         },
       }),
       prisma.project.count({ where }),
@@ -56,13 +56,13 @@ projects.get('/:slug', async (c) => {
       where: { slug: c.req.param('slug') },
       select: {
         id: true, slug: true, title: true, story: true, headerImage: true, campaignVideo: true, images: true,
-        targetAmount: true, raisedAmount: true, status: true, sdgIds: true, startDate: true, endDate: true, charityId: true,
+        targetAmount: true, raisedAmount: true, status: true, submissionStatus: true, sdgIds: true, startDate: true, endDate: true, charityId: true,
         charity: { select: { ...CHARITY_CARD, mission: true, sdgIds: true, websiteUrl: true } },
-        products: { where: { status: 'ACTIVE' }, orderBy: { createdAt: 'desc' }, select: PRODUCT_CARD },
+        products: { where: { status: 'ACTIVE', submissionStatus: 'APPROVED' }, orderBy: { createdAt: 'desc' }, select: PRODUCT_CARD },
       },
     });
-    if (!project || !PUBLIC_STATUSES.includes(project.status)) return c.json({ error: 'Not found' }, 404);
-    const { charityId, ...rest } = project;
+    if (!project || !PUBLIC_STATUSES.includes(project.status) || project.submissionStatus !== 'APPROVED') return c.json({ error: 'Not found' }, 404);
+    const { charityId, submissionStatus, ...rest } = project;
     return c.json({ ...rest, charityRaised: await getCharityRaised(prisma, charityId) });
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
 });

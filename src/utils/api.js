@@ -148,6 +148,14 @@ class ApiClient {
   updateAdminCharity(id, data) { return this.patch(`/admin/charities/${id}`, data); }
   deleteAdminCharity(id) { return this.delete(`/admin/charities/${id}`); }
 
+  // Invite-link submissions — admin review
+  getSubmissions(params = {}) { const qs = new URLSearchParams(params).toString(); return this.get(`/admin/submissions${qs ? '?' + qs : ''}`); }
+  getSubmissionCount() { return this.get('/admin/submissions/count'); }
+  getSubmissionLinks() { return this.get('/admin/submissions/links'); }
+  rotateSubmissionLink(type) { return this.post(`/admin/submissions/links/${type}/rotate`, {}); }
+  approveSubmission(type, id, data = {}) { return this.post(`/admin/submissions/${type}/${id}/approve`, data); }
+  rejectSubmission(type, id, data = {}) { return this.post(`/admin/submissions/${type}/${id}/reject`, data); }
+
   // Newsletter
   subscribeNewsletter(email, source) { return this.post('/newsletter', { email, source }); }
   getAdminNewsletter(params = {}) { const qs = new URLSearchParams(params).toString(); return this.get(`/admin/newsletter${qs ? '?' + qs : ''}`); }

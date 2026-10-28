@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Palette, Package, Wallet, User, Handshake, Mail, Folder, Users, Search, BarChart3, Settings, Flag, HeartHandshake, Brush, ArrowRight, ArrowLeft, Check } from 'lucide-react';
+import { LayoutDashboard, Palette, Package, Wallet, User, Handshake, Mail, Folder, Users, Search, BarChart3, Settings, Flag, HeartHandshake, Inbox, Brush, ArrowRight, ArrowLeft, Check } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Icon from '../../components/ui/Icon';
+import api from '../../utils/api';
 
 const BUYER_NAV = [
   { id: 'overview', icon: LayoutDashboard, label: 'Overview', path: '/dashboard' },
@@ -26,6 +27,7 @@ const CHARITY_NAV = [
 
 const ADMIN_NAV = [
   { id: 'overview', icon: LayoutDashboard, label: 'Overview', path: '/dashboard/admin' },
+  { id: 'submissions', icon: Inbox, label: 'Submissions', path: '/dashboard/admin/submissions', badge: 'submissions' },
   { id: 'products', icon: Palette, label: 'Products', path: '/dashboard/products' },
   { id: 'orders', icon: Package, label: 'Orders', path: '/dashboard/admin/orders' },
   { id: 'artists', icon: Brush, label: 'Artists', path: '/dashboard/admin/artists' },
@@ -43,6 +45,17 @@ export default function DashboardShell({ children, title }) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const [pending, setPending] = useState(0);
+
+  // Admin-only: how many invite-link submissions are waiting for review.
+  useEffect(() => {
+    if (user?.role !== 'ADMIN') return;
+    let live = true;
+    const load = () => api.getSubmissionCount().then(d => { if (live) setPending(d.total || 0); }).catch(() => {});
+    load();
+    window.addEventListener('ft-submissions-changed', load);
+    return () => { live = false; window.removeEventListener('ft-submissions-changed', load); };
+  }, [user?.role]);
 
   const nav = user?.role === 'ARTIST' ? ARTIST_NAV
     : user?.role === 'CHARITY' ? CHARITY_NAV
@@ -71,6 +84,9 @@ export default function DashboardShell({ children, title }) {
               style={{ justifyContent: collapsed ? 'center' : 'flex-start', paddingLeft: collapsed ? 0 : 20 }}>
               <span className="sb-icon" style={{ display: 'flex' }}><Icon icon={item.icon} /></span>
               {!collapsed && <span>{item.label}</span>}
+              {item.badge === 'submissions' && pending > 0 && (
+                <span className="sb-count" aria-label={`${pending} pending`} style={collapsed ? { position: 'absolute', top: 4, right: 10 } : { marginLeft: 'auto', marginRight: 16 }}>{pending > 99 ? '99+' : pending}</span>
+              )}
             </div>
           ))}
         </div>
