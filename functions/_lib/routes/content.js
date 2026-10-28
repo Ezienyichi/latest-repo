@@ -1,15 +1,17 @@
 import { Hono } from 'hono';
+import { publicPartners } from '../partners.js';
 
 const content = new Hono();
 
-// Public, read-only. Admin write routes land later alongside the CRUD UI
-// for PageContent/TeamMember — this only needs to serve what's already
-// seeded so the About page has something to render.
+// Public, read-only. (Partners are managed through /api/admin/partners;
+// the other PageContent rows and TeamMember have no admin editor yet.)
 content.get('/page/:slug', async (c) => {
   const prisma = c.get('prisma');
   try {
     const row = await prisma.pageContent.findUnique({ where: { slug: c.req.param('slug') } });
     if (!row) return c.json({ error: 'Not found' }, 404);
+    // Partners: inactive ones are for the admin only, and only display fields go out.
+    if (row.slug === 'partners') return c.json({ slug: row.slug, title: row.title, updatedAt: row.updatedAt, body: { logos: publicPartners(row.body?.logos) } });
     return c.json(row);
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
 });

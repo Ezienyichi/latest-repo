@@ -33,6 +33,7 @@ const ADMIN_NAV = [
   { id: 'artists', icon: Brush, label: 'Artists', path: '/dashboard/admin/artists' },
   { id: 'charities', icon: HeartHandshake, label: 'Charities', path: '/dashboard/admin/charities' },
   { id: 'projects', icon: Flag, label: 'Campaigns', path: '/dashboard/admin/projects' },
+  { id: 'partners', icon: Handshake, label: 'Partners', path: '/dashboard/admin/partners' },
   { id: 'users', icon: Users, label: 'Users', path: '/dashboard/users' },
   { id: 'newsletter', icon: Mail, label: 'Newsletter', path: '/dashboard/admin/newsletter' },
   { id: 'moderation', icon: Search, label: 'Moderation', path: '/dashboard/moderation' },

@@ -159,6 +159,13 @@ class ApiClient {
   approveSubmission(type, id, data = {}) { return this.post(`/admin/submissions/${type}/${id}/approve`, data); }
   rejectSubmission(type, id, data = {}) { return this.post(`/admin/submissions/${type}/${id}/reject`, data); }
 
+  // Partners & collaborators — admin
+  getAdminPartners() { return this.get('/admin/partners'); }
+  createAdminPartner(data) { return this.post('/admin/partners', data); }
+  updateAdminPartner(id, data) { return this.patch(`/admin/partners/${id}`, data); }
+  deleteAdminPartner(id) { return this.delete(`/admin/partners/${id}`); }
+  reorderAdminPartners(ids) { return this.post('/admin/partners/reorder', { ids }); }
+
   // Newsletter
   subscribeNewsletter(email, source) { return this.post('/newsletter', { email, source }); }
   getAdminNewsletter(params = {}) { const qs = new URLSearchParams(params).toString(); return this.get(`/admin/newsletter${qs ? '?' + qs : ''}`); }

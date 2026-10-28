@@ -1,82 +1,89 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../../utils/api';
 
-// Same fallback shown until PageContent('partners') loads / if the fetch
-// fails — kept in sync with the seed data, not the source of truth for it.
-const PARTNERS_FALLBACK = [
-  { name: 'Meridian Foundation', url: null },
-  { name: 'Northbridge Trust', url: null },
-  { name: 'Sable & Co.', url: null },
-  { name: 'Lumen Partners', url: null },
-  { name: 'Kestrel Group', url: null },
-  { name: 'Anchor Collective', url: null },
+const SPEED_PX_PER_SEC = 30;
+// Fewer than this and a looping marquee would show gaps — they sit in a still, centred row instead.
+const MIN_FOR_MARQUEE = 5;
+
+const GROUPS = [
+  { type: 'PARTNER', label: 'Our Partners', heading: 'Organisations We Work With' },
+  { type: 'COLLABORATOR', label: 'Our Collaborators', heading: 'Creatives & Teams We Build With' },
 ];
 
-const SPEED_PX_PER_SEC = 30;
+function Logo({ p, clone }) {
+  const inner = p.logo ? <img src={p.logo} alt={clone ? '' : p.name} loading="lazy" /> : <span>{p.name}</span>;
+  // The looped second copy is decoration for the animation — keep it out of the tab order / screen readers.
+  const hidden = clone ? { 'aria-hidden': true, tabIndex: -1 } : {};
+  return (
+    <div className="partners-logo-item" title={p.description || p.name} {...(p.website ? {} : { tabIndex: clone ? -1 : 0 })} {...(clone ? { 'aria-hidden': true } : {})}>
+      {p.website
+        ? <a href={p.website} target="_blank" rel="noopener noreferrer" aria-label={p.description ? `${p.name} — ${p.description}` : p.name} {...hidden}>{inner}</a>
+        : inner}
+    </div>
+  );
+}
 
-// Shared between HomePage and AboutPage — editing PageContent('partners')
-// updates both. Continuous right-to-left auto-scroll via CSS @keyframes
-// (translateX 0 -> -50%), not the rAF/scrollLeft technique the product
-// carousels use — logos need no drag/swipe, so plain CSS animation is
-// simpler and sidesteps that mechanism's failure modes entirely. The
-// looped set is rendered twice; -50% is exactly one copy's width because
-// the transform resolves against this same element's own width, so no
-// runtime measurement is needed for the loop itself — only for picking a
-// duration that yields ~30px/sec regardless of how many logos there are.
-export default function PartnersCarousel() {
-  const [logos, setLogos] = useState(null);
+// One scrolling row for one group of partners.
+function Group({ group, items }) {
   const [reduced, setReduced] = useState(false);
   const [duration, setDuration] = useState(30);
   const trackRef = useRef(null);
+  useEffect(() => { setReduced(window.matchMedia('(prefers-reduced-motion: reduce)').matches); }, []);
+  const animate = !reduced && items.length >= MIN_FOR_MARQUEE;
 
   useEffect(() => {
-    api.getPageContent('partners').then(r => setLogos(r.body?.logos?.length ? r.body.logos : PARTNERS_FALLBACK)).catch(() => setLogos(PARTNERS_FALLBACK));
-  }, []);
-
-  useEffect(() => {
-    setReduced(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  }, []);
-
-  const items = logos || PARTNERS_FALLBACK;
-
-  useEffect(() => {
-    if (reduced) return;
+    if (!animate) return;
     const el = trackRef.current;
     if (!el) return;
-    // .partners-track carries no padding of its own (only `gap`), so
-    // scrollWidth is exactly two copies back-to-back — scrollWidth/2 is
-    // the true repeat distance, matching what translateX(-50%) moves.
+    // The track holds two copies back-to-back, so scrollWidth/2 is the true repeat distance.
     const measure = () => setDuration(Math.max(el.scrollWidth / 2 / SPEED_PX_PER_SEC, 6));
     measure();
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
-  }, [items, reduced]);
-
-  const renderLogo = (p, i) => (
-    <div key={`${p.name}-${i}`} className="partners-logo-item" tabIndex={0}>
-      {p.url ? <img src={p.url} alt={p.name} loading="lazy" /> : <span>{p.name}</span>}
-    </div>
-  );
+  }, [items, animate]);
 
   return (
-    <section className="partners-carousel-section">
+    <section className="partners-carousel-section" data-partners-group={group.type}>
       <div className="wrap">
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div className="lbl">Our Partners</div>
-          <h2 className="display" style={{ fontSize: 28 }}>Organisations We Work With</h2>
+          <div className="lbl">{group.label}</div>
+          <h2 className="display" style={{ fontSize: 28 }}>{group.heading}</h2>
         </div>
       </div>
       <div className="partners-track-wrap">
-        {reduced ? (
-          <div className="partners-row partners-track-static">
-            {items.map(renderLogo)}
+        {animate ? (
+          <div className="partners-row partners-track" ref={trackRef} style={{ animationDuration: `${duration}s` }}>
+            {[...items, ...items].map((p, i) => <Logo key={`${p.name}-${i}`} p={p} clone={i >= items.length} />)}
           </div>
         ) : (
-          <div className="partners-row partners-track" ref={trackRef} style={{ animationDuration: `${duration}s` }}>
-            {[...items, ...items].map(renderLogo)}
+          <div className="partners-row partners-track-static">
+            {items.map((p, i) => <Logo key={`${p.name}-${i}`} p={p} />)}
           </div>
         )}
       </div>
     </section>
+  );
+}
+
+// Shared by HomePage and AboutPage. Everything comes from the admin-managed
+// list (Admin → Partners → PageContent('partners')); there is deliberately no
+// built-in placeholder list — invented company names would imply endorsements
+// that don't exist. With no active partners (or if the list can't load) the
+// whole section simply isn't shown.
+export default function PartnersCarousel() {
+  const [logos, setLogos] = useState([]);
+  useEffect(() => {
+    let live = true;
+    api.getPageContent('partners').then(r => { if (live) setLogos(Array.isArray(r.body?.logos) ? r.body.logos : []); }).catch(() => {});
+    return () => { live = false; };
+  }, []);
+
+  return (
+    <>
+      {GROUPS.map(g => {
+        const items = logos.filter(l => (l.type || 'PARTNER') === g.type);
+        return items.length ? <Group key={g.type} group={g} items={items} /> : null;
+      })}
+    </>
   );
 }

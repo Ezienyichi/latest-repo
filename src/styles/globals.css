@@ -1009,3 +1009,11 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--mint);outline-offse
 .format-opt-price{font-family:var(--fd);font-size:20px;font-weight:700;color:var(--accent)}
 .format-opt-sub{font-size:12px;color:var(--muted);line-height:1.5}
 @media(max-width:480px){.format-choice{grid-template-columns:minmax(0,1fr)}}
+
+/* ── Partners carousel: linked logos, second (collaborators) row ─────────── */
+.partners-logo-item a{display:flex;align-items:center;justify-content:center;height:100%;color:inherit;text-decoration:none}
+.partners-logo-item a:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:4px}
+.partners-logo-item a:hover span{color:var(--accent)}
+.partners-logo-item a:hover img{filter:grayscale(0) opacity(1)}
+.partners-carousel-section + .partners-carousel-section{padding-top:0}
+.partners-track-static{gap:36px 56px}

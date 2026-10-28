@@ -5,11 +5,14 @@ import { slugify } from '../helpers.js';
 import { getCharityRaised, getCharityRaisedMap } from '../charityRollup.js';
 import { CURRENCIES } from '../currency.js';
 import adminSubmissions from './adminSubmissions.js';
+import adminPartners from './adminPartners.js';
 
 const admin = new Hono();
 admin.use('*', authenticate, requireRole('ADMIN'));
 // Invite-link submission review queue (guarded by the middleware above).
 admin.route('/submissions', adminSubmissions);
+// Homepage / About partners & collaborators carousel (guarded by the middleware above).
+admin.route('/partners', adminPartners);
 
 // Known SiteSetting keys and their validators. PUT rejects anything not
 // listed here — a typo'd key should fail loudly, not silently create a
