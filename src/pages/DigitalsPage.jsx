@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext';
 import { SDGs, DIGITAL_CATS, FRAMED_CATEGORIES } from '../data/constants';
 import api from '../utils/api';
 import { ArtistCredit } from '../components/ui/ArtistAvatar';
+import { listingPrice } from '../utils/products';
 import Icon from '../components/ui/Icon';
 import { cur } from '../utils/currency';
 
@@ -77,8 +78,8 @@ export default function DigitalsPage() {
               </h1>
               <p style={{ fontSize: 14, color: 'rgba(255,255,255,.82)', marginTop: 8, maxWidth: 400 }}>
                 {activeCat === 'MUSIC' ? 'Original albums, EPs & soundscapes by impact artists'
-                  : activeCat === 'GRAPHIC' ? 'Vector packs, icon sets & design assets with purpose'
-                  : 'Music & Graphics — every purchase funds change'}
+                  : activeCat === 'BOOK' ? 'Books to read online or hold in your hands — every purchase funds change'
+                  : 'Music & Books — every purchase funds change'}
               </p>
             </div>
             <select className="fi fsel" value={sort} onChange={e => setSort(e.target.value)} style={{ width: 160, background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.15)', color: '#fff' }}>
@@ -170,7 +171,7 @@ export default function DigitalsPage() {
                     <div className="product-card-overlay">
                       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
                         <button className="btn btn-p btn-sm" style={{ width: '100%', justifyContent: 'center' }}
-                          onClick={e => { e.stopPropagation(); addToCart(p); }}>Add to Cart — {cur()}{Number(p.basePrice).toFixed(2)}</button>
+                          onClick={e => { e.stopPropagation(); if (p.category === 'BOOK' && p.bookFormat === 'BOTH') { toast('Choose digital or physical on the book page', 'info'); navigate(`/shop/${p.slug}`); return; } addToCart(p); }}>{p.category === 'BOOK' && p.bookFormat === 'BOTH' ? 'Choose edition' : 'Add to Cart'} — {listingPrice(p).from ? 'from ' : ''}{cur()}{Number(p.basePrice).toFixed(2)}</button>
                       </div>
                     </div>
                     {/* Format badge at bottom-left */}
@@ -185,12 +186,12 @@ export default function DigitalsPage() {
                     <div style={{ display: 'flex', gap: 3, marginBottom: 4 }}>{p.sdgIds?.slice(0, 3).map(id => <SdgDot key={id} id={id} />)}</div>
                     <h3 style={{ fontFamily: 'var(--fd)', fontSize: 16, fontWeight: 600, marginBottom: 2, lineHeight: 1.3 }}>{p.title}</h3>
                     <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 6, display: 'flex', justifyContent: 'space-between' }}>
-                      <ArtistCredit artist={p.artist} />
+                      <ArtistCredit artist={p.artist} name={p.creatorName || undefined} />
                       <span>{p.charity?.name}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
-                        <span style={{ fontFamily: 'var(--fd)', fontSize: 17, color: 'var(--accent)', fontWeight: 700 }}>{cur()}{Number(p.basePrice).toFixed(2)}</span>
+                        <span style={{ fontFamily: 'var(--fd)', fontSize: 17, color: 'var(--accent)', fontWeight: 700 }}>{listingPrice(p).from && <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted)', marginRight: 4 }}>From</span>}{cur()}{Number(p.basePrice).toFixed(2)}</span>
                         {p.comparePrice && <span style={{ fontFamily: 'var(--fd)', fontSize: 12, color: 'var(--muted)', textDecoration: 'line-through', marginLeft: 6 }}>{cur()}{Number(p.comparePrice).toFixed(2)}</span>}
                       </div>
                       {p.avgRating && <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: 'var(--gold)' }}><Icon icon={Star} size="inline" fill="currentColor" /> {p.avgRating}</div>}

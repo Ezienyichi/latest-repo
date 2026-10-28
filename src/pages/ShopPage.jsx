@@ -7,6 +7,7 @@ import api from '../utils/api';
 import { ArtistCredit } from '../components/ui/ArtistAvatar';
 import Icon from '../components/ui/Icon';
 import EditionBadge, { priceLabel, priceAmount } from '../components/ui/EditionBadge';
+import { listingPrice } from '../utils/products';
 import { cur } from '../utils/currency';
 
 function SdgDot({ id }) {
@@ -27,7 +28,7 @@ const ORIGINALS_SUBCATS = [
 // Full category nav shown above the SDG filter section — Artwork (with its
 // medium subcategories above) plus the two digital categories, reusing
 // DIGITAL_CATS as the single source of truth for their icon/label rather
-// than redeclaring MUSIC/GRAPHIC here.
+// than redeclaring MUSIC/BOOK here.
 const SHOP_CATEGORIES = [
   { id: 'ARTWORK', label: 'Artwork', icon: Palette, subcats: ORIGINALS_SUBCATS },
   ...DIGITAL_CATS.map(c => ({ id: c.id, label: c.label, icon: c.icon, subcats: null })),
@@ -48,7 +49,7 @@ const SUBCAT_PLACEHOLDERS = [
 ];
 
 // Same guarded-placeholder pattern as SUBCAT_PLACEHOLDERS above, one pool
-// per digital category — MUSIC/GRAPHIC have no real listings yet, so the
+// per digital category — MUSIC/BOOK have no real listings yet, so the
 // category nav below always has something to show without ever being
 // clickable through to checkout (slug: null, same guards).
 const CATEGORY_PLACEHOLDERS = {
@@ -56,9 +57,9 @@ const CATEGORY_PLACEHOLDERS = {
     { id: 'ph-m1', slug: null, title: 'Midnight Sessions', artist: { displayName: 'Kwame Boateng' }, charity: { name: 'Oxfam' }, images: [{ url: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=600&h=750&fit=crop&q=80' }], basePrice: 12, category: 'MUSIC', productType: 'DIGITAL', sdgIds: [] },
     { id: 'ph-m2', slug: null, title: 'Analog Mix', artist: { displayName: 'Nia Kariuki' }, charity: { name: 'WaterAid UK' }, images: [{ url: 'https://images.unsplash.com/photo-1574517947730-55cb23e608c2?w=600&h=750&fit=crop&q=80' }], basePrice: 15, category: 'MUSIC', productType: 'DIGITAL', sdgIds: [] },
   ],
-  GRAPHIC: [
-    { id: 'ph-g1', slug: null, title: 'Prism Set Vol. 2', artist: { displayName: 'Zainab Hassan' }, charity: { name: 'WaterAid UK' }, images: [{ url: 'https://images.unsplash.com/photo-1639170952854-16636715af61?w=600&h=750&fit=crop&q=80' }], basePrice: 35, category: 'GRAPHIC', productType: 'DIGITAL', sdgIds: [] },
-    { id: 'ph-g2', slug: null, title: 'Fracture Grid', artist: { displayName: 'Owen Mensah' }, charity: { name: 'CAMFED' }, images: [{ url: 'https://images.unsplash.com/photo-1754411072193-fa49c36554e4?w=600&h=750&fit=crop&q=80' }], basePrice: 26, category: 'GRAPHIC', productType: 'DIGITAL', sdgIds: [] },
+  BOOK: [
+    { id: 'ph-b1', slug: null, title: 'The Water Carriers', artist: { displayName: 'Zainab Hassan' }, charity: { name: 'WaterAid UK' }, images: [{ url: 'https://images.pexels.com/photos/159711/books-bookstore-book-reading-159711.jpeg?auto=compress&cs=tinysrgb&w=600&h=750&fit=crop' }], basePrice: 18, category: 'BOOK', bookFormat: 'DIGITAL', productType: 'SIMPLE', sdgIds: [] },
+    { id: 'ph-b2', slug: null, title: 'Letters from the Delta', artist: { displayName: 'Owen Mensah' }, charity: { name: 'CAMFED' }, images: [{ url: 'https://images.pexels.com/photos/1370295/pexels-photo-1370295.jpeg?auto=compress&cs=tinysrgb&w=600&h=750&fit=crop' }], basePrice: 14, category: 'BOOK', bookFormat: 'DIGITAL', productType: 'SIMPLE', sdgIds: [] },
   ],
 };
 
@@ -95,7 +96,7 @@ export default function ShopPage() {
 
   // Artwork subcategory tab active: narrow real results to matching medium
   // client-side (no backend support for it), then top up with subcat-tagged
-  // placeholders so the tab never renders empty. MUSIC/GRAPHIC have no real
+  // placeholders so the tab never renders empty. MUSIC/BOOK have no real
   // listings yet, so their real (already category-filtered, currently
   // empty) results are topped up with their placeholder pool the same way.
   const displayProducts =
@@ -103,15 +104,17 @@ export default function ShopPage() {
       ...products.filter(p => (p.medium || '').toLowerCase() === activeSubcat),
       ...SUBCAT_PLACEHOLDERS.filter(p => p.medium.toLowerCase() === activeSubcat),
     ]
-    : (activeCategory === 'MUSIC' || activeCategory === 'GRAPHIC') ? [...products, ...CATEGORY_PLACEHOLDERS[activeCategory]]
+    : (activeCategory === 'MUSIC' || activeCategory === 'BOOK') ? [...products, ...CATEGORY_PLACEHOLDERS[activeCategory]]
     : products;
-  const usingPlaceholders = (activeCategory === 'ARTWORK' && activeSubcat !== 'all') || activeCategory === 'MUSIC' || activeCategory === 'GRAPHIC';
+  const usingPlaceholders = (activeCategory === 'ARTWORK' && activeSubcat !== 'all') || activeCategory === 'MUSIC' || activeCategory === 'BOOK';
   const displayTotal = usingPlaceholders ? displayProducts.length : total;
 
   const goToProduct = (p) => { if (p.slug) navigate(`/shop/${p.slug}`); };
   const addPlaceholderAware = (e, p) => {
     e.stopPropagation();
     if (!p.slug) { toast('This is a placeholder — real products coming soon', 'info'); return; }
+    // A book sold in both editions needs the buyer to pick one first.
+    if (p.category === 'BOOK' && p.bookFormat === 'BOTH') { toast('Choose digital or physical on the book page', 'info'); navigate(`/shop/${p.slug}`); return; }
     addToCart(p);
   };
 
@@ -143,7 +146,7 @@ export default function ShopPage() {
 
       <div className="wrap" style={{ paddingTop: 28, paddingBottom: 80 }}>
         {/* Category navigation — Artwork (+ medium subcategories), Music,
-            Graphic. Placed above the SDG filter section below; drives the
+            Book. Placed above the SDG filter section below; drives the
             same category query the sidebar's SDG/price filters compose
             with. Real products are shown where they exist, placeholders
             top up any category/subcategory with none yet (guarded — no
@@ -216,17 +219,17 @@ export default function ShopPage() {
                         </div>
                       </div>
                       {p.comparePrice && <div className="badge b-red" style={{ position: 'absolute', top: 10, left: 10, zIndex: 3 }}>SALE</div>}
-                      <EditionBadge editionType={p.editionType} style={{ position: 'absolute', top: 10, right: 44, zIndex: 3 }} />
+                      <EditionBadge editionType={p.category === 'MUSIC' || p.category === 'BOOK' ? null : p.editionType} style={{ position: 'absolute', top: 10, right: 44, zIndex: 3 }} />
                       <button className={`wish-btn${isWished(p.id) ? ' active' : ''}`} onClick={e => { e.stopPropagation(); if (!p.slug) { toast('This is a placeholder — real products coming soon', 'info'); return; } toggleWishlist(p.id); toast(isWished(p.id) ? 'Removed from wishlist' : 'Added to wishlist'); }}><Icon icon={Heart} size="inline" fill={isWished(p.id) ? 'currentColor' : 'none'} /></button>
                     </div>
                     <div className="product-card-body">
                       <div style={{ display: 'flex', gap: 3, marginBottom: 6 }}>{p.sdgIds?.map(id => <SdgDot key={id} id={id} />)}</div>
                       <h3 style={{ fontFamily: 'var(--fd)', fontSize: 18, fontWeight: 600, marginBottom: 3 }}>{p.title}</h3>
-                      <p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 8 }}><ArtistCredit artist={p.artist} prefix="by " /> · {p.charity?.name}</p>
+                      <p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 8 }}><ArtistCredit artist={p.artist} name={p.creatorName || undefined} prefix="by " /> · {p.charity?.name}</p>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <span>
                           {priceLabel(p) && <span style={{ display: 'block', fontSize: 9, fontWeight: 700, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--muted)' }}>{priceLabel(p)}</span>}
-                          <span style={{ fontFamily: 'var(--fd)', fontSize: 18, color: 'var(--accent)', fontWeight: 700 }}>{cur()}{priceAmount(p).toLocaleString()}</span>
+                          <span style={{ fontFamily: 'var(--fd)', fontSize: 18, color: 'var(--accent)', fontWeight: 700 }}>{listingPrice(p).from && <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted)', marginRight: 4 }}>From</span>}{cur()}{priceAmount(p).toLocaleString()}</span>
                         </span>
                         <span className="badge b-muted" style={{ fontSize: 9, textTransform: 'capitalize' }}>{p.productType?.toLowerCase()}</span>
                       </div>
@@ -242,13 +245,13 @@ export default function ShopPage() {
                       {p.images?.[0]?.url ? <img src={p.images[0].url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: '#1B4332' }} />}
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', gap: 3, marginBottom: 4, alignItems: 'center' }}>{p.sdgIds?.map(id => <SdgDot key={id} id={id} />)}<EditionBadge editionType={p.editionType} /></div>
+                      <div style={{ display: 'flex', gap: 3, marginBottom: 4, alignItems: 'center' }}>{p.sdgIds?.map(id => <SdgDot key={id} id={id} />)}<EditionBadge editionType={p.category === 'MUSIC' || p.category === 'BOOK' ? null : p.editionType} /></div>
                       <h3 style={{ fontFamily: 'var(--fd)', fontSize: 18, fontWeight: 600, marginBottom: 2 }}>{p.title}</h3>
-                      <p style={{ fontSize: 11, color: 'var(--muted)' }}><ArtistCredit artist={p.artist} /> · {p.medium} · {p.charity?.name}</p>
+                      <p style={{ fontSize: 11, color: 'var(--muted)' }}><ArtistCredit artist={p.artist} name={p.creatorName || undefined} />{p.medium && <> · {p.medium}</>} · {p.charity?.name}</p>
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
                       {priceLabel(p) && <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--muted)' }}>{priceLabel(p)}</div>}
-                      <div style={{ fontFamily: 'var(--fd)', fontSize: 20, color: 'var(--accent)', fontWeight: 700, marginBottom: 8 }}>{cur()}{priceAmount(p).toLocaleString()}</div>
+                      <div style={{ fontFamily: 'var(--fd)', fontSize: 20, color: 'var(--accent)', fontWeight: 700, marginBottom: 8 }}>{listingPrice(p).from && <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginRight: 4 }}>From</span>}{cur()}{priceAmount(p).toLocaleString()}</div>
                       <button className="btn btn-p btn-sm" onClick={e => addPlaceholderAware(e, p)}>Add to Cart</button>
                     </div>
                   </div>
@@ -270,11 +273,11 @@ export default function ShopPage() {
                   {qv.images?.[0]?.url ? <img src={qv.images[0].url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: '#1B4332' }} />}
                 </div>
                 <div>
-                  <div style={{ display: 'flex', gap: 3, marginBottom: 8, alignItems: 'center' }}>{qv.sdgIds?.map(id => <SdgDot key={id} id={id} />)}<EditionBadge editionType={qv.editionType} /></div>
+                  <div style={{ display: 'flex', gap: 3, marginBottom: 8, alignItems: 'center' }}>{qv.sdgIds?.map(id => <SdgDot key={id} id={id} />)}<EditionBadge editionType={qv.category === 'MUSIC' || qv.category === 'BOOK' ? null : qv.editionType} /></div>
                   <p style={{ fontSize: 13, color: 'var(--txt2)', lineHeight: 1.7, marginBottom: 14 }}>{qv.description?.slice(0, 180)}…</p>
                   {priceLabel(qv) && <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--muted)' }}>{priceLabel(qv)}</div>}
-                  <div style={{ fontFamily: 'var(--fd)', fontSize: 26, color: 'var(--accent)', fontWeight: 700, marginBottom: 14 }}>{cur()}{priceAmount(qv).toLocaleString()}</div>
-                  <button className="btn btn-p" style={{ width: '100%', justifyContent: 'center' }} onClick={() => { if (!qv.slug) { toast('This is a placeholder — real products coming soon', 'info'); return; } addToCart(qv); setQv(null); }}>Add to Cart</button>
+                  <div style={{ fontFamily: 'var(--fd)', fontSize: 26, color: 'var(--accent)', fontWeight: 700, marginBottom: 14 }}>{listingPrice(qv).from && <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--muted)', marginRight: 4 }}>From</span>}{cur()}{priceAmount(qv).toLocaleString()}</div>
+                  <button className="btn btn-p" style={{ width: '100%', justifyContent: 'center' }} onClick={() => { if (!qv.slug) { toast('This is a placeholder — real products coming soon', 'info'); return; } if (qv.category === 'BOOK' && qv.bookFormat === 'BOTH') { navigate(`/shop/${qv.slug}`); setQv(null); return; } addToCart(qv); setQv(null); }}>{qv.category === 'BOOK' && qv.bookFormat === 'BOTH' ? 'Choose edition' : 'Add to Cart'}</button>
                   {qv.slug && <button className="btn btn-g" style={{ width: '100%', justifyContent: 'center', marginTop: 7, display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => { navigate(`/shop/${qv.slug}`); setQv(null); }}>Full Details <Icon icon={ArrowRight} size="inline" /></button>}
                 </div>
               </div>

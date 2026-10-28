@@ -3,6 +3,8 @@ import { CheckCircle2, Leaf, Award, Globe } from 'lucide-react';
 import { SDGs, FRAMED_CATEGORIES } from '../data/constants';
 import Icon from '../components/ui/Icon';
 import { cur } from '../utils/currency';
+import AccessLink from '../components/ui/AccessLink';
+import { BookOpen } from 'lucide-react';
 
 function SdgDot({ id }) {
   const s = SDGs.find(x => x.id === id); if (!s) return null;
@@ -14,6 +16,10 @@ export default function OrderConfirmationPage() {
   const { state } = useLocation();
   const order = state?.order;
   const summary = state?.summary;
+
+  // Digital lines: the buyer's read / listen link, handed over right here.
+  const digital = (order?.items || []).filter(i => i.accessUrl);
+  const hasPhysical = (order?.items || []).some(i => i.format !== 'DIGITAL' && i.product?.category !== 'MUSIC');
 
   if (!order) return (
     <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -38,6 +44,20 @@ export default function OrderConfirmationPage() {
       </div>
 
       <div className="wrap" style={{ paddingTop: 32, maxWidth: 800 }}>
+        {/* Digital purchases — ready now */}
+        {digital.length > 0 && (
+          <div className="card" data-digital-ready style={{ padding: 26, marginBottom: 20, border: '2px solid var(--mint)', background: 'rgba(23,124,29,.06)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}><Icon icon={BookOpen} size={26} style={{ color: 'var(--accent)' }} /><h2 style={{ fontFamily: 'var(--fd)', fontSize: 26 }}>Your {digital.length > 1 ? 'digital purchases are' : (digital[0].product?.category === 'MUSIC' ? 'music is' : 'book is')} ready</h2></div>
+            <p style={{ fontSize: 13, color: 'var(--txt2)', marginBottom: 16 }}>Open {digital.length > 1 ? 'them' : 'it'} any time — the same link is saved under <Link to="/orders" style={{ color: 'var(--accent)' }}>My Orders</Link>.</p>
+            {digital.map((item, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', padding: '12px 0', borderTop: i ? '1px solid var(--border)' : 'none' }}>
+                <div style={{ fontFamily: 'var(--fd)', fontSize: 19, fontWeight: 600, minWidth: 0 }}>{item.product?.title}</div>
+                <AccessLink item={item} size="lg" />
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Order items */}
         <div className="card" style={{ padding: 24, marginBottom: 20 }}>
           <h3 style={{ fontFamily: 'var(--fd)', fontSize: 22, marginBottom: 18 }}>Order Items</h3>
@@ -49,7 +69,7 @@ export default function OrderConfirmationPage() {
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 2, cursor: 'pointer', color: 'var(--txt)' }}
                   onClick={() => navigate(`/shop/${item.product?.slug}`)}>{item.product?.title}</div>
-                <div style={{ fontSize: 12, color: 'var(--muted)' }}>by {item.product?.artist?.displayName} × {item.quantity}</div>
+                <div style={{ fontSize: 12, color: 'var(--muted)' }}>by {item.product?.creatorName || item.product?.artist?.displayName}{item.format === 'DIGITAL' ? ` · ${item.product?.category === 'MUSIC' ? 'digital' : 'digital edition'}` : ` × ${item.quantity}`}{item.format === 'PHYSICAL' && ' · physical book'}</div>
                 {item.product?.charity?.name && <div style={{ fontSize: 11, color: 'var(--sage)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}><Icon icon={Leaf} size="inline" /> Supporting: {item.product.charity.name}</div>}
                 {item.product?.autoCertificate && (
                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 6, padding: '3px 10px', background: 'rgba(255,173,0,.08)', border: '1px solid rgba(255,173,0,.2)', borderRadius: 20, fontSize: 10, color: '#b37800', fontWeight: 600 }}>
@@ -98,7 +118,7 @@ export default function OrderConfirmationPage() {
         </div>
 
         {/* Shipping info */}
-        {order.shippingAddress && (
+        {hasPhysical && order.shippingAddress && (
           <div className="card" style={{ padding: 24, marginBottom: 20 }}>
             <h3 style={{ fontFamily: 'var(--fd)', fontSize: 18, marginBottom: 10 }}>Shipping To</h3>
             <div style={{ fontSize: 14, color: 'var(--txt2)', lineHeight: 1.7 }}>

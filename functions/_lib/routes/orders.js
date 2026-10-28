@@ -1,10 +1,27 @@
 import { Hono } from 'hono';
 import { authenticate, requireRole, optionalAuth } from '../auth.js';
-import { createPayment } from '../payment.js';
 import { getSplitRates, computeSplit } from '../split.js';
 import { getCurrencySymbol } from '../currency.js';
+import { createPayment, grantsDigitalAccess } from '../payment.js';
+import { resolveOrderLine } from '../digital.js';
 
 const orders = new Hono();
+
+// Every order response goes through this: a digital line gets its `accessUrl`
+// (read / listen link) only if the order is in good standing, and the raw
+// product column is always removed so it can't ride along in the payload.
+function withAccess(order) {
+  if (!order) return order;
+  const entitled = grantsDigitalAccess(order);
+  return {
+    ...order,
+    items: (order.items || []).map(({ product, ...item }) => {
+      const { digitalAccessUrl, ...safeProduct } = product || {};
+      const digital = item.format === 'DIGITAL' || (!item.format && safeProduct.category === 'MUSIC');
+      return { ...item, product: product ? safeProduct : product, accessUrl: digital && entitled ? digitalAccessUrl || null : null };
+    }),
+  };
+}
 
 // Coupon codes (in production, store in DB)
 const COUPONS = {
@@ -39,27 +56,36 @@ orders.post('/', optionalAuth, async (c) => {
     const rates = await getSplitRates(prisma);
 
     let subtotal = 0;
+    let needsShipping = false;   // any physical line (artwork, printed book)
     const orderItems = [];
+    const stockOps = [];
     for (const item of items) {
       const product = await prisma.product.findUnique({ where: { id: item.productId }, include: { variations: true } });
       if (!product || product.submissionStatus !== 'APPROVED') return c.json({ error: `Product ${item.productId} not found` }, 400);
-      const price = item.variationId
+      // The client only says which edition it wants; what it costs, how many
+      // can be bought and whether it ships are all decided here.
+      const line = resolveOrderLine(product, item);
+      if (line.error) return c.json({ error: line.error }, 400);
+      const price = line.price ?? (item.variationId
         ? Number(product.variations.find(v => v.id === item.variationId)?.price || product.basePrice)
-        : Number(product.basePrice);
-      const lineTotal = price * item.quantity;
+        : Number(product.basePrice));
+      const lineTotal = price * line.quantity;
       subtotal += lineTotal;
+      if (line.physical) needsShipping = true;
       const lineSplit = computeSplit(lineTotal, rates);
       orderItems.push({
         productId: product.id,
-        variationId: item.variationId || null,
-        quantity: item.quantity,
+        variationId: line.format ? null : (item.variationId || null),
+        quantity: line.quantity,
+        format: line.format,
         unitPrice: price,
         addonSelections: item.addons || null,
         charitySplitAmt: lineSplit.charityAmt,
         platformFeeAmt: lineSplit.platformAmt,
       });
-      if (product.stockQuantity != null && product.stockQuantity > 0) {
-        await prisma.product.update({ where: { id: product.id }, data: { stockQuantity: { decrement: item.quantity } } });
+      // Applied only once the whole order is valid and saved (below), so a rejected order never eats stock.
+      if (line.physical && product.stockQuantity != null && product.stockQuantity > 0) {
+        stockOps.push({ id: product.id, by: line.quantity });
       }
     }
 
@@ -73,7 +99,9 @@ orders.post('/', optionalAuth, async (c) => {
     }
 
     const discountedSubtotal = subtotal - discount;
-    const shipping = discountedSubtotal > 500 ? 0 : 12.99;
+    // Digital-only baskets (music, digital books) have nothing to ship.
+    if (needsShipping && !shippingAddress?.address1) return c.json({ error: 'A shipping address is required for physical items' }, 400);
+    const shipping = !needsShipping || discountedSubtotal > 500 ? 0 : 12.99;
     const orderSplit = computeSplit(discountedSubtotal, rates);
     const { platformAmt: platformFee, charityAmt: charitySplit, artistAmt: artistPayout } = orderSplit;
     const totalAmount = discountedSubtotal + shipping;
@@ -93,12 +121,14 @@ orders.post('/', optionalAuth, async (c) => {
       include: {
         items: {
           include: {
-            product: { select: { title: true, images: true, slug: true, category: true, artist: { select: { displayName: true } }, charity: { select: { name: true } }, autoCertificate: true, certificateId: true } },
+            product: { select: { title: true, images: true, slug: true, category: true, digitalAccessUrl: true, creatorName: true, artist: { select: { displayName: true } }, charity: { select: { name: true } }, autoCertificate: true, certificateId: true } },
             variation: true,
           },
         },
       },
     });
+
+    for (const op of stockOps) await prisma.product.update({ where: { id: op.id }, data: { stockQuantity: { decrement: op.by } } });
 
     // Payment processor is abstracted behind createPayment() — no provider
     // wired yet. Swapping in a real gateway later only touches payment.js.
@@ -109,7 +139,7 @@ orders.post('/', optionalAuth, async (c) => {
       include: {
         items: {
           include: {
-            product: { select: { title: true, images: true, slug: true, category: true, artist: { select: { displayName: true } }, charity: { select: { name: true } }, autoCertificate: true, certificateId: true } },
+            product: { select: { title: true, images: true, slug: true, category: true, digitalAccessUrl: true, creatorName: true, artist: { select: { displayName: true } }, charity: { select: { name: true } }, autoCertificate: true, certificateId: true } },
             variation: true,
           },
         },
@@ -135,7 +165,7 @@ orders.post('/', optionalAuth, async (c) => {
       }).catch(() => {});
     }
 
-    return c.json({ order, paymentRef: payment.paymentRef, discount, subtotal, shipping, platformFee, charitySplit, artistPayout, totalAmount }, 201);
+    return c.json({ order: withAccess(order), paymentRef: payment.paymentRef, discount, subtotal, shipping, platformFee, charitySplit, artistPayout, totalAmount }, 201);
   } catch (e) { console.error('Order error:', e); return c.json({ error: 'Order creation failed' }, 500); }
 });
 
@@ -144,10 +174,10 @@ orders.get('/', authenticate, async (c) => {
   try {
     const list = await prisma.order.findMany({
       where: { buyerId: c.get('userId') },
-      include: { items: { include: { product: { select: { title: true, images: true, slug: true, category: true, artist: { select: { displayName: true } }, charity: { select: { name: true } }, autoCertificate: true, certificateId: true } } } } },
+      include: { items: { include: { product: { select: { title: true, images: true, slug: true, category: true, digitalAccessUrl: true, creatorName: true, artist: { select: { displayName: true } }, charity: { select: { name: true } }, autoCertificate: true, certificateId: true } } } } },
       orderBy: { createdAt: 'desc' },
     });
-    return c.json(list);
+    return c.json(list.map(withAccess));
   } catch (e) { return c.json({ error: 'Failed to fetch orders' }, 500); }
 });
 
@@ -156,10 +186,10 @@ orders.get('/:id', authenticate, async (c) => {
   try {
     const order = await prisma.order.findFirst({
       where: { id: c.req.param('id'), buyerId: c.get('userId') },
-      include: { items: { include: { product: { select: { title: true, images: true, slug: true, category: true, medium: true, year: true, artist: { select: { displayName: true } }, charity: { select: { name: true, logo: true } }, autoCertificate: true, certificateId: true } }, variation: true } } },
+      include: { items: { include: { product: { select: { title: true, images: true, slug: true, category: true, digitalAccessUrl: true, creatorName: true, medium: true, year: true, artist: { select: { displayName: true } }, charity: { select: { name: true, logo: true } }, autoCertificate: true, certificateId: true } }, variation: true } } },
     });
     if (!order) return c.json({ error: 'Order not found' }, 404);
-    return c.json(order);
+    return c.json(withAccess(order));
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
 });
 

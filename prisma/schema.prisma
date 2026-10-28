@@ -34,7 +34,13 @@ enum ProductStatus {
 enum ProductCategory {
   ARTWORK
   MUSIC
-  GRAPHIC
+  BOOK
+}
+
+enum BookFormat {
+  DIGITAL
+  PHYSICAL
+  BOTH
 }
 
 // Originals vs. reproductions — drives the "Originals Only" homepage row.
@@ -210,6 +216,18 @@ model Product {
   medium           String?
   year             Int?
   dimensions       String?
+  // Link-delivered digital products: the music listen link / digital-book read link.
+  // Never returned by a public endpoint — only to a buyer whose order grants access.
+  digitalAccessUrl String?
+  // Books: which editions are sold, and a price per edition (basePrice mirrors the lowest).
+  bookFormat       BookFormat?
+  digitalPrice     Decimal?           @db.Decimal(10, 2)
+  physicalPrice    Decimal?           @db.Decimal(10, 2)
+  // Music: performing artist · Book: author — shown instead of the platform artist profile.
+  creatorName      String?
+  isbn             String?
+  publisher        String?
+  language         String?
   fileUrl          String?
   fileFormat       String?
   previewUrl       String?
@@ -289,6 +307,7 @@ model OrderItem {
   variation       ProductVariation? @relation(fields: [variationId], references: [id])
   quantity        Int
   unitPrice       Decimal           @db.Decimal(10, 2)
+  format          String? // books: "DIGITAL" | "PHYSICAL"; music: "DIGITAL"; artwork: null
   addonSelections Json?
   charitySplitAmt Decimal           @default(0) @db.Decimal(10, 2)
   platformFeeAmt  Decimal           @default(0) @db.Decimal(10, 2)

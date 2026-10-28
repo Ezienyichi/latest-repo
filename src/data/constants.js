@@ -1,4 +1,4 @@
-import { Music, PenTool } from 'lucide-react';
+import { Music, BookOpen } from 'lucide-react';
 
 export const SDGs = [
   { id: 1, n: 'No Poverty', c: '#E5243B' },
@@ -22,7 +22,7 @@ export const SDGs = [
 
 export const DIGITAL_CATS = [
   { id: 'MUSIC', label: 'Music', icon: Music, color: '#2EB8E6', bg: '#041525', bgImage: 'https://images.pexels.com/photos/32215665/pexels-photo-32215665.jpeg?auto=compress&cs=tinysrgb&w=1600' },
-  { id: 'GRAPHIC', label: 'Graphics', icon: PenTool, color: '#E07B54', bg: '#1F0E08', bgImage: 'https://images.pexels.com/photos/33950026/pexels-photo-33950026.jpeg?auto=compress&cs=tinysrgb&w=1600' },
+  { id: 'BOOK', label: 'Books', icon: BookOpen, color: '#E0A354', bg: '#1F1408', bgImage: 'https://images.pexels.com/photos/159711/books-bookstore-book-reading-159711.jpeg?auto=compress&cs=tinysrgb&w=1600' },
 ];
 
 export function getSdg(id) {
@@ -34,4 +34,5 @@ export function getSdg(id) {
 // Everything else uses object-fit:cover within the same fixed frame.
 // Single source of truth — every component that renders a product image
 // should import this rather than redeclaring its own copy.
-export const FRAMED_CATEGORIES = ['ARTWORK', 'GRAPHIC'];
+// A book cover is shown whole (never cropped), like an artwork.
+export const FRAMED_CATEGORIES = ['ARTWORK', 'BOOK'];

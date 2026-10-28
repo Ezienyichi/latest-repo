@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { stripPrivate } from '../digital.js';
 
 const artists = new Hono();
 
@@ -18,7 +19,7 @@ artists.get('/:id', async (c) => {
       include: { products: { where: { status: 'ACTIVE', submissionStatus: 'APPROVED' }, include: { charity: { select: { name: true } }, reviews: { select: { rating: true } } } }, partnerships: { include: { charity: { select: { name: true, logo: true } } } } },
     });
     if (!artist) return c.json({ error: 'Not found' }, 404);
-    return c.json(artist);
+    return c.json({ ...artist, products: artist.products.map(stripPrivate) });
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
 });
 

@@ -16,10 +16,11 @@ export default function EditionBadge({ editionType, style }) {
 // (falling back to basePrice if an admin hasn't set one yet). Prints/
 // editions just show the plain price, unlabelled, as before.
 export function priceLabel(product) {
+  if (product?.category && product.category !== 'ARTWORK') return null;   // music / books are plain-priced
   return product?.editionType === 'ORIGINAL' ? 'Estimated Value' : null;
 }
 
 export function priceAmount(product) {
-  if (product?.editionType === 'ORIGINAL' && product?.estimatedValue != null) return Number(product.estimatedValue);
+  if ((!product?.category || product.category === 'ARTWORK') && product?.editionType === 'ORIGINAL' && product?.estimatedValue != null) return Number(product.estimatedValue);
   return Number(product?.basePrice ?? product?.price ?? 0);
 }

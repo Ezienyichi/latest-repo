@@ -29,8 +29,9 @@ export default function CheckoutPage() {
   const discountAmt = location.state?.discount || 0;
   const couponCode = location.state?.couponCode || null;
   const afterDiscount = cartTotal - discountAmt;
-  const shippingCost = afterDiscount > 500 ? 0 : 12.99;
-  const hasDigitalOnly = cart.every(item => item.price < 100); // rough heuristic
+  // Only a physical line (artwork, printed book) ships — digital-only baskets pay no shipping and need no address.
+  const needsShipping = cart.some(item => item.delivery !== 'DIGITAL');
+  const shippingCost = !needsShipping || afterDiscount > 500 ? 0 : 12.99;
   const platformFee = afterDiscount * rates.platform_pct;
   const charitySplit = afterDiscount * rates.charity_pct;
   const grandTotal = afterDiscount + shippingCost;
@@ -44,7 +45,7 @@ export default function CheckoutPage() {
     if (!shipping.firstName || !shipping.lastName || !shipping.email) {
       toast('Please fill in all required fields', 'err'); return false;
     }
-    if (!shipping.address1 || !shipping.city || !shipping.postcode) {
+    if (needsShipping && (!shipping.address1 || !shipping.city || !shipping.postcode)) {
       toast('Please complete your shipping address', 'err'); return false;
     }
     return true;
@@ -57,6 +58,7 @@ export default function CheckoutPage() {
         productId: c.productId,
         variationId: c.variation?.id || null,
         quantity: c.qty,
+        format: c.format || null,
         addons: c.addons || null,
       }));
       
@@ -102,7 +104,8 @@ export default function CheckoutPage() {
           <div>
             {step === 1 && (
               <div className="card" style={{ padding: 28 }}>
-                <h3 style={{ fontFamily: 'var(--fd)', fontSize: 22, marginBottom: 20 }}>Shipping Details</h3>
+                <h3 style={{ fontFamily: 'var(--fd)', fontSize: 22, marginBottom: 20 }}>{needsShipping ? 'Shipping Details' : 'Your Details'}</h3>
+                {!needsShipping && <div className="alert alert-i" style={{ marginBottom: 16, fontSize: 13 }}>Everything in your basket is digital — no address needed. Your link appears as soon as you order.</div>}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
                   <div className="fg" style={{ margin: 0 }}><label className="fl">First Name *</label><input className="fi" value={shipping.firstName} onChange={e => set('firstName', e.target.value)} required /></div>
                   <div className="fg" style={{ margin: 0 }}><label className="fl">Last Name *</label><input className="fi" value={shipping.lastName} onChange={e => set('lastName', e.target.value)} required /></div>
@@ -111,6 +114,7 @@ export default function CheckoutPage() {
                   <div className="fg" style={{ margin: 0 }}><label className="fl">Email *</label><input className="fi" type="email" value={shipping.email} onChange={e => set('email', e.target.value)} required /></div>
                   <div className="fg" style={{ margin: 0 }}><label className="fl">Phone</label><input className="fi" type="tel" value={shipping.phone} onChange={e => set('phone', e.target.value)} /></div>
                 </div>
+                {needsShipping && (<>
                 <div className="fg"><label className="fl">Address Line 1 *</label><input className="fi" value={shipping.address1} onChange={e => set('address1', e.target.value)} placeholder="123 High Street" required /></div>
                 <div className="fg"><label className="fl">Address Line 2</label><input className="fi" value={shipping.address2} onChange={e => set('address2', e.target.value)} placeholder="Flat, unit, floor (optional)" /></div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
@@ -118,6 +122,7 @@ export default function CheckoutPage() {
                   <div className="fg" style={{ margin: 0 }}><label className="fl">Postcode *</label><input className="fi" value={shipping.postcode} onChange={e => set('postcode', e.target.value)} required /></div>
                   <div className="fg" style={{ margin: 0 }}><label className="fl">Country</label><select className="fi fsel" value={shipping.country} onChange={e => set('country', e.target.value)}><option>United Kingdom</option><option>United States</option><option>Nigeria</option><option>Ghana</option><option>Kenya</option><option>South Africa</option><option>France</option><option>Germany</option></select></div>
                 </div>
+                </>)}
                 <button className="btn btn-p btn-lg" style={{ width: '100%', justifyContent: 'center', marginTop: 18, display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => { if (validateShipping()) setStep(2); }}>
                   Continue to Payment <Icon icon={ArrowRight} size="inline" />
                 </button>
@@ -169,10 +174,12 @@ export default function CheckoutPage() {
                   
                   {/* Shipping summary */}
                   <div style={{ marginBottom: 18, padding: 14, background: 'var(--glass)', borderRadius: 'var(--r)' }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 6 }}>Ship to</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 6 }}>{needsShipping ? 'Ship to' : 'Your details'}</div>
                     <div style={{ fontSize: 14 }}>{shipping.firstName} {shipping.lastName}</div>
-                    <div style={{ fontSize: 12, color: 'var(--txt2)' }}>{shipping.address1}{shipping.address2 ? `, ${shipping.address2}` : ''}</div>
-                    <div style={{ fontSize: 12, color: 'var(--txt2)' }}>{shipping.city}, {shipping.postcode}, {shipping.country}</div>
+                    {needsShipping && <>
+                      <div style={{ fontSize: 12, color: 'var(--txt2)' }}>{shipping.address1}{shipping.address2 ? `, ${shipping.address2}` : ''}</div>
+                      <div style={{ fontSize: 12, color: 'var(--txt2)' }}>{shipping.city}, {shipping.postcode}, {shipping.country}</div>
+                    </>}
                     <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>{shipping.email}</div>
                   </div>
 
@@ -184,7 +191,7 @@ export default function CheckoutPage() {
                       </div>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: 14, fontWeight: 500 }}>{item.title}</div>
-                        <div style={{ fontSize: 11, color: 'var(--muted)' }}>by {item.artist} × {item.qty}</div>
+                        <div style={{ fontSize: 11, color: 'var(--muted)' }}>by {item.artist}{item.delivery === 'DIGITAL' ? ' · digital — your link appears after you order' : ` × ${item.qty}`}</div>
                       </div>
                       <div style={{ fontFamily: 'var(--fd)', fontSize: 16, color: 'var(--accent)', fontWeight: 700 }}>{cur()}{(item.price * item.qty).toLocaleString()}</div>
                     </div>

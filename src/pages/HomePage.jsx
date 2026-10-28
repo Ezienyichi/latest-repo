@@ -44,7 +44,7 @@ const ORIGINALS_SUBCATS = [
 const DIGITAL_SUBCATS = [
   { id: 'all', label: 'All' },
   { id: 'MUSIC', label: 'Music' },
-  { id: 'GRAPHIC', label: 'Graphics' },
+  { id: 'BOOK', label: 'Books' },
   { id: 'DIGITAL_ART', label: 'Digital Art' },
 ];
 const PAINTING_PLACEHOLDERS = [
@@ -58,8 +58,8 @@ const PAINTING_PLACEHOLDERS = [
 const DIGITAL_PLACEHOLDERS = [
   { title: 'Midnight Sessions', artist: 'Kwame Boateng', price: 12, charityName: 'Oxfam', category: 'MUSIC', subcat: 'MUSIC', img: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=600&h=750&fit=crop&q=80' },
   { title: 'Analog Mix', artist: 'Nia Kariuki', price: 15, charityName: 'WaterAid UK', category: 'MUSIC', subcat: 'MUSIC', img: 'https://images.unsplash.com/photo-1574517947730-55cb23e608c2?w=600&h=750&fit=crop&q=80' },
-  { title: 'Prism Set Vol. 2', artist: 'Zainab Hassan', price: 35, charityName: 'WaterAid UK', category: 'GRAPHIC', subcat: 'GRAPHIC', img: 'https://images.unsplash.com/photo-1639170952854-16636715af61?w=600&h=750&fit=crop&q=80' },
-  { title: 'Fracture Grid', artist: 'Owen Mensah', price: 26, charityName: 'CAMFED', category: 'GRAPHIC', subcat: 'GRAPHIC', img: 'https://images.unsplash.com/photo-1754411072193-fa49c36554e4?w=600&h=750&fit=crop&q=80' },
+  { title: 'The Water Carriers', artist: 'Zainab Hassan', price: 18, charityName: 'WaterAid UK', category: 'BOOK', subcat: 'BOOK', img: 'https://images.pexels.com/photos/159711/books-bookstore-book-reading-159711.jpeg?auto=compress&cs=tinysrgb&w=600&h=750&fit=crop' },
+  { title: 'Letters from the Delta', artist: 'Owen Mensah', price: 14, charityName: 'CAMFED', category: 'BOOK', subcat: 'BOOK', img: 'https://images.pexels.com/photos/1370295/pexels-photo-1370295.jpeg?auto=compress&cs=tinysrgb&w=600&h=750&fit=crop' },
   { title: 'Chromatic Drift', artist: 'Tumi Radebe', price: 28, charityName: 'CAMFED', category: 'DIGITAL_ART', subcat: 'DIGITAL_ART', img: 'https://images.unsplash.com/photo-1748363565614-7fea470379f4?w=600&h=750&fit=crop&q=80' },
   { title: 'Still Frame', artist: 'Nomvula Dube', price: 22, charityName: 'Oxfam', category: 'DIGITAL_ART', subcat: 'DIGITAL_ART', img: 'https://images.unsplash.com/photo-1736147066581-95fa303553a0?w=600&h=750&fit=crop&q=80' },
 ];
@@ -86,7 +86,7 @@ function GalleryCard({ item, onClick, onCharityClick }) {
           <img className="imgswap-main" src={item.img} alt={item.title} loading="lazy" draggable={false} />
           {item.img2 && <img className="imgswap-hover" src={item.img2} alt="" loading="lazy" draggable={false} />}
         </div>
-        <EditionBadge editionType={item.editionType} style={{ position: 'absolute', top: 10, left: 10, zIndex: 3 }} />
+        <EditionBadge editionType={item.category === 'MUSIC' || item.category === 'BOOK' ? null : item.editionType} style={{ position: 'absolute', top: 10, left: 10, zIndex: 3 }} />
       </div>
       <div className="gallery-card-body">
         <h3 className="gallery-card-title">{item.title}</h3>
@@ -596,7 +596,7 @@ export default function HomePage() {
                       </div>
                     )}
                     {aw.comparePrice && <div className="badge b-red" style={{ position: 'absolute', top: 10, left: 10, zIndex: 3 }}>SALE</div>}
-                    <EditionBadge editionType={aw.editionType} style={{ position: 'absolute', top: 10, right: 10, zIndex: 3 }} />
+                    <EditionBadge editionType={aw.category === 'MUSIC' || aw.category === 'BOOK' ? null : aw.editionType} style={{ position: 'absolute', top: 10, right: 10, zIndex: 3 }} />
                   </div>
                   <div style={{ padding: 14 }}>
                     <div style={{ display: 'flex', gap: 3, marginBottom: 6 }}>{aw.sdgIds?.map(id => <SdgDot key={id} id={id} sm />)}</div>

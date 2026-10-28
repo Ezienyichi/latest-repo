@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { authenticate, requireRole, optionalAuth } from '../auth.js';
 import { slugify } from '../helpers.js';
+import { CATEGORIES, stripPrivate, checkDigitalProduct } from '../digital.js';
 
 const products = new Hono();
 
@@ -11,7 +12,12 @@ products.get('/', optionalAuth, async (c) => {
     const { category, editionType, sdg, charityId, artistId, minPrice, maxPrice, search, sort, type, featured } = q;
     const page = q.page || 1, limit = q.limit || 12;
     const where = { status: 'ACTIVE', submissionStatus: 'APPROVED' };
-    if (category) where.category = category.toUpperCase();
+    if (category) {
+      const cc = category.toUpperCase();
+      // An unknown/retired category (e.g. a bookmarked link to a removed category) is simply empty, not an error.
+      if (!CATEGORIES.includes(cc)) return c.json({ items: [], total: 0, page: parseInt(page), pages: 0 });
+      where.category = cc;
+    }
     if (editionType) where.editionType = editionType.toUpperCase();
     if (sdg) where.sdgIds = { hasSome: [parseInt(sdg)] };
     if (charityId) where.charityId = charityId;
@@ -35,7 +41,7 @@ products.get('/', optionalAuth, async (c) => {
       prisma.product.findMany({ where, orderBy, skip, take: parseInt(limit), include: { artist: { select: { id: true, displayName: true, avatarUrl: true, verified: true } }, charity: { select: { id: true, name: true, logo: true } }, variations: true, reviews: { select: { rating: true } } } }),
       prisma.product.count({ where }),
     ]);
-    return c.json({ items: items.map(p => ({ ...p, avgRating: p.reviews.length ? (p.reviews.reduce((a, r) => a + r.rating, 0) / p.reviews.length).toFixed(1) : null, reviewCount: p.reviews.length })), total, page: parseInt(page), pages: Math.ceil(total / parseInt(limit)) });
+    return c.json({ items: items.map(p => ({ ...stripPrivate(p), avgRating: p.reviews.length ? (p.reviews.reduce((a, r) => a + r.rating, 0) / p.reviews.length).toFixed(1) : null, reviewCount: p.reviews.length })), total, page: parseInt(page), pages: Math.ceil(total / parseInt(limit)) });
   } catch (e) { console.error(e); return c.json({ error: 'Failed to fetch products' }, 500); }
 });
 
@@ -47,7 +53,8 @@ products.get('/:slug', optionalAuth, async (c) => {
     // Only a public campaign (ACTIVE, or COMPLETED shown as funded) is surfaced — DRAFT/ARCHIVED stay private even if linked.
     if (product.project && (!['ACTIVE', 'COMPLETED'].includes(product.project.status) || product.project.submissionStatus !== 'APPROVED')) product.project = null;
     if (product.project) delete product.project.submissionStatus;
-    return c.json(product);
+    // The listen / read link is what's being sold — never part of a public response.
+    return c.json(stripPrivate(product));
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
 });
 
@@ -57,12 +64,14 @@ products.post('/', authenticate, requireRole('ARTIST', 'ADMIN'), async (c) => {
     const artist = await prisma.artistProfile.findUnique({ where: { userId: c.get('userId') } });
     if (!artist) return c.json({ error: 'Artist profile required' }, 400);
     const body = await c.req.json();
-    const { title, description, productType, category, editionType, basePrice, comparePrice, estimatedValue, sku, stockQuantity, medium, year, sdgIds, images, gallery, charityId, projectId, autoCertificate, videoUrl, tags, fileUrl, fileFormat, previewUrl, pages: pg, featured } = body;
-    if (!title || !basePrice) return c.json({ error: 'Title and price required' }, 400);
+    const { title, description, productType, category, editionType, basePrice, comparePrice, estimatedValue, sku, stockQuantity, medium, dimensions, year, sdgIds, images, gallery, charityId, projectId, autoCertificate, videoUrl, tags, fileUrl, fileFormat, previewUrl, pages: pg, featured, digitalAccessUrl, bookFormat, digitalPrice, physicalPrice, creatorName, isbn, publisher, language } = body;
+    const dig = checkDigitalProduct({ category: category || 'ARTWORK', digitalAccessUrl, bookFormat, digitalPrice, physicalPrice, creatorName, isbn, publisher, language });
+    if (dig.error) return c.json({ error: dig.error }, 400);
+    if (!title || !(dig.derived.basePrice ?? basePrice)) return c.json({ error: 'Title and price required' }, 400);
     let slug = slugify(title);
     if (await prisma.product.findUnique({ where: { slug } })) slug += '-' + Date.now().toString(36);
     const certId = autoCertificate ? `CAG-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}` : undefined;
-    const product = await prisma.product.create({ data: { artistId: artist.id, charityId, projectId: projectId || null, title, slug, description, productType: productType || 'SIMPLE', category: category || 'ARTWORK', editionType: editionType || 'ORIGINAL', basePrice, comparePrice, estimatedValue, sku, stockQuantity, medium, year, sdgIds: sdgIds || [], images: images || [], gallery, videoUrl, tags: tags || [], fileUrl, fileFormat, previewUrl, pages: pg, autoCertificate: !!autoCertificate, certificateId: certId, featured: !!featured, status: 'DRAFT' }, include: { variations: true, addons: true, artist: true, charity: true } });
+    const product = await prisma.product.create({ data: { artistId: artist.id, charityId, projectId: projectId || null, title, slug, description, productType: productType || 'SIMPLE', category: category || 'ARTWORK', editionType: editionType || 'ORIGINAL', basePrice, comparePrice, estimatedValue, sku, stockQuantity, medium, dimensions, year, sdgIds: sdgIds || [], images: images || [], gallery, videoUrl, tags: tags || [], fileUrl, fileFormat, previewUrl, pages: pg, autoCertificate: !!autoCertificate, certificateId: certId, featured: !!featured, status: 'DRAFT', ...dig.derived }, include: { variations: true, addons: true, artist: true, charity: true } });
     return c.json(product, 201);
   } catch (e) { console.error(e); return c.json({ error: 'Create failed' }, 500); }
 });
@@ -73,7 +82,16 @@ products.patch('/:id', authenticate, requireRole('ARTIST', 'ADMIN'), async (c) =
     const p = await prisma.product.findUnique({ where: { id: c.req.param('id') }, include: { artist: true } });
     if (!p) return c.json({ error: 'Not found' }, 404);
     if (c.get('userRole') !== 'ADMIN' && p.artist.userId !== c.get('userId')) return c.json({ error: 'Not yours' }, 403);
-    const updated = await prisma.product.update({ where: { id: c.req.param('id') }, data: await c.req.json(), include: { variations: true, addons: true } });
+    const body = await c.req.json();
+    const data = { ...body };
+    // Re-check the digital/book rules whenever a field they depend on changes (or the product goes live).
+    const TOUCHES = ['category', 'bookFormat', 'digitalAccessUrl', 'digitalPrice', 'physicalPrice', 'creatorName', 'isbn', 'publisher', 'language'];
+    if (TOUCHES.some(k => k in body) || body.status === 'ACTIVE') {
+      const dig = checkDigitalProduct({ ...p, ...body });
+      if (dig.error) return c.json({ error: dig.error }, 400);
+      Object.assign(data, dig.derived);
+    }
+    const updated = await prisma.product.update({ where: { id: c.req.param('id') }, data, include: { variations: true, addons: true } });
     return c.json(updated);
   } catch (e) { return c.json({ error: 'Update failed' }, 500); }
 });

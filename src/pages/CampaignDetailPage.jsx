@@ -167,7 +167,7 @@ export default function CampaignDetailPage() {
                         {a.images[1]?.url && <img className="imgswap-hover" src={a.images[1].url} alt="" loading="lazy" />}
                       </div>
                     ) : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(145deg,#1B4332,#2D6A4F)' }} />}
-                    <EditionBadge editionType={a.editionType} style={{ position: 'absolute', top: 10, right: 10, zIndex: 3 }} />
+                    <EditionBadge editionType={a.category === 'MUSIC' || a.category === 'BOOK' ? null : a.editionType} style={{ position: 'absolute', top: 10, right: 10, zIndex: 3 }} />
                   </div>
                   <div className="product-card-body">
                     <div style={{ display: 'flex', gap: 3, marginBottom: 6 }}>{a.sdgIds?.map(id => <SdgDot key={id} id={id} />)}</div>

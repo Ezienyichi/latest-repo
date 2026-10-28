@@ -178,10 +178,10 @@ export default function ArtworkManager() {
                   <select className="fi fsel" value={form.productType} onChange={e => set('productType', e.target.value)}>
                     <option value="SIMPLE">Simple</option><option value="VARIABLE">Variable</option><option value="DOWNLOADABLE">Downloadable</option><option value="VIRTUAL">Virtual</option>
                   </select></div>
+                {/* This form creates artworks. Music and books have their own category-specific form in the admin Products manager. */}
                 <div className="fg" style={{ margin: 0 }}><label className="fl">Category</label>
-                  <select className="fi fsel" value={form.category} onChange={e => set('category', e.target.value)}>
-                    <option value="ARTWORK">Artwork</option><option value="MUSIC">Music</option><option value="GRAPHIC">Graphic</option>
-                  </select></div>
+                  <input className="fi" value="Artwork" readOnly aria-readonly="true" style={{ opacity: .75 }} />
+                </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginTop: 14 }}>
                 <div className="fg" style={{ margin: 0 }}><label className="fl">Medium</label><input className="fi" value={form.medium} onChange={e => set('medium', e.target.value)} placeholder="e.g. Oil on Canvas" /></div>

@@ -2,13 +2,14 @@ import { Truck, Download, BadgeCheck, HandHeart, Globe } from 'lucide-react';
 import Icon from './Icon';
 
 // isDigital swaps the delivery badge to a download-focused one — a buyer of
-// an ebook/track/graphic/animation should never see a shipping estimate.
-export default function TrustBadges({ isDigital = false }) {
+// a digital book or a track should never see a shipping estimate.
+// `certified` is false for products that carry no certificate of authenticity.
+export default function TrustBadges({ isDigital = false, certified = true }) {
   const badges = [
     isDigital
-      ? { icon: Download, label: 'Instant Digital Download', text: 'Available immediately after purchase' }
+      ? { icon: Download, label: 'Instant Online Access', text: 'Your link is ready as soon as you order' }
       : { icon: Truck, label: 'Fast Delivery', text: 'Delivery outside Africa within 2-3 weeks' },
-    { icon: BadgeCheck, label: 'Certified', text: 'Certificate of authenticity included' },
+    ...(certified ? [{ icon: BadgeCheck, label: 'Certified', text: 'Certificate of authenticity included' }] : []),
     { icon: HandHeart, label: 'Artists Supported', text: 'Artists are supported from every purchase' },
     { icon: Globe, label: 'Community & Life Impact', text: 'Each work is linked to a cause & benefits charity' },
   ];

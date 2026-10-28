@@ -7,6 +7,7 @@ import { FRAMED_CATEGORIES } from '../data/constants';
 import api from '../utils/api';
 import Icon from '../components/ui/Icon';
 import { cur } from '../utils/currency';
+import AccessLink from '../components/ui/AccessLink';
 
 const STATUS_STYLES = {
   PENDING: { bg: 'rgba(255,173,0,.08)', border: 'rgba(255,173,0,.2)', color: '#b37800', label: 'Pending' },
@@ -91,7 +92,8 @@ export default function OrdersPage() {
                           </div>
                           <div style={{ flex: 1 }}>
                             <div style={{ fontSize: 14, fontWeight: 500 }}>{item.product?.title}</div>
-                            <div style={{ fontSize: 11, color: 'var(--muted)' }}>{item.product?.artist?.displayName} × {item.quantity}</div>
+                            <div style={{ fontSize: 11, color: 'var(--muted)' }}>{item.product?.creatorName || item.product?.artist?.displayName}{item.format === 'DIGITAL' ? ` · ${item.product?.category === 'MUSIC' ? 'digital' : 'digital edition'}` : ` × ${item.quantity}`}{item.format === 'PHYSICAL' && ' · physical book'}</div>
+                            {item.accessUrl && <div style={{ marginTop: 6 }}><AccessLink item={item} /></div>}
                             {item.product?.autoCertificate && item.product?.certificateId && (
                               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 4, padding: '2px 8px', background: 'rgba(255,173,0,.08)', border: '1px solid rgba(255,173,0,.18)', borderRadius: 14, fontSize: 10, color: '#b37800', cursor: 'pointer' }}
                                 onClick={() => toast('Certificate download ready!', 'info')}>

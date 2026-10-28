@@ -9,7 +9,6 @@ import ProductAddons from '../components/ui/ProductAddons';
 import CertificateModal from '../components/ui/CertificateModal';
 import SocialShare from '../components/ui/SocialShare';
 import MusicPlayer from '../components/ui/MusicPlayer';
-import GraphicPreview from '../components/ui/GraphicPreview';
 import IncludesList from '../components/ui/IncludesList';
 import ArtworkCause from '../components/ui/ArtworkCause';
 import TrustBadges from '../components/ui/TrustBadges';
@@ -17,6 +16,7 @@ import EditionBadge, { priceLabel, priceAmount } from '../components/ui/EditionB
 import api from '../utils/api';
 import { ArtistCredit } from '../components/ui/ArtistAvatar';
 import { cur } from '../utils/currency';
+import { CATEGORY_LABEL, BOOK_FORMAT_LABEL, deliveryFor, defaultBookFormat, priceFor } from '../utils/products';
 
 function SdgDot({ id, sm }) {
   const s = SDGs.find(x => x.id === id); if (!s) return null;
@@ -40,6 +40,7 @@ export default function ProductPage() {
   const [zoomPos, setZoomPos] = useState(null); // { x, y } for hover zoom
   const [selVar, setSelVar] = useState(null);
   const [qty, setQty] = useState(1);
+  const [format, setFormat] = useState(null); // books: 'DIGITAL' | 'PHYSICAL'
   const [addonValues, setAddonValues] = useState({});
   const [tab, setTab] = useState('details');
   const [certOpen, setCertOpen] = useState(false);
@@ -52,6 +53,7 @@ export default function ProductPage() {
     setLoading(true); setActiveImg(0); setAddonValues({}); setTab('details'); setQty(1);
     api.getProduct(slug).then(p => {
       setProduct(p);
+      setFormat(p.category === 'BOOK' ? defaultBookFormat(p) : null);
       if (p.variations?.length) setSelVar(p.variations[0]);
       // Fetch upsells if available
       if (p.upsellIds?.length) {
@@ -76,18 +78,24 @@ export default function ProductPage() {
   const hasVideo = !!product.gallery?.video;
   const totalSlides = images.length + (hasVideo ? 1 : 0);
   const isVideoActive = hasVideo && activeImg === images.length;
-  const price = selVar ? Number(selVar.price) : Number(product.basePrice);
+  const isArt = product.category === 'ARTWORK';
+  const isBook = product.category === 'BOOK';
+  // How this purchase is delivered follows the category (and, for a book, the edition picked).
+  const delivery = deliveryFor(product.category, format);
+  const price = selVar ? Number(selVar.price) : priceFor(product, format);
   const reviews = product.reviews || [];
   const avgRating = reviews.length ? (reviews.reduce((a, r) => a + r.rating, 0) / reviews.length).toFixed(1) : null;
   const cat = DIGITAL_CATS.find(c => c.id === product.category);
-  const isDigital = product.category !== 'ARTWORK';
+  const isDigital = delivery === 'DIGITAL';          // link delivery, nothing ships
+  const isDigitalCat = !isArt;                       // lives in the Digital Store
+  const creator = product.creatorName || product.artist?.displayName;
   const isFramed = FRAMED_CATEGORIES.includes(product.category);
 
   const handleAddToCart = () => {
     // Check required addons
     const missing = (product.addons || []).filter(ao => ao.required && !addonValues[ao.id]);
     if (missing.length) { toast(`Please fill: ${missing.map(a => a.label).join(', ')}`, 'err'); return; }
-    addToCart(product, qty, selVar, addonValues);
+    addToCart(product, isDigital ? 1 : qty, selVar, addonValues, format);
   };
 
   const submitReview = async () => {
@@ -118,7 +126,7 @@ export default function ProductPage() {
       <div className="wrap" style={{ paddingTop: 28, paddingBottom: 56 }}>
         <div className="breadcrumbs">
           <Link to="/">Home</Link><span className="sep">›</span>
-          <Link to={isDigital ? '/digitals' : '/shop'}>{isDigital ? 'Digital Store' : 'Shop'}</Link><span className="sep">›</span>
+          <Link to={isDigitalCat ? '/digitals' : '/shop'}>{isDigitalCat ? 'Digital Store' : 'Shop'}</Link><span className="sep">›</span>
           <span className="current">{product.title}</span>
         </div>
 
@@ -218,15 +226,19 @@ export default function ProductPage() {
             {/* SDG badges + type */}
             <div style={{ display: 'flex', gap: 5, marginBottom: 12, flexWrap: 'wrap' }}>
               {product.sdgIds?.map(id => <SdgDot key={id} id={id} />)}
-              <EditionBadge editionType={product.editionType} />
-              <span className="badge b-muted" style={{ textTransform: 'capitalize' }}>{product.productType?.toLowerCase()}</span>
-              {isDigital && <span className="badge b-blue">{product.category}</span>}
+              {isArt && <EditionBadge editionType={product.editionType} />}
+              {isArt && <span className="badge b-muted" style={{ textTransform: 'capitalize' }}>{product.productType?.toLowerCase()}</span>}
+              {!isArt && <span className="badge b-blue">{CATEGORY_LABEL[product.category]}</span>}
+              {isBook && <span className="badge b-muted">{BOOK_FORMAT_LABEL[product.bookFormat]}</span>}
             </div>
 
             {/* Title */}
             <h1 className="display" style={{ fontSize: 42, marginBottom: 8 }}>{product.title}</h1>
             <p style={{ fontSize: 15, color: 'var(--txt2)', marginBottom: 6 }}>
-              <ArtistCredit artist={product.artist} prefix="by " size={26} nameStyle={{ color: 'var(--accent)', cursor: 'pointer', fontWeight: 500 }} onNameClick={() => navigate(`/artists/${product.artist?.id}`)} />
+              {/* Music / books credit the artist or author typed in the admin form; artworks link to the artist profile. */}
+              {product.creatorName
+                ? <ArtistCredit artist={product.artist} name={product.creatorName} prefix="by " size={26} nameStyle={{ fontWeight: 500 }} />
+                : <ArtistCredit artist={product.artist} prefix="by " size={26} nameStyle={{ color: 'var(--accent)', cursor: 'pointer', fontWeight: 500 }} onNameClick={() => navigate(`/artists/${product.artist?.id}`)} />}
               {product.medium && <> · {product.medium}</>}
               {product.year && <> · {product.year}</>}
             </p>
@@ -235,18 +247,36 @@ export default function ProductPage() {
             {/* Rating summary */}
             {avgRating && <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}><Stars val={Math.round(avgRating)} ro /><span style={{ fontSize: 13, color: 'var(--muted)' }}>{avgRating} ({reviews.length} review{reviews.length !== 1 ? 's' : ''})</span></div>}
 
+            {/* Book edition choice: both formats → the buyer picks; the price, quantity and delivery below follow it. */}
+            {isBook && (
+              product.bookFormat === 'BOTH' ? (
+                <div role="radiogroup" aria-label="Choose your edition" className="format-choice">
+                  {[['DIGITAL', 'Digital edition', 'Read online — instant access after you order'], ['PHYSICAL', 'Physical book', 'A printed copy, shipped to you']].map(([f, label, sub]) => (
+                    <button key={f} type="button" role="radio" aria-checked={format === f} className={`format-opt${format === f ? ' on' : ''}`} onClick={() => setFormat(f)}>
+                      <span className="format-opt-top"><span className="format-opt-label">{format === f && <Icon icon={Check} size="inline" />} {label}</span><span className="format-opt-price">{cur()}{priceFor(product, f).toLocaleString()}</span></span>
+                      <span className="format-opt-sub">{sub}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="alert alert-i" style={{ marginBottom: 16, fontSize: 13 }}>
+                  <Icon icon={isDigital ? Download : Info} size="inline" /><div>{isDigital ? <><strong>Digital edition</strong> — you can read it online as soon as you order.</> : <><strong>Physical book</strong> — a printed copy shipped to you.</>}</div>
+                </div>
+              )
+            )}
+
             {/* Price — originals headline their estimated value; the Add to
                 Cart button below always shows the real amount charged, so
                 relabeling this number never obscures what's actually paid. */}
-            {!selVar && priceLabel(product) && <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 4 }}>{priceLabel(product)}</div>}
+            {isArt && !selVar && priceLabel(product) && <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 4 }}>{priceLabel(product)}</div>}
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 22 }}>
-              <span style={{ fontFamily: 'var(--fd)', fontSize: 42, color: 'var(--accent)', fontWeight: 700 }}>{cur()}{(selVar ? price : priceAmount(product)).toLocaleString()}</span>
-              {product.comparePrice && <span style={{ fontFamily: 'var(--fd)', fontSize: 22, color: 'var(--muted)', textDecoration: 'line-through' }}>{cur()}{Number(product.comparePrice).toLocaleString()}</span>}
-              {product.comparePrice && <span className="badge b-red">SAVE {cur()}{(Number(product.comparePrice) - price).toLocaleString()}</span>}
+              <span style={{ fontFamily: 'var(--fd)', fontSize: 42, color: 'var(--accent)', fontWeight: 700 }}>{cur()}{(selVar || !isArt ? price : priceAmount(product)).toLocaleString()}</span>
+              {isArt && product.comparePrice && <span style={{ fontFamily: 'var(--fd)', fontSize: 22, color: 'var(--muted)', textDecoration: 'line-through' }}>{cur()}{Number(product.comparePrice).toLocaleString()}</span>}
+              {isArt && product.comparePrice && <span className="badge b-red">SAVE {cur()}{(Number(product.comparePrice) - price).toLocaleString()}</span>}
             </div>
 
             {/* Campaign + charity this artwork supports */}
-            <ArtworkCause product={product} />
+            {isArt && <ArtworkCause product={product} />}
 
             {/* Variations */}
             {product.variations?.length > 0 && (
@@ -276,13 +306,15 @@ export default function ProductPage() {
 
             {/* Quantity + Cart + Wishlist */}
             <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-              <div className="qty">
-                <button className="qty-b" onClick={() => setQty(Math.max(1, qty - 1))}>−</button>
-                <input className="qty-i" type="number" value={qty} min={1} onChange={e => setQty(Math.max(1, parseInt(e.target.value) || 1))} />
-                <button className="qty-b" onClick={() => setQty(qty + 1)}>+</button>
-              </div>
+              {!isDigital && (
+                <div className="qty">
+                  <button className="qty-b" onClick={() => setQty(Math.max(1, qty - 1))}>−</button>
+                  <input className="qty-i" type="number" value={qty} min={1} onChange={e => setQty(Math.max(1, parseInt(e.target.value) || 1))} />
+                  <button className="qty-b" onClick={() => setQty(qty + 1)}>+</button>
+                </div>
+              )}
               <button className="btn btn-p btn-lg" style={{ flex: 1, justifyContent: 'center' }} onClick={handleAddToCart}>
-                Add to Cart — {cur()}{(price * qty).toLocaleString()}
+                {isDigital ? `Buy ${isBook ? 'digital edition' : 'now'}` : 'Add to Cart'} — {cur()}{(price * (isDigital ? 1 : qty)).toLocaleString()}
               </button>
               <button className={`btn ${isWished(product.id) ? 'btn-p' : 'btn-s'} btn-icon`} style={{ width: 48, height: 48 }}
                 onClick={() => { toggleWishlist(product.id); toast(isWished(product.id) ? 'Removed from wishlist' : 'Added to wishlist', 'ok'); }}
@@ -293,12 +325,11 @@ export default function ProductPage() {
 
             {/* Social share */}
             <div style={{ marginBottom: 22 }}>
-              <SocialShare title={`${product.title} by ${product.artist?.displayName} — FastTackle Africa`} />
+              <SocialShare title={`${product.title} by ${creator} — FastTackle Africa`} />
             </div>
 
             {/* Digital product previews */}
             {product.category === 'MUSIC' && <MusicPlayer product={product} />}
-            {product.category === 'GRAPHIC' && <GraphicPreview product={product} />}
 
             {/* What's included (for digital products) */}
             {product.tags?.length > 3 && isDigital && (
@@ -310,7 +341,7 @@ export default function ProductPage() {
 
             {/* Tabs */}
             <div className="tabs-container">
-              {['details', 'shipping', 'certificate', 'reviews'].map(t => (
+              {['details', 'shipping', ...(isArt ? ['certificate'] : []), 'reviews'].map(t => (
                 <button key={t} className={`tab-btn${tab === t ? ' active' : ''}`} onClick={() => setTab(t)} style={{ textTransform: 'capitalize' }}>
                   {t} {t === 'reviews' ? `(${reviews.length})` : ''}
                 </button>
@@ -319,7 +350,7 @@ export default function ProductPage() {
 
             {tab === 'details' && (
               <div style={{ fontSize: 13, color: 'var(--txt2)', lineHeight: 1.85 }}>
-                {[['Medium', product.medium], ['Dimensions', product.dimensions], ['Year', product.year], ['Format', product.fileFormat], ['Pages', product.pages], ['SKU', product.sku], ['Stock', product.stockQuantity != null ? `${product.stockQuantity} available` : null]].filter(([, v]) => v).map(([k, v]) => (
+                {[[product.category === 'MUSIC' ? 'Artist' : 'Author', !isArt ? product.creatorName : null], ['Edition', isBook ? BOOK_FORMAT_LABEL[product.bookFormat] : null], ['Publisher', product.publisher], ['ISBN', product.isbn], ['Language', product.language], ['Medium', product.medium], ['Dimensions', product.dimensions], ['Year', product.year], ['Format', product.fileFormat], ['Pages', product.pages], ['SKU', product.sku], ['Stock', !isDigital && product.stockQuantity != null ? `${product.stockQuantity} available` : null]].filter(([, v]) => v).map(([k, v]) => (
                   <div key={k} style={{ display: 'flex', gap: 12, padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
                     <span style={{ fontWeight: 600, minWidth: 100, color: 'var(--txt)' }}>{k}</span><span>{v}</span>
                   </div>
@@ -331,11 +362,11 @@ export default function ProductPage() {
             {tab === 'shipping' && (
               <div style={{ fontSize: 13, color: 'var(--txt2)', lineHeight: 1.85 }}>
                 {isDigital ? (
-                  <div className="alert alert-ok"><Icon icon={Download} size="inline" /><div>This is a <strong>digital product</strong>. After purchase, you'll receive instant download access via email and your account dashboard. No shipping required.</div></div>
+                  <div className="alert alert-ok"><Icon icon={Download} size="inline" /><div>This is a <strong>digital {isBook ? 'book' : 'product'}</strong>. As soon as you order, your {isBook ? 'read' : 'listen'} link appears on your order confirmation and under <strong>My Orders</strong>. No shipping required.</div></div>
                 ) : (
                   <>
                     <p style={{ marginBottom: 12 }}>Free shipping on orders over {cur()}500. Standard shipping: {cur()}12.99.</p>
-                    <p style={{ marginBottom: 12 }}>All physical artworks are professionally packaged with protective crating. Delivery within 5–10 business days (UK). International shipping available.</p>
+                    <p style={{ marginBottom: 12 }}>{isBook ? 'Printed books are carefully packaged for delivery.' : 'All physical artworks are professionally packaged with protective crating.'} Delivery within 5–10 business days (UK). International shipping available.</p>
                     <p>Tracking information provided via email once dispatched.</p>
                   </>
                 )}
@@ -412,7 +443,7 @@ export default function ProductPage() {
         )}
       </div>
 
-      <TrustBadges isDigital={isDigital} />
+      <TrustBadges isDigital={isDigital} certified={isArt} />
 
       {/* Lightbox */}
       {lightbox && images.length > 0 && (

@@ -192,7 +192,7 @@ export function parseSubmission(type, body, env) {
       ['websiteUrl', httpUrl(body.artist.websiteUrl, 'Artist website')],
     ]); if (a.error) return a;
     const cat = body.category === undefined ? 'ARTWORK' : body.category;
-    if (!['ARTWORK', 'GRAPHIC'].includes(cat)) return { error: 'Category must be ARTWORK or GRAPHIC' };
+    if (cat !== 'ARTWORK') return { error: 'The artwork form only accepts artworks' };
     const ed = body.editionType === undefined ? 'ORIGINAL' : body.editionType;
     if (!['ORIGINAL', 'PRINT', 'EDITION'].includes(ed)) return { error: 'Edition type must be ORIGINAL, PRINT or EDITION' };
     let year = null;

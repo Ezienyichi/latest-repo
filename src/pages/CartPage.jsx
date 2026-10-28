@@ -16,7 +16,9 @@ export default function CartPage() {
   const [discount, setDiscount] = useState(null);
   const [couponLoading, setCouponLoading] = useState(false);
 
-  const shipping = cartTotal > 500 ? 0 : 12.99;
+  // Digital items (music, digital books) don't ship — only a physical line triggers shipping.
+  const needsShipping = cart.some(i => i.delivery !== 'DIGITAL');
+  const shipping = !needsShipping || cartTotal > 500 ? 0 : 12.99;
   const discountAmt = discount?.discount || 0;
   const afterDiscount = cartTotal - discountAmt;
   const platformFee = afterDiscount * 0.1;
@@ -75,23 +77,26 @@ export default function CartPage() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontFamily: 'var(--fd)', fontSize: 18, fontWeight: 600, marginBottom: 3, cursor: 'pointer' }} onClick={() => navigate(`/shop/${item.slug}`)}>{item.title}</div>
                   <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 3 }}>by {item.artist}</div>
+                  {(item.category === 'MUSIC' || item.format) && <div data-line-format style={{ fontSize: 11, color: 'var(--accent)', marginBottom: 3, fontWeight: 600 }}>{item.category === 'MUSIC' ? 'Digital · listen online' : item.format === 'DIGITAL' ? 'Digital edition · read online' : item.format === 'PHYSICAL' ? 'Physical book' : null}</div>}
                   {item.variation && <div style={{ fontSize: 11, color: 'var(--accent)', marginBottom: 3 }}>{Object.values(item.variation.attributeCombination || item.variation.attrs || {}).join(' · ')}</div>}
                   {item.charityName && <div style={{ fontSize: 11, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 4 }}><Icon icon={Leaf} size="inline" style={{ color: 'var(--sage)' }} /> Supporting: {item.charityName}</div>}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10, flexShrink: 0 }}>
                   <span style={{ fontFamily: 'var(--fd)', fontSize: 20, color: 'var(--accent)', fontWeight: 700 }}>{cur()}{(item.price * item.qty).toLocaleString()}</span>
-                  <div className="qty">
-                    <button className="qty-b" onClick={() => updateQty(item.id, item.qty - 1)}>−</button>
-                    <input className="qty-i" type="number" value={item.qty} min={1} readOnly />
-                    <button className="qty-b" onClick={() => updateQty(item.id, item.qty + 1)}>+</button>
-                  </div>
+                  {item.delivery !== 'DIGITAL' && (
+                    <div className="qty">
+                      <button className="qty-b" onClick={() => updateQty(item.id, item.qty - 1)}>−</button>
+                      <input className="qty-i" type="number" value={item.qty} min={1} readOnly />
+                      <button className="qty-b" onClick={() => updateQty(item.id, item.qty + 1)}>+</button>
+                    </div>
+                  )}
                   <button className="btn btn-danger btn-sm" onClick={() => removeFromCart(item.id)}>Remove</button>
                 </div>
               </div>
             ))}
 
             {/* Free shipping nudge */}
-            {cartTotal < 500 && cartTotal > 300 && (
+            {needsShipping && cartTotal < 500 && cartTotal > 300 && (
               <div className="alert alert-i" style={{ marginTop: 12 }}>
                 <Icon icon={Truck} size="inline" />
                 <div>Add <strong>{cur()}{(500 - cartTotal).toFixed(2)}</strong> more for <strong>free shipping</strong>!</div>
