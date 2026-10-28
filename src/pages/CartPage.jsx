@@ -37,7 +37,6 @@ export default function CartPage() {
   };
 
   const proceedToCheckout = () => {
-    if (!user) { toast('Please sign in to checkout', 'info'); navigate('/login'); return; }
     navigate('/checkout', { state: { discount: discountAmt, couponCode: discount?.code } });
   };
 

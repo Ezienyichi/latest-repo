@@ -4,7 +4,7 @@ import DashboardShell from './DashboardShell';
 import api from '../../utils/api';
 import { cur } from '../../utils/currency';
 
-const SB = { PENDING: 'b-gold', PROCESSING: 'b-blue', SHIPPED: 'b-purple', DELIVERED: 'b-green', CANCELLED: 'b-red' };
+const SB = { PENDING: 'b-gold', PAID: 'b-green', PROCESSING: 'b-blue', SHIPPED: 'b-purple', DELIVERED: 'b-green', CANCELLED: 'b-red' };
 
 export default function ArtistOrders() {
   const { toast } = useCart();
@@ -22,7 +22,7 @@ export default function ArtistOrders() {
       {loading ? <div>{[1,2,3].map(i => <div key={i} className="skel" style={{ height: 50, borderRadius: 8, marginBottom: 8 }} />)}</div> : (
         <>
           <div style={{ display: 'flex', gap: 6, marginBottom: 18, flexWrap: 'wrap' }}>
-            {['all', 'PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED'].map(f => (
+            {['all', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED'].map(f => (
               <button key={f} className={`btn btn-sm ${filter === f ? 'btn-p' : 'btn-s'}`} onClick={() => setFilter(f)} style={{ textTransform: 'capitalize' }}>
                 {f === 'all' ? 'All' : f.toLowerCase()} ({f === 'all' ? orders.length : orders.filter(o => o.order.status === f).length})
               </button>

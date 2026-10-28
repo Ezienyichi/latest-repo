@@ -57,13 +57,13 @@ dashboard.get('/artist', authenticate, requireRole('ARTIST'), async (c) => {
         orderBy: { createdAt: 'desc' },
       }),
       prisma.orderItem.findMany({
-        where: { product: { artistId: profile.id } },
+        where: { product: { artistId: profile.id }, order: { status: { not: 'PENDING' } } },   // an unpaid order is nothing to fulfil
         include: { order: { select: { id: true, status: true, createdAt: true, shippingAddress: true, buyerId: true } }, product: { select: { title: true, images: true, slug: true } } },
         orderBy: { order: { createdAt: 'desc' } },
         take: 50,
       }),
       prisma.orderItem.aggregate({
-        where: { product: { artistId: profile.id }, order: { status: { in: ['DELIVERED', 'SHIPPED', 'PROCESSING'] } } },
+        where: { product: { artistId: profile.id }, order: { status: { in: ['DELIVERED', 'SHIPPED', 'PROCESSING', 'PAID'] } } },
         _sum: { unitPrice: true, charitySplitAmt: true, platformFeeAmt: true },
       }),
       prisma.artistCharityPartnership.findMany({ where: { artistId: profile.id }, include: { charity: { select: { id: true, name: true, logo: true, sdgIds: true } } } }),
@@ -257,7 +257,8 @@ dashboard.get('/admin', authenticate, requireRole('ADMIN'), async (c) => {
       prisma.user.count(),
       prisma.product.count({ where: { status: 'ACTIVE' } }),
       prisma.order.count(),
-      prisma.order.aggregate({ _sum: { totalAmount: true, charitySplit: true, platformFee: true } }),
+      // revenue = money actually received: unpaid, cancelled and refunded orders don't count
+      prisma.order.aggregate({ where: { status: { in: ['PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED'] } }, _sum: { totalAmount: true, charitySplit: true, platformFee: true } }),
       prisma.user.findMany({ orderBy: { createdAt: 'desc' }, take: 10, select: { id: true, email: true, role: true, firstName: true, lastName: true, createdAt: true } }),
       prisma.order.findMany({ orderBy: { createdAt: 'desc' }, take: 10, include: { buyer: { select: { email: true, firstName: true } }, items: { select: { product: { select: { title: true } } } } } }),
     ]);

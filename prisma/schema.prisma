@@ -55,6 +55,7 @@ enum EditionType {
 
 enum OrderStatus {
   PENDING
+  PAID
   PROCESSING
   SHIPPED
   DELIVERED
@@ -279,22 +280,27 @@ model ProductAddon {
 }
 
 model Order {
-  id              String      @id @default(cuid())
-  buyerId         String?
-  buyer           User?       @relation(fields: [buyerId], references: [id])
-  buyerEmail      String
-  status          OrderStatus @default(PENDING)
-  totalAmount     Decimal     @db.Decimal(10, 2)
-  shippingAmount  Decimal     @default(0) @db.Decimal(10, 2)
-  platformFee     Decimal     @default(0) @db.Decimal(10, 2)
-  charitySplit    Decimal     @default(0) @db.Decimal(10, 2)
-  shippingAddress Json?
-  paymentRef      String?
-  refundRequested Boolean     @default(false)
-  refundedAt      DateTime?
-  items           OrderItem[]
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  id                String      @id @default(cuid())
+  buyerId           String?
+  buyer             User?       @relation(fields: [buyerId], references: [id])
+  buyerEmail        String
+  status            OrderStatus @default(PENDING)
+  totalAmount       Decimal     @db.Decimal(10, 2)
+  shippingAmount    Decimal     @default(0) @db.Decimal(10, 2)
+  platformFee       Decimal     @default(0) @db.Decimal(10, 2)
+  charitySplit      Decimal     @default(0) @db.Decimal(10, 2)
+  shippingAddress   Json?
+  paymentRef        String?     @unique
+  // Set by the payment module (payment.js) when the order is confirmed paid.
+  paidAt            DateTime?
+  paymentProvider   String?
+  // When this order's charity split was credited to its campaigns' raisedAmount; cleared if it is reversed (cancel / refund).
+  fundsAttributedAt DateTime?
+  refundRequested   Boolean     @default(false)
+  refundedAt        DateTime?
+  items             OrderItem[]
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 }
 
 model OrderItem {

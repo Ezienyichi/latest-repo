@@ -91,6 +91,9 @@ class ApiClient {
   validateCoupon(code, subtotal) { return this.post('/orders/validate-coupon', { code, subtotal }); }
   createOrder(data) { return this.post('/orders', data); }
   getOrders() { return this.get('/orders'); }
+  // Payment module: confirm a payment reference. With the real processor this only verifies;
+  // in test mode `outcome` ('success' | 'failed') lets the tester pick the result.
+  confirmPayment(reference, outcome) { return this.post('/payments/confirm', { reference, outcome }); }
   getOrder(id) { return this.get(`/orders/${id}`); }
 
   // Dashboard

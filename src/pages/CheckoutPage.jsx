@@ -38,7 +38,6 @@ export default function CheckoutPage() {
 
   const set = (k, v) => setShipping(p => ({ ...p, [k]: v }));
 
-  if (!user) { navigate('/login'); return null; }
   if (cart.length === 0) { navigate('/cart'); return null; }
 
   const validateShipping = () => {
@@ -66,11 +65,13 @@ export default function CheckoutPage() {
         items,
         shippingAddress: shipping,
         couponCode,
+        // guests check out too — the order is tied to the email they entered
+        ...(user ? {} : { buyerEmail: shipping.email }),
       });
 
-      clearCart();
-      toast('Order placed successfully!', 'ok');
-      navigate('/order-confirmation', { state: { order: res.order, summary: { subtotal: cartTotal, discount: discountAmt, shipping: shippingCost, platformFee, charitySplit, total: grandTotal } } });
+      // The order now exists but is NOT paid: hand over to the payment step. The cart is only
+      // cleared once the payment is confirmed, so a failed payment doesn't lose the basket.
+      navigate('/payment', { state: { order: res.order, payment: res.payment, summary: { subtotal: cartTotal, discount: discountAmt, shipping: shippingCost, platformFee, charitySplit, total: grandTotal } } });
     } catch (e) {
       toast(e.message || 'Order failed — please try again', 'err');
     } finally {

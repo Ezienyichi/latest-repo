@@ -34,7 +34,7 @@ certificates.get('/my-certificates', authenticate, async (c) => {
   const prisma = c.get('prisma');
   try {
     const orderItems = await prisma.orderItem.findMany({
-      where: { order: { buyerId: c.get('userId'), status: { in: ['PROCESSING', 'SHIPPED', 'DELIVERED'] } } },
+      where: { order: { buyerId: c.get('userId'), status: { in: ['PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED'] } } },
       include: {
         product: { select: { title: true, certificateId: true, autoCertificate: true, images: true, slug: true, category: true, artist: { select: { displayName: true } }, charity: { select: { name: true } } } },
         order: { select: { createdAt: true } },

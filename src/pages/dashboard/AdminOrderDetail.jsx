@@ -11,13 +11,23 @@ import { cur } from '../../utils/currency';
 
 const STATUS_STYLES = {
   PENDING: { bg: 'rgba(255,173,0,.08)', border: 'rgba(255,173,0,.2)', color: '#b37800' },
+  PAID: { bg: 'rgba(23,124,29,.08)', border: 'rgba(23,124,29,.18)', color: '#177c1d' },
   PROCESSING: { bg: 'rgba(59,130,246,.08)', border: 'rgba(59,130,246,.18)', color: '#3b82f6' },
   SHIPPED: { bg: 'rgba(139,92,246,.08)', border: 'rgba(139,92,246,.18)', color: '#8b5cf6' },
   DELIVERED: { bg: 'rgba(23,124,29,.08)', border: 'rgba(23,124,29,.18)', color: '#177c1d' },
   CANCELLED: { bg: 'rgba(220,38,38,.08)', border: 'rgba(220,38,38,.18)', color: '#dc2626' },
   REFUNDED: { bg: 'rgba(107,114,128,.08)', border: 'rgba(107,114,128,.18)', color: '#6b7280' },
 };
-const STATUSES = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED'];
+// Mirrors the server's legal moves (functions/_lib/orderFlow.js). PAID is never offered:
+// an order becomes PAID only when its payment is confirmed.
+const NEXT = {
+  PENDING: ['CANCELLED'],
+  PAID: ['PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED'],
+  PROCESSING: ['SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED'],
+  SHIPPED: ['DELIVERED', 'CANCELLED', 'REFUNDED'],
+  DELIVERED: ['REFUNDED'],
+  CANCELLED: [], REFUNDED: [],
+};
 
 function Field({ label, value }) {
   return (
@@ -81,12 +91,23 @@ export default function AdminOrderDetail() {
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <span className="badge" style={{ background: st.bg, border: `1px solid ${st.border}`, color: st.color }}>{order.status}</span>
             <select className="fi fsel" value={newStatus} onChange={e => setNewStatus(e.target.value)} style={{ flex: 1 }}>
-              {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+              {[order.status, ...(NEXT[order.status] || [])].map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <button className="btn btn-p btn-sm" disabled={saving || newStatus === order.status} onClick={updateStatus} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
               <Icon icon={Save} size="inline" /> Update
             </button>
           </div>
+        </div>
+      </div>
+
+      <div className="card" data-payment-card style={{ padding: 20, marginBottom: 16 }}>
+        <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 14 }}>Payment</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 14 }}>
+          <Field label="Payment status" value={order.paidAt ? 'Paid' : order.status === 'PENDING' ? 'Awaiting payment' : '—'} />
+          <Field label="Provider" value={order.paymentProvider === 'stub' ? 'Test mode (no real charge)' : order.paymentProvider} />
+          <Field label="Reference" value={order.paymentRef} />
+          <Field label="Paid at" value={order.paidAt ? new Date(order.paidAt).toLocaleString('en-GB') : null} />
+          <Field label="Campaign credit" value={order.fundsAttributedAt ? `Applied ${new Date(order.fundsAttributedAt).toLocaleString('en-GB')}` : order.paidAt ? 'Reversed (cancelled / refunded)' : 'Not yet — credited when paid'} />
         </div>
       </div>
 

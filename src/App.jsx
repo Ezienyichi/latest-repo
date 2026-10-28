@@ -21,6 +21,7 @@ import CharityProfilePage from './pages/CharityProfilePage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
+import PaymentPage from './pages/PaymentPage';
 import OrdersPage from './pages/OrdersPage';
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
@@ -111,6 +112,7 @@ function WithLayout() {
         <Route path="/charities/:id" element={<CharityProfilePage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/payment" element={<PaymentPage />} />
         <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
         <Route path="/orders" element={<OrdersPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />

@@ -13,6 +13,7 @@ import { FRAMED_CATEGORIES } from '../../data/constants';
 // OrderStatus value including CANCELLED/REFUNDED.
 const STATUS_STYLES = {
   PENDING: { bg: 'rgba(255,173,0,.08)', border: 'rgba(255,173,0,.2)', color: '#b37800' },
+  PAID: { bg: 'rgba(23,124,29,.08)', border: 'rgba(23,124,29,.18)', color: '#177c1d' },
   PROCESSING: { bg: 'rgba(59,130,246,.08)', border: 'rgba(59,130,246,.18)', color: '#3b82f6' },
   SHIPPED: { bg: 'rgba(139,92,246,.08)', border: 'rgba(139,92,246,.18)', color: '#8b5cf6' },
   DELIVERED: { bg: 'rgba(23,124,29,.08)', border: 'rgba(23,124,29,.18)', color: '#177c1d' },
@@ -56,7 +57,7 @@ export default function AdminOrders() {
       <div style={{ display: 'flex', gap: 8, marginBottom: 18, flexWrap: 'wrap', alignItems: 'center' }}>
         <select className="fi fsel" value={status} onChange={e => setStatus(e.target.value)} style={{ width: 150 }}>
           <option value="">All Statuses</option>
-          {['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED'].map(s => <option key={s} value={s}>{s}</option>)}
+          {['PENDING', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED'].map(s => <option key={s} value={s}>{s}</option>)}
         </select>
         <input className="fi" value={buyerEmail} onChange={e => setBuyerEmail(e.target.value)} placeholder="Buyer email..." style={{ width: 200 }} onKeyDown={e => e.key === 'Enter' && filter()} />
         <label style={{ fontSize: 11, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 6 }}>

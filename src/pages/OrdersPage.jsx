@@ -10,7 +10,8 @@ import { cur } from '../utils/currency';
 import AccessLink from '../components/ui/AccessLink';
 
 const STATUS_STYLES = {
-  PENDING: { bg: 'rgba(255,173,0,.08)', border: 'rgba(255,173,0,.2)', color: '#b37800', label: 'Pending' },
+  PENDING: { bg: 'rgba(255,173,0,.08)', border: 'rgba(255,173,0,.2)', color: '#b37800', label: 'Awaiting payment' },
+  PAID: { bg: 'rgba(23,124,29,.08)', border: 'rgba(23,124,29,.18)', color: '#177c1d', label: 'Paid' },
   PROCESSING: { bg: 'rgba(59,130,246,.08)', border: 'rgba(59,130,246,.18)', color: '#3b82f6', label: 'Processing' },
   SHIPPED: { bg: 'rgba(139,92,246,.08)', border: 'rgba(139,92,246,.18)', color: '#8b5cf6', label: 'Shipped' },
   DELIVERED: { bg: 'rgba(23,124,29,.08)', border: 'rgba(23,124,29,.18)', color: '#177c1d', label: 'Delivered' },

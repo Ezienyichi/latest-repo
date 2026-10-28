@@ -2,26 +2,14 @@ import { Hono } from 'hono';
 import { authenticate, requireRole, optionalAuth } from '../auth.js';
 import { getSplitRates, computeSplit } from '../split.js';
 import { getCurrencySymbol } from '../currency.js';
-import { createPayment, grantsDigitalAccess } from '../payment.js';
+import { initiatePayment } from '../payment.js';
+import { checkTransition, reverseFundsAttribution } from '../orderFlow.js';
+import { withAccess } from '../orderView.js';
+import { writeAuditLog } from '../audit.js';
 import { resolveOrderLine } from '../digital.js';
+import { PRODUCT_VIEW_SELECT } from '../orderView.js';
 
 const orders = new Hono();
-
-// Every order response goes through this: a digital line gets its `accessUrl`
-// (read / listen link) only if the order is in good standing, and the raw
-// product column is always removed so it can't ride along in the payload.
-function withAccess(order) {
-  if (!order) return order;
-  const entitled = grantsDigitalAccess(order);
-  return {
-    ...order,
-    items: (order.items || []).map(({ product, ...item }) => {
-      const { digitalAccessUrl, ...safeProduct } = product || {};
-      const digital = item.format === 'DIGITAL' || (!item.format && safeProduct.category === 'MUSIC');
-      return { ...item, product: product ? safeProduct : product, accessUrl: digital && entitled ? digitalAccessUrl || null : null };
-    }),
-  };
-}
 
 // Coupon codes (in production, store in DB)
 const COUPONS = {
@@ -121,7 +109,7 @@ orders.post('/', optionalAuth, async (c) => {
       include: {
         items: {
           include: {
-            product: { select: { title: true, images: true, slug: true, category: true, digitalAccessUrl: true, creatorName: true, artist: { select: { displayName: true } }, charity: { select: { name: true } }, autoCertificate: true, certificateId: true } },
+            product: { select: PRODUCT_VIEW_SELECT },
             variation: true,
           },
         },
@@ -130,42 +118,35 @@ orders.post('/', optionalAuth, async (c) => {
 
     for (const op of stockOps) await prisma.product.update({ where: { id: op.id }, data: { stockQuantity: { decrement: op.by } } });
 
-    // Payment processor is abstracted behind createPayment() — no provider
-    // wired yet. Swapping in a real gateway later only touches payment.js.
-    const payment = await createPayment(order);
+    // The order is created PENDING. The payment module (payment.js) gets the
+    // processor ready and hands back the reference the buyer pays against; the
+    // order only becomes PAID when confirmPayment() succeeds (POST /api/payments/confirm
+    // or the processor's webhook) — which is also when digital links are released
+    // and the charity split is credited to campaigns.
+    const payment = await initiatePayment(order, { env: c.env });
     order = await prisma.order.update({
       where: { id: order.id },
-      data: { paymentRef: payment.paymentRef, status: payment.status === 'pending' ? 'PENDING' : 'PROCESSING' },
+      data: { paymentRef: payment.reference, paymentProvider: payment.provider },
       include: {
         items: {
           include: {
-            product: { select: { title: true, images: true, slug: true, category: true, digitalAccessUrl: true, creatorName: true, artist: { select: { displayName: true } }, charity: { select: { name: true } }, autoCertificate: true, certificateId: true } },
+            product: { select: PRODUCT_VIEW_SELECT },
             variation: true,
           },
         },
       },
     });
 
-    // Update charity raised amounts
-    for (const item of order.items) {
-      if (item.product?.charity?.name) {
-        const product = await prisma.product.findUnique({ where: { id: item.productId }, select: { charityId: true } });
-        if (product?.charityId) {
-          await prisma.charityProfile.update({ where: { id: product.charityId }, data: { raised: { increment: item.charitySplitAmt } } }).catch(() => {});
-        }
-      }
-    }
-
     if (userId) {
       await prisma.notification.create({
         // icon is a semantic key, not an emoji — nothing renders real
         // Notification rows yet (the navbar bell is still mock data), so
         // this maps to a lucide icon whenever that UI gets built.
-        data: { userId, icon: 'package', title: 'Order placed', body: `Order ${order.id.slice(0, 12)} — ${await getCurrencySymbol(prisma)}${totalAmount.toFixed(2)}`, link: `/orders/${order.id}` },
+        data: { userId, icon: 'package', title: 'Order placed', body: `Order ${order.id.slice(0, 12)} — ${await getCurrencySymbol(prisma)}${totalAmount.toFixed(2)} · awaiting payment` },
       }).catch(() => {});
     }
 
-    return c.json({ order: withAccess(order), paymentRef: payment.paymentRef, discount, subtotal, shipping, platformFee, charitySplit, artistPayout, totalAmount }, 201);
+    return c.json({ order: withAccess(order), payment, paymentRef: payment.reference, discount, subtotal, shipping, platformFee, charitySplit, artistPayout, totalAmount }, 201);
   } catch (e) { console.error('Order error:', e); return c.json({ error: 'Order creation failed' }, 500); }
 });
 
@@ -199,17 +180,29 @@ orders.get('/:id', authenticate, async (c) => {
 orders.patch('/:id/status', authenticate, requireRole('ADMIN'), async (c) => {
   const prisma = c.get('prisma');
   try {
-    const { status } = await c.req.json();
-    const valid = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED'];
+    const id = c.req.param('id');
+    const { status } = await c.req.json().catch(() => ({}));
+    const valid = ['PENDING', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED'];
     if (!valid.includes(status)) return c.json({ error: 'Invalid status' }, 400);
-    const order = await prisma.order.update({ where: { id: c.req.param('id') }, data: { status } });
+    const before = await prisma.order.findUnique({ where: { id } });
+    if (!before) return c.json({ error: 'Order not found' }, 404);
+    // PAID can only be reached through the payment module; fulfilment moves forward only.
+    const illegal = checkTransition(before.status, status);
+    if (illegal) return c.json({ error: illegal }, 409);
+    const order = await prisma.$transaction(async (tx) => {
+      const updated = await tx.order.update({ where: { id }, data: { status } });
+      // A cancelled / refunded order no longer funds its campaigns.
+      if (status === 'CANCELLED' || status === 'REFUNDED') await reverseFundsAttribution(tx, id);
+      return updated;
+    });
+    await writeAuditLog(prisma, { adminId: c.get('userId'), action: 'order.status', targetType: 'Order', targetId: id, before: { status: before.status }, after: { status } });
     if (order.buyerId) {
       await prisma.notification.create({
-        data: { userId: order.buyerId, icon: status === 'SHIPPED' ? 'truck' : status === 'DELIVERED' ? 'check' : 'clipboard', title: `Order ${status.toLowerCase()}`, body: `Order ${order.id.slice(0, 12)} has been ${status.toLowerCase()}`, link: `/orders/${order.id}` },
+        data: { userId: order.buyerId, icon: status === 'SHIPPED' ? 'truck' : status === 'DELIVERED' ? 'check' : 'clipboard', title: `Order ${status.toLowerCase()}`, body: `Order ${order.id.slice(0, 12)} has been ${status.toLowerCase()}.` },
       }).catch(() => {});
     }
     return c.json(order);
-  } catch (e) { return c.json({ error: 'Update failed' }, 500); }
+  } catch (e) { console.error(e); return c.json({ error: 'Update failed' }, 500); }
 });
 
 export default orders;
