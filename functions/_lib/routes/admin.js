@@ -263,6 +263,23 @@ const PROJECT_STATUSES = ['DRAFT', 'ACTIVE', 'COMPLETED', 'ARCHIVED'];
 const isHttpUrl = (v) => typeof v === 'string' && /^https?:\/\/\S+$/.test(v);
 const toJson = (x) => JSON.parse(JSON.stringify(x));
 
+// Gallery images (Project.images / CharityProfile.images): [{ url, label? }],
+// same shape as Product.images. Blank slots from the admin form are dropped.
+const MAX_GALLERY_IMAGES = 24;
+function parseGallery(v) {
+  if (!Array.isArray(v)) return { error: 'images must be a list' };
+  const out = [];
+  for (const it of v) {
+    const url = typeof it === 'string' ? it : it?.url;
+    if (url === '' || url == null) continue;
+    if (!isHttpUrl(url)) return { error: 'Every gallery image must be an http(s) URL' };
+    const label = typeof it === 'object' && typeof it.label === 'string' ? it.label.trim().slice(0, 120) : '';
+    out.push(label ? { url, label } : { url });
+  }
+  if (out.length > MAX_GALLERY_IMAGES) return { error: `A gallery can hold at most ${MAX_GALLERY_IMAGES} images` };
+  return { value: out };
+}
+
 // Validates a create (full) or edit (partial) body; returns { error } or { data }.
 async function parseProjectBody(prisma, body, { partial }) {
   const data = {};
@@ -300,6 +317,11 @@ async function parseProjectBody(prisma, body, { partial }) {
       if (v !== null && !isHttpUrl(v)) return { error: `${k} must be an http(s) URL or empty` };
       data[k] = v;
     }
+  }
+  if (has('images')) {
+    const g = parseGallery(body.images);
+    if (g.error) return { error: g.error };
+    data.images = g.value;
   }
   for (const k of ['startDate', 'endDate']) {
     if (has(k)) {
@@ -487,6 +509,11 @@ async function parseCharityBody(prisma, body, { partial, exceptId }) {
   if (has('sdgIds')) {
     if (!Array.isArray(body.sdgIds) || !body.sdgIds.every(n => Number.isInteger(n) && n >= 1 && n <= 17)) return { error: 'sdgIds must be integers 1-17' };
     data.sdgIds = [...new Set(body.sdgIds)].sort((a, b) => a - b);
+  }
+  if (has('images')) {
+    const g = parseGallery(body.images);
+    if (g.error) return { error: g.error };
+    data.images = g.value;
   }
   if (has('target')) {
     const n = Number(body.target);

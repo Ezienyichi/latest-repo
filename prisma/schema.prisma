@@ -148,6 +148,7 @@ model CharityProfile {
   target          Decimal                    @default(0) @db.Decimal(12, 2)
   funderCount     Int                        @default(0)
   websiteUrl      String?
+  images          Json                       @default("[]")
   products        Product[]
   projects        Project[]
   partnerships    ArtistCharityPartnership[]
@@ -498,6 +499,7 @@ model Project {
   story         String         @db.Text
   headerImage   String?
   campaignVideo String?
+  images        Json           @default("[]")
   targetAmount  Decimal        @db.Decimal(12, 2)
   raisedAmount  Decimal        @default(0) @db.Decimal(12, 2)
   status        ProjectStatus  @default(DRAFT)

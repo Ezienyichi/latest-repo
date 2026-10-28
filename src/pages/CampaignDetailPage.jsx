@@ -10,6 +10,7 @@ import { ArtistCredit } from '../components/ui/ArtistAvatar';
 import { CampaignProgress, SdgDot, money } from './CampaignsPage';
 import { cur } from '../utils/currency';
 import CampaignVideo from '../components/ui/CampaignVideo';
+import ImageGallery from '../components/ui/ImageGallery';
 import { parseVideo } from '../utils/video';
 
 const fmtDate = (d) => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -73,6 +74,7 @@ export default function CampaignDetailPage() {
   const sdgs = (p.sdgIds || []).map(id => SDGs.find(s => s.id === id)).filter(Boolean);
   const products = p.products || [];
   const hasVideo = !!parseVideo(p.campaignVideo);
+  const gallery = (Array.isArray(p.images) ? p.images : []).filter(i => i?.url);
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--base)' }}>
@@ -132,8 +134,22 @@ export default function CampaignDetailPage() {
             <Story key={p.id} text={p.story} />
           </div>
 
-          {hasVideo && <div className="cb-video"><CampaignVideo url={p.campaignVideo} poster={p.headerImage} title={`${p.title} — campaign video`} /></div>}
+          {hasVideo && (
+            <div className="cb-video">
+              <CampaignVideo url={p.campaignVideo} poster={p.headerImage} title={`${p.title} — campaign video`} />
+              {/* Directly under the video; capped so the sticky column stays shorter than the viewport. */}
+              <ImageGallery images={gallery} alt={p.title} max={8} minTile={110} />
+            </div>
+          )}
         </div>
+
+        {/* No video → nothing to sit under, so the gallery gets its own block after the story. */}
+        {!hasVideo && gallery.length > 0 && (
+          <div id="gallery" style={{ marginTop: 40, maxWidth: 760 }}>
+            <div className="lbl" style={{ marginBottom: 10 }}>Gallery</div>
+            <ImageGallery images={gallery} alt={p.title} minTile={150} />
+          </div>
+        )}
 
         <div id="artworks" style={{ marginTop: 56, scrollMarginTop: 90 }}>
           <div className="lbl" style={{ marginBottom: 8 }}>Art For This Campaign</div>

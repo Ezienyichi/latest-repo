@@ -9,6 +9,7 @@ import Icon from '../components/ui/Icon';
 import CharityLogo from '../components/ui/CharityLogo';
 import { cur } from '../utils/currency';
 import { CampaignCard } from './CampaignsPage';
+import ImageGallery from '../components/ui/ImageGallery';
 
 function SdgDot({ id }) {
   const s = SDGs.find(x => x.id === id); if (!s) return null;
@@ -137,6 +138,14 @@ export default function CharityProfilePage() {
             <div className="product-grid">
               {campaigns.map(p => <CampaignCard key={p.id} p={p} onOpen={() => navigate(`/campaigns/${p.slug}`)} />)}
             </div>
+          </div>
+        )}
+
+        {tab === 'overview' && Array.isArray(charity.images) && charity.images.some(i => i?.url) && (
+          <div id="gallery" style={{ paddingBottom: 60 }}>
+            <div className="lbl" style={{ marginBottom: 8 }}>In pictures</div>
+            <h2 className="display" style={{ fontSize: 30, marginBottom: 18 }}>Gallery</h2>
+            <ImageGallery images={charity.images} alt={charity.name} minTile={180} />
           </div>
         )}
 

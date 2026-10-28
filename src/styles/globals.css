@@ -982,3 +982,14 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--mint);outline-offse
    is dark rather than white — same 4:5 frame, same contain-fit, no muddy grey. */
 .hero-art-frame.pf-framed{background:linear-gradient(145deg,#16241b,#0b130e)!important;box-shadow:none!important}
 .hero-art-frame.pf-framed img{background:#0d1711!important;border-color:rgba(255,255,255,.1)!important}
+
+/* ── Campaign / charity image galleries ───────────────────── */
+.img-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(var(--tile,150px),100%),1fr));gap:10px}
+.img-gallery-tile{position:relative;display:block;padding:0;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;aspect-ratio:4/3;background:var(--glass);cursor:zoom-in;min-width:0}
+.img-gallery-tile img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s var(--ease)}
+.img-gallery-tile:hover img,.img-gallery-tile:focus-visible img{transform:scale(1.05)}
+.img-gallery-tile:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.img-gallery-more{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);color:#fff;font-family:var(--fd);font-size:26px;font-weight:600;pointer-events:none}
+.cb-video .img-gallery{margin-top:14px}
+@media(prefers-reduced-motion:reduce){.img-gallery-tile img{transition:none}}
+@media(max-width:600px){.lightbox-nav{width:44px;height:44px;font-size:22px}.lightbox-nav.prev{left:8px}.lightbox-nav.next{right:8px}.lightbox-img{max-width:94vw;max-height:70vh}.lightbox-thumbs{max-width:92vw}}

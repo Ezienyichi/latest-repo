@@ -6,11 +6,12 @@ import { useCart } from '../../context/CartContext';
 import { SDGs, FRAMED_CATEGORIES } from '../../data/constants';
 import DashboardShell from './DashboardShell';
 import Uploader from '../../components/ui/Uploader';
+import GalleryEditor from '../../components/ui/GalleryEditor';
 import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
 import { cur } from '../../utils/currency';
 
-const EMPTY = { title: '', charityId: '', story: '', headerImage: '', campaignVideo: '', targetAmount: '', status: 'DRAFT', sdgIds: [], startDate: '', endDate: '' };
+const EMPTY = { title: '', charityId: '', story: '', headerImage: '', campaignVideo: '', images: [], targetAmount: '', status: 'DRAFT', sdgIds: [], startDate: '', endDate: '' };
 const toDateInput = (d) => (d ? new Date(d).toISOString().slice(0, 10) : '');
 const money = (n) => `${cur()}${Number(n || 0).toLocaleString('en-GB', { maximumFractionDigits: 2 })}`;
 
@@ -36,7 +37,7 @@ export default function AdminProjectEditor() {
 
   const fill = (p) => setForm({
     title: p.title || '', charityId: p.charityId || '', story: p.story || '',
-    headerImage: p.headerImage || '', campaignVideo: p.campaignVideo || '',
+    headerImage: p.headerImage || '', campaignVideo: p.campaignVideo || '', images: Array.isArray(p.images) ? p.images : [],
     targetAmount: p.targetAmount != null ? String(Number(p.targetAmount)) : '', status: p.status || 'DRAFT',
     sdgIds: p.sdgIds || [], startDate: toDateInput(p.startDate), endDate: toDateInput(p.endDate),
   });
@@ -57,7 +58,7 @@ export default function AdminProjectEditor() {
     if (form.startDate && form.endDate && form.endDate < form.startDate) return toast('End date must be after the start date', 'err');
     const body = {
       title: form.title, charityId: form.charityId, story: form.story,
-      headerImage: form.headerImage.trim() || null, campaignVideo: form.campaignVideo.trim() || null,
+      headerImage: form.headerImage.trim() || null, campaignVideo: form.campaignVideo.trim() || null, images: form.images.filter(i => i.url),
       targetAmount: Number(form.targetAmount), status: form.status, sdgIds: form.sdgIds,
       startDate: form.startDate || null, endDate: form.endDate || null,
     };
@@ -140,6 +141,11 @@ export default function AdminProjectEditor() {
         <div className="fg">
           <label className="fl">Campaign Video <span style={{ fontWeight: 400, color: 'var(--muted)' }}>— YouTube link or direct video file (optional)</span></label>
           <input className="fi" value={form.campaignVideo} onChange={e => set('campaignVideo', e.target.value)} placeholder="https://www.youtube.com/watch?v=… or https://example.com/campaign.mp4" />
+        </div>
+
+        <div className="fg">
+          <label className="fl">Gallery Images <span style={{ fontWeight: 400, color: 'var(--muted)' }}>— shown under the video, click to zoom (optional)</span></label>
+          <GalleryEditor value={form.images} onChange={v => set('images', v)} />
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>

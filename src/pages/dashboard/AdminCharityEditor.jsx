@@ -6,6 +6,7 @@ import { useCart } from '../../context/CartContext';
 import { SDGs } from '../../data/constants';
 import DashboardShell from './DashboardShell';
 import Uploader from '../../components/ui/Uploader';
+import GalleryEditor from '../../components/ui/GalleryEditor';
 import CharityLogo from '../../components/ui/CharityLogo';
 import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
@@ -14,7 +15,7 @@ import { PROJECT_STATUS_BADGE } from './AdminProjects';
 
 // An admin-created charity is vouched for by the admin, so new ones default
 // to verified; the toggle is right there to turn it off.
-const EMPTY = { name: '', mission: '', logo: '', registrationNo: '', websiteUrl: '', sdgIds: [], target: '', verified: true };
+const EMPTY = { name: '', mission: '', logo: '', registrationNo: '', websiteUrl: '', images: [], sdgIds: [], target: '', verified: true };
 const money = (n) => `${cur()}${Number(n || 0).toLocaleString('en-GB', { maximumFractionDigits: 2 })}`;
 
 export default function AdminCharityEditor() {
@@ -32,7 +33,7 @@ export default function AdminCharityEditor() {
 
   const fill = (c) => setForm({
     name: c.name || '', mission: c.mission || '', logo: c.logo || '', registrationNo: c.registrationNo || '',
-    websiteUrl: c.websiteUrl || '', sdgIds: c.sdgIds || [], target: Number(c.target) > 0 ? String(Number(c.target)) : '', verified: !!c.verified,
+    websiteUrl: c.websiteUrl || '', images: Array.isArray(c.images) ? c.images : [], sdgIds: c.sdgIds || [], target: Number(c.target) > 0 ? String(Number(c.target)) : '', verified: !!c.verified,
   });
   const load = () => api.getAdminCharity(id).then(c => { setCharity(c); fill(c); })
     .catch(e => { toast(e.message || 'Failed to load charity', 'err'); navigate('/dashboard/admin/charities'); })
@@ -47,7 +48,7 @@ export default function AdminCharityEditor() {
     if (form.target !== '' && !(Number(form.target) >= 0)) return toast('Target must be 0 or more', 'err');
     const body = {
       name: form.name, mission: form.mission, registrationNo: form.registrationNo, websiteUrl: form.websiteUrl.trim() || null,
-      sdgIds: form.sdgIds, target: form.target === '' ? 0 : Number(form.target), verified: form.verified,
+      sdgIds: form.sdgIds, target: form.target === '' ? 0 : Number(form.target), verified: form.verified, images: form.images.filter(i => i.url),
     };
     // Older seed data can hold an emoji in `logo`; echoing that back would be
     // rejected as a non-URL, so only send it when it actually changed.
@@ -106,6 +107,10 @@ export default function AdminCharityEditor() {
           <Uploader bucket="avatars" accept="image/jpeg,image/png,image/webp" maxBytes={5 * 1024 * 1024} kind="image"
             value={form.logo ? { path: null, publicUrl: form.logo } : null}
             onUploaded={({ publicUrl }) => set('logo', publicUrl)} label="Upload a logo" />
+        </div>
+        <div className="fg">
+          <label className="fl">Gallery Images <span style={{ fontWeight: 400, color: 'var(--muted)' }}>— shown on the charity page, click to zoom (optional)</span></label>
+          <GalleryEditor value={form.images} onChange={v => set('images', v)} />
         </div>
         <div className="fg"><label className="fl">Mission / Description</label><textarea className="fi fta" rows={5} value={form.mission} onChange={e => set('mission', e.target.value)} placeholder="What does this charity do, and who does it help?" /></div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14 }}>

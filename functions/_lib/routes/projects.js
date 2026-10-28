@@ -55,7 +55,7 @@ projects.get('/:slug', async (c) => {
     const project = await prisma.project.findUnique({
       where: { slug: c.req.param('slug') },
       select: {
-        id: true, slug: true, title: true, story: true, headerImage: true, campaignVideo: true,
+        id: true, slug: true, title: true, story: true, headerImage: true, campaignVideo: true, images: true,
         targetAmount: true, raisedAmount: true, status: true, sdgIds: true, startDate: true, endDate: true, charityId: true,
         charity: { select: { ...CHARITY_CARD, mission: true, sdgIds: true, websiteUrl: true } },
         products: { where: { status: 'ACTIVE' }, orderBy: { createdAt: 'desc' }, select: PRODUCT_CARD },
