@@ -26,7 +26,7 @@ export default function ArtworkManager() {
     medium: '', year: new Date().getFullYear(), sdgIds: [], charityId: '',
     autoCertificate: true, featured: false, tags: '',
     fileFormat: '', pages: '', previewUrl: '', fileUrl: '',
-    images: [{ url: '', label: 'Front View' }],
+    images: [{ url: '', label: 'Front View' }, { url: '', label: 'In Situ' }],
     galleryImages: [], galleryVideo: '',
   });
 
@@ -54,6 +54,7 @@ export default function ArtworkManager() {
 
   const handleSubmit = async () => {
     if (!form.title || !form.basePrice) { toast('Title and price are required', 'err'); return; }
+    if (!form.images[0]?.url && form.images.some(i => i.url)) { toast('Upload the main image (Image 1) first — Image 2 is the hover image', 'err'); return; }
     try {
       const data = {
         ...form,
@@ -81,7 +82,7 @@ export default function ArtworkManager() {
         toast('Artwork created as draft!', 'ok');
       }
       setShowForm(false); setEditId(null); setStep(1);
-      setForm({ title: '', description: '', productType: 'SIMPLE', category: 'ARTWORK', editionType: 'ORIGINAL', basePrice: '', comparePrice: '', sku: '', stockQuantity: '', medium: '', year: new Date().getFullYear(), sdgIds: [], charityId: '', autoCertificate: true, featured: false, tags: '', fileFormat: '', pages: '', previewUrl: '', fileUrl: '', images: [{ url: '', label: 'Front View' }], galleryImages: [], galleryVideo: '' });
+      setForm({ title: '', description: '', productType: 'SIMPLE', category: 'ARTWORK', editionType: 'ORIGINAL', basePrice: '', comparePrice: '', sku: '', stockQuantity: '', medium: '', year: new Date().getFullYear(), sdgIds: [], charityId: '', autoCertificate: true, featured: false, tags: '', fileFormat: '', pages: '', previewUrl: '', fileUrl: '', images: [{ url: '', label: 'Front View' }, { url: '', label: 'In Situ' }], galleryImages: [], galleryVideo: '' });
       loadProducts();
     } catch (e) { toast(e.message, 'err'); }
   };
@@ -198,9 +199,11 @@ export default function ArtworkManager() {
             {step === 2 && (<>
               <h3 style={{ fontFamily: 'var(--fd)', fontSize: 20, marginBottom: 16 }}>Media & Images</h3>
               <div style={{ marginBottom: 16 }}>
-                <div className="fl" style={{ marginBottom: 8 }}>Product Images</div>
+                <div className="fl" style={{ marginBottom: 4 }}>Product Images</div>
+                <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 10 }}>Image 1 is the main image. <strong>Image 2 appears when a shopper hovers the product card</strong> — an in-situ “shown in a room” shot works well.</p>
                 {form.images.map((img, i) => (
                   <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'flex-start' }}>
+                    <span className={`badge ${i === 0 ? 'b-green' : i === 1 ? 'b-gold' : 'b-muted'}`} style={{ fontSize: 10, minWidth: 56, textAlign: 'center', marginTop: 10 }}>{i === 0 ? 'MAIN' : i === 1 ? 'HOVER' : `EXTRA ${i - 1}`}</span>
                     <div style={{ flex: 2 }}>
                       <Uploader
                         bucket="previews"

@@ -17,7 +17,7 @@ const EMPTY_FORM = {
   medium: '', year: new Date().getFullYear(), sdgIds: [], charityId: '', projectId: '',
   autoCertificate: true, featured: false, tags: '',
   fileFormat: '', pages: '', previewUrl: '', fileUrl: '',
-  images: [{ url: '', label: 'Front View' }],
+  images: [{ url: '', label: 'Front View' }, { url: '', label: 'In Situ' }],
   galleryImages: [], galleryVideo: '',
 };
 
@@ -92,7 +92,8 @@ export default function AdminProductManager() {
       sdgIds: p.sdgIds || [], charityId: p.charityId || '', projectId: p.projectId || '',
       autoCertificate: !!p.autoCertificate, featured: !!p.featured, tags: (p.tags || []).join(', '),
       fileFormat: p.fileFormat || '', pages: p.pages != null ? String(p.pages) : '', previewUrl: p.previewUrl || '', fileUrl: p.fileUrl || '',
-      images: p.images?.length ? p.images : [{ url: '', label: 'Front View' }],
+      // Always show a slot for the hover image (images[1]), even on a one-image product.
+      images: p.images?.length > 1 ? p.images : [...(p.images?.length ? p.images : [{ url: '', label: 'Front View' }]), { url: '', label: 'In Situ' }],
       galleryImages: p.gallery?.images || [], galleryVideo: p.gallery?.video || '',
     });
     setEditId(p.id);
@@ -102,6 +103,9 @@ export default function AdminProductManager() {
 
   const handleSubmit = async () => {
     if (!form.title || !form.basePrice) { toast('Title and price are required', 'err'); return; }
+    // Empty slots are dropped on save, so a filled Image 2 with an empty Image 1
+    // would silently become the main image.
+    if (!form.images[0]?.url && form.images.some(i => i.url)) { toast('Upload the main image (Image 1) first — Image 2 is the hover image', 'err'); return; }
     try {
       const data = {
         ...form,
@@ -275,9 +279,11 @@ export default function AdminProductManager() {
             {step === 2 && (<>
               <h3 style={{ fontFamily: 'var(--fd)', fontSize: 20, marginBottom: 16 }}>Media & Images</h3>
               <div style={{ marginBottom: 16 }}>
-                <div className="fl" style={{ marginBottom: 8 }}>Product Images</div>
+                <div className="fl" style={{ marginBottom: 4 }}>Product Images</div>
+                <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 10 }}>Image 1 is the main image. <strong>Image 2 appears when a shopper hovers the product card</strong> — an in-situ “shown in a room” shot works well.</p>
                 {form.images.map((img, i) => (
                   <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'flex-start' }}>
+                    <span className={`badge ${i === 0 ? 'b-green' : i === 1 ? 'b-gold' : 'b-muted'}`} style={{ fontSize: 10, minWidth: 56, textAlign: 'center', marginTop: 10 }}>{i === 0 ? 'MAIN' : i === 1 ? 'HOVER' : `EXTRA ${i - 1}`}</span>
                     <div style={{ flex: 2 }}>
                       <Uploader
                         bucket="previews"
