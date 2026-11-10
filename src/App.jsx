@@ -71,7 +71,7 @@ export default function App() {
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--base)' }}>
       <div style={{ textAlign: 'center' }}>
-        <Wordmark style={{ fontFamily: 'var(--fd)', fontSize: 32, color: 'var(--accent)', marginBottom: 8, display: 'block' }} />
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}><Wordmark size="card" style={{ fontFamily: 'var(--fd)', fontSize: 32, color: 'var(--accent)', display: 'block' }} /></div>
         <div style={{ color: 'var(--muted)', fontSize: 14 }}>Loading...</div>
       </div>
     </div>

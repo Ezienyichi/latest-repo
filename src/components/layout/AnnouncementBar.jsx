@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Phone, Mail, Star } from 'lucide-react';
-import api from '../../utils/api';
+import { Phone, Mail, Star, MessageCircle } from 'lucide-react';
+import { useSiteSettings } from '../../utils/siteSettings';
+import { mailHref, telHref, waHref } from '../../utils/contact';
 import Icon from '../ui/Icon';
 
 // lucide-react dropped brand/logo icons — these are small generic glyphs,
@@ -16,17 +16,17 @@ const XGlyph = (props) => <svg width="14" height="14" viewBox="0 0 24 24" fill="
 // redeploy. "#" is a valid seeded placeholder for the link fields until
 // the real destinations are set.
 export default function AnnouncementBar() {
-  const [s, setS] = useState(null);
-
-  useEffect(() => { api.getPublicSettings().then(setS).catch(() => {}); }, []);
+  const s = useSiteSettings();
 
   if (!s) return null;
+  const wa = waHref(s.whatsapp_number);
 
   return (
     <div className="announce-bar">
       <div className="announce-left">
-        {s.contact_phone && <a href={`tel:${s.contact_phone.replace(/[^\d+]/g, '')}`} className="announce-item"><Icon icon={Phone} size={13} />{s.contact_phone}</a>}
-        {s.contact_email && <a href={`mailto:${s.contact_email}`} className="announce-item announce-email"><Icon icon={Mail} size={13} />{s.contact_email}</a>}
+        {s.contact_phone && <a href={telHref(s.contact_phone)} className="announce-item"><Icon icon={Phone} size={13} />{s.contact_phone}</a>}
+        {wa && <a href={wa} target="_blank" rel="noopener noreferrer" className="announce-item announce-wa" aria-label="Chat on WhatsApp"><Icon icon={MessageCircle} size={13} /><span className="announce-wa-text">WhatsApp</span></a>}
+        {s.contact_email && <a href={mailHref(s.contact_email)} className="announce-item announce-email"><Icon icon={Mail} size={13} />{s.contact_email}</a>}
       </div>
       <div className="announce-center">{s.announcement_message}</div>
       <div className="announce-right">

@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Eye, AlertTriangle, Lightbulb } from 'lucide-react';
 import CountUp from '../components/ui/CountUp';
 import Icon from '../components/ui/Icon';
 import PartnersCarousel from '../components/ui/PartnersCarousel';
+import ContactDetails, { hasContactDetails } from '../components/ui/ContactDetails';
+import { useSiteSettings } from '../utils/siteSettings';
 import api from '../utils/api';
 
 const PILLARS = [
@@ -16,11 +18,19 @@ export default function AboutPage() {
   const navigate = useNavigate();
   const [content, setContent] = useState(null);
   const [team, setTeam] = useState([]);
+  const site = useSiteSettings();
+  const { hash } = useLocation();
 
   useEffect(() => {
     api.getPageContent('about').then(r => setContent(r.body)).catch(() => {});
     api.getTeam().then(setTeam).catch(() => {});
   }, []);
+
+  // "Contact Us" in the footer links here (#contact) — React Router doesn't scroll to a hash by itself.
+  useEffect(() => {
+    // Instant (not smooth) and re-applied as the hero / team content loads, because those change the page height above this section.
+    if (hash === '#contact' && hasContactDetails(site)) { const t = setTimeout(() => document.getElementById('contact')?.scrollIntoView(), 60); return () => clearTimeout(t); }
+  }, [hash, site, content, team]);
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--base)' }}>
@@ -98,6 +108,18 @@ export default function AboutPage() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══ GET IN TOUCH — the admin-managed contact details (Admin → Settings → Branding & Contact) ═══ */}
+      {hasContactDetails(site) && (
+        <section id="contact" className="about-contact" style={{ scrollMarginTop: 90 }}>
+          <div className="wrap" style={{ maxWidth: 720, textAlign: 'center' }}>
+            <div className="lbl" style={{ marginBottom: 8 }}>Contact</div>
+            <h2 className="display" style={{ fontSize: 34, marginBottom: 10 }}>Get in Touch</h2>
+            <p style={{ fontSize: 14, color: 'var(--muted)', marginBottom: 22 }}>Questions about an order, an artwork, or working with us? We'd love to hear from you.</p>
+            <ContactDetails s={site} className="about" />
           </div>
         </section>
       )}

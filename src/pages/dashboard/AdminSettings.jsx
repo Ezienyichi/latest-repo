@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import DashboardShell from './DashboardShell';
 import Uploader from '../../components/ui/Uploader';
+import BrandingContactCard from './BrandingContactCard';
 import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
 import { CURRENCIES, currencyCode, setCurrency } from '../../utils/currency';
@@ -89,6 +90,8 @@ export default function AdminSettings() {
 
   return (
     <DashboardShell title="Settings">
+      <BrandingContactCard />
+
       <div className="card" style={{ padding: 28, maxWidth: 640, marginBottom: 24 }}>
         <h3 style={{ fontFamily: 'var(--fd)', fontSize: 20, marginBottom: 6 }}>Platform Currency</h3>
         <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 20 }}>One currency for the whole platform: artwork prices, estimated values, campaign targets, cart and order totals, splits and charity totals. It is a single site-wide choice, never per item.</p>

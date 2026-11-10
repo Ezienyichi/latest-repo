@@ -11,6 +11,10 @@
   <meta property="og:url" content="https://fasttackle.pages.dev"/>
   <meta property="og:type" content="website"/>
   <meta name="twitter:card" content="summary_large_image"/>
+  <!-- Default tab icon. When admin sets site_favicon_url (Admin → Settings → Branding & Contact) the app
+       swaps this link's href at runtime, and the script below re-applies the last custom icon instantly on later visits. -->
+  <link rel="icon" id="site-favicon" href="/favicon.svg" type="image/svg+xml"/>
+  <script>try{var u=localStorage.getItem('ft_favicon');if(u){var l=document.getElementById('site-favicon');l.removeAttribute('type');l.setAttribute('href',u)}}catch(e){}</script>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 </head>

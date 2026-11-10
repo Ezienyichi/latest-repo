@@ -1,26 +1,34 @@
 import { useNavigate } from 'react-router-dom';
 import { SDGs } from '../../data/constants';
 import Wordmark from '../ui/Wordmark';
+import ContactDetails, { hasContactDetails } from '../ui/ContactDetails';
+import { useSiteSettings } from '../../utils/siteSettings';
 
 export default function Footer() {
   const navigate = useNavigate();
+  const s = useSiteSettings();
+  const showContact = hasContactDetails(s);
   const sections = [
     ['Platform', [['Discover Art', '/shop'], ['Digital Store', '/digitals'], ['Browse Artists', '/artists'], ['Impact Campaigns', '/campaigns'], ['About Us', '/about']]],
-    ['Support', [['Privacy Policy', '/'], ['Contact Us', '/'], ['Documentation', '/']]],
+    // "Contact Us" goes to the About page's contact section (the same admin-managed details as the footer column).
+    ['Support', [['Privacy Policy', '/'], ['Contact Us', '/about#contact'], ['Documentation', '/']]],
   ];
 
   return (
     <footer style={{ background: 'var(--footer-bg)', borderTop: '1px solid var(--border)', padding: '56px 0 32px' }}>
       <div className="wrap">
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 48, marginBottom: 48 }}>
+        <div className={`footer-grid${showContact ? ' has-contact' : ''}`}>
           <div>
-            <Wordmark style={{ fontFamily: 'var(--fd)', fontSize: 20, color: 'var(--mint)', marginBottom: 4, fontWeight: 700, display: 'block' }} />
+            {/* The footer is always dark, so it takes the light logo (site_logo_dark_url) when there is one. */}
+            <div style={{ marginBottom: 6 }}>
+              <Wordmark onDark size="footer" style={{ fontFamily: 'var(--fd)', fontSize: 20, color: 'var(--mint)', fontWeight: 700, display: 'block' }} />
+            </div>
             <p style={{ fontSize: 13, color: 'var(--footer-txt)', lineHeight: 1.75, maxWidth: 260 }}>
               Where extraordinary art funds real-world change. Every purchase carries a premium certificate of authenticity and supports a verified SDG project.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 16 }}>
-              {SDGs.slice(0, 9).map(s => (
-                <span key={s.id} className="sdg" style={{ background: s.c, color: '#fff', width: 20, height: 20, fontSize: 8, borderRadius: 4 }}>{s.id}</span>
+              {SDGs.slice(0, 9).map(sd => (
+                <span key={sd.id} className="sdg" style={{ background: sd.c, color: '#fff', width: 20, height: 20, fontSize: 8, borderRadius: 4 }}>{sd.id}</span>
               ))}
             </div>
           </div>
@@ -36,9 +44,15 @@ export default function Footer() {
               ))}
             </div>
           ))}
+          {showContact && (
+            <div data-footer-contact>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 14 }}>Contact</div>
+              <ContactDetails s={s} className="on-dark" />
+            </div>
+          )}
         </div>
-        <div style={{ borderTop: '1px solid var(--border)', paddingTop: 22, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 12, color: 'var(--footer-txt)' }}>© 2026 FastTackle Africa. All rights reserved.</span>
+        <div className="footer-bottom">
+          <span style={{ fontSize: 12, color: 'var(--footer-txt)' }}>© {new Date().getFullYear()} {s?.site_name || 'FastTackle Africa'}. All rights reserved.</span>
           <span style={{ fontSize: 12, color: 'var(--footer-txt)' }}>Powered by Art. Driven by Purpose.</span>
         </div>
       </div>

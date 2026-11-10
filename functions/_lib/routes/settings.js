@@ -8,8 +8,10 @@ const settings = new Hono();
 // of a guess baked into the frontend.
 const PUBLIC_KEYS = [
   'charity_pct', 'platform_pct', 'theory_if', 'theory_and_if', 'theory_then', 'site_name', 'site_logo_url',
+  // Branding — a light logo for dark backgrounds (footer) and the browser-tab icon.
+  'site_logo_dark_url', 'site_favicon_url',
   // Top announcement bar — all admin-editable, see admin.js SETTING_VALIDATORS.
-  'contact_email', 'contact_phone', 'announcement_message',
+  'contact_email', 'contact_phone', 'whatsapp_number', 'business_hours', 'announcement_message',
   'social_instagram_url', 'social_facebook_url', 'social_twitter_url',
   'trustpilot_url', 'google_review_url',
   // Homepage hero background — video or image, admin-editable.
@@ -30,8 +32,15 @@ const DEFAULTS = {
   // Unset until a real logo exists — the Wordmark component falls back to
   // the text name whenever this is null, so nothing breaks by leaving it.
   site_logo_url: null,
-  contact_email: 'hello@fasttackle.africa',
-  contact_phone: '+44 20 1234 5678',
+  // Unset → the footer reuses site_logo_url; the browser uses the built-in default icon.
+  site_logo_dark_url: null,
+  site_favicon_url: null,
+  // No built-in contact details: nothing is shown on the site until admin sets them
+  // (Admin → Settings → Branding & Contact), so a placeholder can never go public.
+  contact_email: null,
+  contact_phone: null,
+  whatsapp_number: null,
+  business_hours: null,
   announcement_message: 'Mon–Fri, 9am–6pm GMT · Worldwide Shipping & Digital Delivery',
   social_instagram_url: '#',
   social_facebook_url: '#',

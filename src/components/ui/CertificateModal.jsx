@@ -26,7 +26,7 @@ export default function CertificateModal({ product, onClose }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
               <div>
                 <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase', color: '#b37800', marginBottom: 4 }}>Issued By</div>
-                <Wordmark style={{ fontFamily: 'var(--fd)', fontSize: 18, fontWeight: 700, color: '#1B4332', display: 'block' }} />
+                <Wordmark size="sm" style={{ fontFamily: 'var(--fd)', fontSize: 18, fontWeight: 700, color: '#1B4332', display: 'block' }} />
               </div>
               <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'linear-gradient(135deg,#177c1d,#1B4332)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: 'var(--fd)', fontSize: 18, fontWeight: 700 }}>CAG</div>
             </div>

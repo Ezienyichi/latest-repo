@@ -44,7 +44,7 @@ export default function RegisterPage() {
       <div style={{ width: '100%', maxWidth: 460, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 'var(--rl)', padding: '40px 36px', boxShadow: 'var(--shl)' }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <Link to="/" style={{ textDecoration: 'none' }}>
-            <Wordmark style={{ fontFamily: 'var(--fd)', fontSize: 28, fontWeight: 700, color: 'var(--accent)', marginBottom: 4, display: 'block' }} />
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4 }}><Wordmark size="card" style={{ fontFamily: 'var(--fd)', fontSize: 28, fontWeight: 700, color: 'var(--accent)', display: 'block' }} /></div>
           </Link>
           <p style={{ fontSize: 14, color: 'var(--muted)' }}>Create your account</p>
         </div>
@@ -68,7 +68,7 @@ export default function RegisterPage() {
           </div>
           <div className="fg">
             <label className="fl">Phone (optional)</label>
-            <input className="fi" type="tel" value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+44 7700 000000" />
+            <input className="fi" type="tel" value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+234 801 234 5678" />
           </div>
           <div className="fg">
             <label className="fl">Password</label>

@@ -50,7 +50,7 @@ export default function LoginPage() {
       <div style={{ width: '100%', maxWidth: 440, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 'var(--rl)', padding: '40px 36px', boxShadow: 'var(--shl)' }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <Link to="/" style={{ textDecoration: 'none' }}>
-            <Wordmark style={{ fontFamily: 'var(--fd)', fontSize: 28, fontWeight: 700, color: 'var(--accent)', marginBottom: 4, display: 'block' }} />
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4 }}><Wordmark size="card" style={{ fontFamily: 'var(--fd)', fontSize: 28, fontWeight: 700, color: 'var(--accent)', display: 'block' }} /></div>
           </Link>
           <p style={{ fontSize: 14, color: 'var(--muted)' }}>Sign in to your account</p>
         </div>

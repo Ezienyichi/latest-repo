@@ -6,6 +6,7 @@ import { getCharityRaised, getCharityRaisedMap } from '../charityRollup.js';
 import { CURRENCIES } from '../currency.js';
 import adminSubmissions from './adminSubmissions.js';
 import adminPartners from './adminPartners.js';
+import { EMAIL_RE, normalizePhone } from '../contact.js';
 
 const admin = new Hono();
 admin.use('*', authenticate, requireRole('ADMIN'));
@@ -36,7 +37,14 @@ const SETTING_VALIDATORS = {
   site_name: async (value) => (typeof value === 'string' && value.trim()) ? null : 'Must be a non-empty string',
   tagline: async (value) => (typeof value === 'string' && value.trim()) ? null : 'Must be a non-empty string',
   footer_copyright: async (value) => (typeof value === 'string' && value.trim()) ? null : 'Must be a non-empty string',
-  contact_email: async (value) => (typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) ? null : 'Must be a valid email address',
+  // ── Branding & contact (admin → Settings → Branding & Contact). Image fields are
+  // null-or-URL like site_logo_url; phone numbers must be international (+country code)
+  // and may be cleared (null) so a number can be taken off the site.
+  contact_email: async (value) => (typeof value === 'string' && value.length <= 254 && EMAIL_RE.test(value)) ? null : 'Must be a valid email address',
+  site_logo_dark_url: async (value) => (value === null || (typeof value === 'string' && value.length <= 600 && /^https?:\/\/\S+$/.test(value))) ? null : 'Must be a valid URL or null',
+  site_favicon_url: async (value) => (value === null || (typeof value === 'string' && value.length <= 600 && /^https?:\/\/\S+$/.test(value))) ? null : 'Must be a valid URL or null',
+  whatsapp_number: async (value) => (value === null || normalizePhone(value)) ? null : 'Must be in international format, e.g. +234 801 234 5678',
+  business_hours: async (value) => (value === null || (typeof value === 'string' && value.trim() && value.length <= 200 && !/[\u0000-\u001F]/.test(value))) ? null : 'Must be text of 200 characters or fewer, or null',
   maintenance_mode: async (value) => (typeof value === 'boolean') ? null : 'Must be true or false',
   maintenance_message: async (value) => (typeof value === 'string') ? null : 'Must be a string',
   show_homepage_stats: async (value) => (typeof value === 'boolean') ? null : 'Must be true or false',
@@ -45,11 +53,11 @@ const SETTING_VALIDATORS = {
   theory_then: async (value) => (typeof value === 'string' && value.trim()) ? null : 'Must be a non-empty string',
   // null is valid here — it's how a logo gets unset to fall back to the
   // text wordmark, not just how it gets set.
-  site_logo_url: async (value) => (value === null || (typeof value === 'string' && /^https?:\/\//.test(value))) ? null : 'Must be a valid URL or null',
+  site_logo_url: async (value) => (value === null || (typeof value === 'string' && value.length <= 600 && /^https?:\/\/\S+$/.test(value))) ? null : 'Must be a valid URL or null',
   // Top announcement bar. Link fields are deliberately lenient (not
   // required to be a real https URL) — "#" is a valid placeholder until
   // admin has the real destination.
-  contact_phone: async (value) => (typeof value === 'string' && value.trim()) ? null : 'Must be a non-empty string',
+  contact_phone: async (value) => (value === null || normalizePhone(value)) ? null : 'Must be in international format, e.g. +234 801 234 5678',
   announcement_message: async (value) => (typeof value === 'string') ? null : 'Must be a string',
   social_instagram_url: async (value) => (typeof value === 'string') ? null : 'Must be a string',
   social_facebook_url: async (value) => (typeof value === 'string') ? null : 'Must be a string',

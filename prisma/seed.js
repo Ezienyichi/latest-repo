@@ -26,8 +26,8 @@ async function main() {
   await prisma.siteSetting.upsert({ where: { key: 'theory_then' }, update: {}, create: { key: 'theory_then', value: 'then creative commerce becomes a sustainable source of philanthropic capital that strengthens nonprofits, empowers creative entrepreneurs, and delivers measurable improvements in communities worldwide.' } });
 
   // ── TOP ANNOUNCEMENT BAR (placeholders — admin-editable) ──
-  await prisma.siteSetting.upsert({ where: { key: 'contact_email' }, update: {}, create: { key: 'contact_email', value: 'hello@fasttackle.africa' } });
-  await prisma.siteSetting.upsert({ where: { key: 'contact_phone' }, update: {}, create: { key: 'contact_phone', value: '+44 20 1234 5678' } });
+  // Contact email / phone / WhatsApp / hours are deliberately NOT seeded: set them in
+  // Admin → Settings → Branding & Contact, so no invented number or address can go public.
   await prisma.siteSetting.upsert({ where: { key: 'announcement_message' }, update: {}, create: { key: 'announcement_message', value: 'Mon–Fri, 9am–6pm GMT · Worldwide Shipping & Digital Delivery' } });
   await prisma.siteSetting.upsert({ where: { key: 'social_instagram_url' }, update: {}, create: { key: 'social_instagram_url', value: '#' } });
   await prisma.siteSetting.upsert({ where: { key: 'social_facebook_url' }, update: {}, create: { key: 'social_facebook_url', value: '#' } });
