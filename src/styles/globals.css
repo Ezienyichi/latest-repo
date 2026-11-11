@@ -1142,3 +1142,27 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--mint);outline-offse
 }
 
 @media (max-width:600px){.empty{padding:48px 8px;max-width:100%}.empty .btn{max-width:100%}}
+
+/* ═══ HOMEPAGE MOBILE IMAGES ═══
+   Safety net for plain content images: never wider than their box, keep their
+   own aspect ratio. Element-selector specificity is the lowest there is, so it
+   never overrides the fixed frames (.imgswap, .pf-framed, .hero-vid, backgrounds
+   etc. all set width/height through classes or inline styles). */
+img{max-width:100%;height:auto}
+/* Hero image/video focal point: centre by default; override --hero-focus (e.g. "50% 30%") to move it. */
+.hero-vid{object-position:var(--hero-focus,50% 50%)}
+/* When the layout collapses to one column, the featured-artwork card used to stack under the text and
+   push the hero to ~115% of the screen height, so the next section was never visible. Below 900px the card
+   is dropped from the hero (the same piece still shows in Top Sellers) and spacing is tightened so the
+   hero is about 2/3 of the screen with the heading and button in view. */
+@media(max-width:900px){
+  .hero-grid .hero-card{display:none}
+  .hero-stats{margin-top:32px;padding-top:22px}
+}
+@media(max-width:640px){
+  .hero-grid{padding:44px 20px 32px}
+  .hero-h1{margin:16px 0 16px;font-size:clamp(40px,12vw,52px)}
+  .hero-sub{margin-bottom:24px}
+  .hero-stats{margin-top:24px;padding-top:18px}
+  .hero-stat-val{font-size:30px}
+}
