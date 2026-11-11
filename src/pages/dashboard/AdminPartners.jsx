@@ -24,7 +24,7 @@ export default function AdminPartners() {
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { if (user && user.role !== 'ADMIN') navigate('/'); }, [user]);
+  useEffect(() => { if (user && !['ADMIN', 'STAFF'].includes(user.role)) navigate('/'); }, [user]);
   useEffect(() => {
     api.getAdminPartners().then(d => { setItems(d.items || []); setMax(d.max || 60); })
       .catch(e => toast(e.message || 'Failed to load partners', 'err')).finally(() => setLoading(false));

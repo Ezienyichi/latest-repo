@@ -25,7 +25,7 @@ export default function AdminProjects() {
   const [charityId, setCharityId] = useState('');
   const [search, setSearch] = useState('');
 
-  useEffect(() => { if (user && user.role !== 'ADMIN') navigate('/'); }, [user]);
+  useEffect(() => { if (user && !['ADMIN', 'STAFF'].includes(user.role)) navigate('/'); }, [user]);
   useEffect(() => { api.getCharities().then(setCharities).catch(() => {}); }, []);
 
   const load = (p = 1) => {

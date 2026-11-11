@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Users, Palette, Package, Wallet, Landmark, Leaf, Search, Check } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
+import { AddStaff, StaffActions, TempPasswordNotice } from './StaffAdmin';
 import DashboardShell, { StatCard } from './DashboardShell';
 import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
@@ -29,6 +30,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [userSearch, setUserSearch] = useState('');
   const [userRole, setUserRole] = useState('');
+  const [temp, setTemp] = useState(null);      // a temporary staff password, shown once
 
   useEffect(() => {
     if (user?.role !== 'ADMIN') { navigate('/'); return; }
@@ -210,24 +212,28 @@ export default function AdminDashboard() {
 
       {/* ═══ USERS ═══ */}
       {tab === 'users' && (<>
-        <div style={{ display: 'flex', gap: 10, marginBottom: 18 }}>
+        <TempPasswordNotice temp={temp} onClose={() => setTemp(null)} />
+        <AddStaff setTemp={setTemp} onCreated={searchUsers} />
+        <div style={{ display: 'flex', gap: 10, marginBottom: 18, flexWrap: 'wrap' }}>
           <input className="fi" value={userSearch} onChange={e => setUserSearch(e.target.value)} placeholder="Search users..." style={{ width: 260 }} onKeyDown={e => e.key === 'Enter' && searchUsers()} />
           <select className="fi fsel" value={userRole} onChange={e => { setUserRole(e.target.value); }} style={{ width: 140 }}>
-            <option value="">All Roles</option><option value="BUYER">Buyer</option><option value="ARTIST">Artist</option><option value="CHARITY">Charity</option><option value="ADMIN">Admin</option>
+            <option value="">All Roles</option><option value="BUYER">Buyer</option><option value="ARTIST">Artist</option><option value="CHARITY">Charity</option><option value="ADMIN">Admin</option><option value="STAFF">Staff</option>
           </select>
           <button className="btn btn-p btn-sm" onClick={searchUsers}>Search</button>
         </div>
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
           <table className="tbl">
-            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Verified</th><th>Joined</th></tr></thead>
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Verified</th><th>Joined</th><th>Status</th><th></th></tr></thead>
             <tbody>
               {(users?.users || []).map(u => (
                 <tr key={u.id}>
                   <td style={{ fontWeight: 500 }}>{u.firstName} {u.lastName}</td>
                   <td style={{ fontSize: 12 }}>{u.email}</td>
-                  <td><span className={`badge ${u.role === 'ADMIN' ? 'b-red' : u.role === 'ARTIST' ? 'b-purple' : u.role === 'CHARITY' ? 'b-green' : 'b-muted'}`} style={{ fontSize: 10 }}>{u.role}</span></td>
+                  <td><span className={`badge ${u.role === 'ADMIN' ? 'b-red' : u.role === 'STAFF' ? 'b-gold' : u.role === 'ARTIST' ? 'b-purple' : u.role === 'CHARITY' ? 'b-green' : 'b-muted'}`} style={{ fontSize: 10 }}>{u.role}</span></td>
                   <td>{u.emailVerified ? <span style={{ color: 'var(--sage)' }}><Icon icon={Check} size="inline" /></span> : <span style={{ color: 'var(--muted)' }}>—</span>}</td>
                   <td style={{ fontSize: 12 }}>{new Date(u.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}</td>
+                  <td style={{ fontSize: 11 }}>{u.role === 'STAFF' ? (u.deactivatedAt ? <span className="badge b-red" style={{ fontSize: 9 }}>DEACTIVATED</span> : u.mustChangePassword ? <span className="badge b-muted" style={{ fontSize: 9 }}>TEMP PASSWORD</span> : <span className="badge b-green" style={{ fontSize: 9 }}>ACTIVE</span>) : ''}</td>
+                  <td><StaffActions u={u} onChanged={searchUsers} setTemp={setTemp} /></td>
                 </tr>
               ))}
             </tbody>

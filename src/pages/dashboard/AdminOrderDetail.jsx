@@ -48,7 +48,7 @@ export default function AdminOrderDetail() {
   const [newStatus, setNewStatus] = useState('');
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { if (user && user.role !== 'ADMIN') navigate('/'); }, [user]);
+  useEffect(() => { if (user && !['ADMIN', 'STAFF'].includes(user.role)) navigate('/'); }, [user]);
 
   const load = () => {
     setLoading(true);
@@ -91,7 +91,7 @@ export default function AdminOrderDetail() {
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <span className="badge" style={{ background: st.bg, border: `1px solid ${st.border}`, color: st.color }}>{order.status}</span>
             <select className="fi fsel" value={newStatus} onChange={e => setNewStatus(e.target.value)} style={{ flex: 1 }}>
-              {[order.status, ...(NEXT[order.status] || [])].map(s => <option key={s} value={s}>{s}</option>)}
+              {[order.status, ...(NEXT[order.status] || [])].filter(s => s === order.status || user?.role !== 'STAFF' || ['PROCESSING', 'SHIPPED', 'DELIVERED'].includes(s)).map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <button className="btn btn-p btn-sm" disabled={saving || newStatus === order.status} onClick={updateStatus} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
               <Icon icon={Save} size="inline" /> Update

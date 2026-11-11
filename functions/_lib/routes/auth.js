@@ -30,12 +30,13 @@ auth.post('/login', async (c) => {
     const { email, password } = await c.req.json();
     const user = await prisma.user.findUnique({ where: { email }, include: { artistProfile: true, charityProfile: true } });
     if (!user?.passwordHash || !(await verifyPassword(password, user.passwordHash))) return c.json({ error: 'Invalid credentials' }, 401);
+    if (user.deactivatedAt) return c.json({ error: 'Invalid credentials' }, 401);   // deactivated: same answer as a wrong password
     return c.json({
       token: await makeToken(user, c.env.JWT_SECRET),
       user: {
         id: user.id, email: user.email, role: user.role,
         firstName: user.firstName, lastName: user.lastName, avatarUrl: user.avatarUrl,
-        emailVerified: user.emailVerified,
+        emailVerified: user.emailVerified, mustChangePassword: user.mustChangePassword,
         hasProfile: !!(user.artistProfile || user.charityProfile),
         artistProfile: user.artistProfile ? { id: user.artistProfile.id, displayName: user.artistProfile.displayName, verified: user.artistProfile.verified } : null,
         charityProfile: user.charityProfile ? { id: user.charityProfile.id, name: user.charityProfile.name, verified: user.charityProfile.verified } : null,
@@ -62,7 +63,7 @@ auth.get('/me', authenticate, async (c) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: c.get('userId') }, include: { artistProfile: true, charityProfile: true } });
     if (!user) return c.json({ error: 'Not found' }, 404);
-    const { passwordHash, verificationCode, ...safe } = user;
+    const { passwordHash, verificationCode, sessionVersion, ...safe } = user;
     return c.json(safe);
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
 });

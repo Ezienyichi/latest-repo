@@ -1,3 +1,4 @@
+import { staffOk } from '../auth.js';
 import { Hono } from 'hono';
 import { writeAuditLog } from '../audit.js';
 import {
@@ -20,7 +21,7 @@ const model = (prisma, type) => (type === 'charity' ? prisma.charityProfile : ty
 const select = (type) => (type === 'charity' ? CHARITY_SEL : type === 'campaign' ? CAMPAIGN_SEL : ARTWORK_SEL);
 const titleOf = (type, e) => (type === 'charity' ? e.name : e.title);
 
-adminSubmissions.get('/count', async (c) => {
+adminSubmissions.get('/count', staffOk, async (c) => {
   const prisma = c.get('prisma');
   try {
     const [charity, campaign, artwork] = await Promise.all(SUBMISSION_TYPES.map(t => model(prisma, t).count({ where: { submissionStatus: 'PENDING' } })));
@@ -30,7 +31,7 @@ adminSubmissions.get('/count', async (c) => {
 
 // The pending queue (or APPROVED / REJECTED via ?status=), newest first,
 // across the three types.
-adminSubmissions.get('/', async (c) => {
+adminSubmissions.get('/', staffOk, async (c) => {
   const prisma = c.get('prisma');
   try {
     const q = c.req.query();
@@ -91,7 +92,7 @@ const nameTaken = (prisma, name, exceptId) => prisma.charityProfile.findFirst({
   where: { name: { equals: name, mode: 'insensitive' }, submissionStatus: 'APPROVED', ...(exceptId ? { NOT: { id: exceptId } } : {}) }, select: { id: true },
 });
 
-adminSubmissions.post('/:type/:id/approve', async (c) => {
+adminSubmissions.post('/:type/:id/approve', staffOk, async (c) => {
   const prisma = c.get('prisma');
   try {
     const type = c.req.param('type'), id = c.req.param('id');
@@ -162,7 +163,7 @@ adminSubmissions.post('/:type/:id/approve', async (c) => {
   }
 });
 
-adminSubmissions.post('/:type/:id/reject', async (c) => {
+adminSubmissions.post('/:type/:id/reject', staffOk, async (c) => {
   const prisma = c.get('prisma');
   try {
     const type = c.req.param('type'), id = c.req.param('id');

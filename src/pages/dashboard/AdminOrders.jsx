@@ -34,7 +34,7 @@ export default function AdminOrders() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
-  useEffect(() => { if (user && user.role !== 'ADMIN') navigate('/'); }, [user]);
+  useEffect(() => { if (user && !['ADMIN', 'STAFF'].includes(user.role)) navigate('/'); }, [user]);
 
   const load = (p = page) => {
     setLoading(true);

@@ -1,5 +1,7 @@
 import { Hono } from 'hono';
 import { authenticate, requireRole, optionalAuth } from '../auth.js';
+import { getHouseArtist } from '../submissions.js';
+import { writeAuditLog } from '../audit.js';
 import { slugify } from '../helpers.js';
 import { CATEGORIES, stripPrivate, checkDigitalProduct } from '../digital.js';
 
@@ -58,10 +60,10 @@ products.get('/:slug', optionalAuth, async (c) => {
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
 });
 
-products.post('/', authenticate, requireRole('ARTIST', 'ADMIN'), async (c) => {
+products.post('/', authenticate, requireRole('ARTIST', 'ADMIN', 'STAFF'), async (c) => {
   const prisma = c.get('prisma');
   try {
-    const artist = await prisma.artistProfile.findUnique({ where: { userId: c.get('userId') } });
+    const artist = c.get('userRole') === 'STAFF' ? await getHouseArtist(prisma) : await prisma.artistProfile.findUnique({ where: { userId: c.get('userId') } });
     if (!artist) return c.json({ error: 'Artist profile required' }, 400);
     const body = await c.req.json();
     const { title, description, productType, category, editionType, basePrice, comparePrice, estimatedValue, sku, stockQuantity, medium, dimensions, year, sdgIds, images, gallery, charityId, projectId, autoCertificate, videoUrl, tags, fileUrl, fileFormat, previewUrl, pages: pg, featured, digitalAccessUrl, bookFormat, digitalPrice, physicalPrice, creatorName, isbn, publisher, language } = body;
@@ -72,16 +74,17 @@ products.post('/', authenticate, requireRole('ARTIST', 'ADMIN'), async (c) => {
     if (await prisma.product.findUnique({ where: { slug } })) slug += '-' + Date.now().toString(36);
     const certId = autoCertificate ? `CAG-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}` : undefined;
     const product = await prisma.product.create({ data: { artistId: artist.id, charityId, projectId: projectId || null, title, slug, description, productType: productType || 'SIMPLE', category: category || 'ARTWORK', editionType: editionType || 'ORIGINAL', basePrice, comparePrice, estimatedValue, sku, stockQuantity, medium, dimensions, year, sdgIds: sdgIds || [], images: images || [], gallery, videoUrl, tags: tags || [], fileUrl, fileFormat, previewUrl, pages: pg, autoCertificate: !!autoCertificate, certificateId: certId, featured: !!featured, status: 'DRAFT', ...dig.derived }, include: { variations: true, addons: true, artist: true, charity: true } });
+    if (c.get('userRole') !== 'ARTIST') await writeAuditLog(prisma, { adminId: c.get('userId'), action: 'product.create', targetType: 'Product', targetId: product.id, before: null, after: { title: product.title, category: product.category, status: product.status } });
     return c.json(product, 201);
   } catch (e) { console.error(e); return c.json({ error: 'Create failed' }, 500); }
 });
 
-products.patch('/:id', authenticate, requireRole('ARTIST', 'ADMIN'), async (c) => {
+products.patch('/:id', authenticate, requireRole('ARTIST', 'ADMIN', 'STAFF'), async (c) => {
   const prisma = c.get('prisma');
   try {
     const p = await prisma.product.findUnique({ where: { id: c.req.param('id') }, include: { artist: true } });
     if (!p) return c.json({ error: 'Not found' }, 404);
-    if (c.get('userRole') !== 'ADMIN' && p.artist.userId !== c.get('userId')) return c.json({ error: 'Not yours' }, 403);
+    if (!['ADMIN', 'STAFF'].includes(c.get('userRole')) && p.artist.userId !== c.get('userId')) return c.json({ error: 'Not yours' }, 403);
     const body = await c.req.json();
     const data = { ...body };
     // Re-check the digital/book rules whenever a field they depend on changes (or the product goes live).
@@ -92,6 +95,7 @@ products.patch('/:id', authenticate, requireRole('ARTIST', 'ADMIN'), async (c) =
       Object.assign(data, dig.derived);
     }
     const updated = await prisma.product.update({ where: { id: c.req.param('id') }, data, include: { variations: true, addons: true } });
+    if (c.get('userRole') !== 'ARTIST') await writeAuditLog(prisma, { adminId: c.get('userId'), action: 'product.update', targetType: 'Product', targetId: p.id, before: { title: p.title, status: p.status }, after: { title: updated.title, status: updated.status, fields: Object.keys(body) } });
     return c.json(updated);
   } catch (e) { return c.json({ error: 'Update failed' }, 500); }
 });

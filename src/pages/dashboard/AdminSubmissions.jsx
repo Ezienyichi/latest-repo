@@ -248,7 +248,7 @@ export default function AdminSubmissions() {
   const [artists, setArtists] = useState([]);
   const [reviewing, setReviewing] = useState(null);
 
-  useEffect(() => { if (user && user.role !== 'ADMIN') navigate('/'); }, [user]);
+  useEffect(() => { if (user && !['ADMIN', 'STAFF'].includes(user.role)) navigate('/'); }, [user]);
   useEffect(() => {
     api.getAdminCharities({ limit: 200, submission: 'APPROVED' }).then(d => setCharities(d.items || [])).catch(() => {});
     api.getAdminArtists({ limit: 100 }).then(d => setArtists(d.items || [])).catch(() => {});
@@ -269,7 +269,7 @@ export default function AdminSubmissions() {
 
   return (
     <DashboardShell title="Submissions">
-      <ShareLinks />
+      {user?.role === 'ADMIN' && <ShareLinks />}
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap', alignItems: 'center' }}>
         {[['PENDING', `Pending${counts.total ? ` (${counts.total})` : ''}`], ['REJECTED', 'Rejected'], ['APPROVED', 'Approved']].map(([s, l]) => (

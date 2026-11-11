@@ -182,13 +182,15 @@ orders.get('/:id', authenticate, async (c) => {
 // Restricted to ADMIN — the ported backend/routes/orders.js version only
 // required `authenticate`, letting any logged-in buyer update any order's
 // status. That looked like an unintentional gap, so it's fixed here.
-orders.patch('/:id/status', authenticate, requireRole('ADMIN'), async (c) => {
+orders.patch('/:id/status', authenticate, requireRole('ADMIN', 'STAFF'), async (c) => {
   const prisma = c.get('prisma');
   try {
     const id = c.req.param('id');
     const { status } = await c.req.json().catch(() => ({}));
     const valid = ['PENDING', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED'];
     if (!valid.includes(status)) return c.json({ error: 'Invalid status' }, 400);
+    // Shipping updates only for staff: cancelling or refunding returns money, which is the owner's call.
+    if (c.get('userRole') === 'STAFF' && !['PROCESSING', 'SHIPPED', 'DELIVERED'].includes(status)) return c.json({ error: 'Only the owner can set that status' }, 403);
     const before = await prisma.order.findUnique({ where: { id } });
     if (!before) return c.json({ error: 'Order not found' }, 404);
     // PAID can only be reached through the payment module; fulfilment moves forward only.

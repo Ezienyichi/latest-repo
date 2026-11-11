@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { authenticate, requireRole } from '../auth.js';
+import { authenticate, requireRole, staffOk, staffGate } from '../auth.js';
 import { writeAuditLog } from '../audit.js';
 import { slugify } from '../helpers.js';
 import { getCharityRaised, getCharityRaisedMap } from '../charityRollup.js';
@@ -8,10 +8,13 @@ import adminSubmissions from './adminSubmissions.js';
 import adminPartners from './adminPartners.js';
 import adminLegal from './adminLegal.js';
 import adminAccount from './adminAccount.js';
+import adminStaff from './adminStaff.js';
+import adminTeam from './adminTeam.js';
 import { EMAIL_RE, normalizePhone } from '../contact.js';
 
 const admin = new Hono();
-admin.use('*', authenticate, requireRole('ADMIN'));
+// ADMIN (the owner) can use everything below. STAFF can use only the routes marked with `staffOk` (default deny, see auth.js).
+admin.use('*', authenticate, requireRole('ADMIN', 'STAFF'), staffGate);
 // Invite-link submission review queue (guarded by the middleware above).
 admin.route('/submissions', adminSubmissions);
 // Homepage / About partners & collaborators carousel (guarded by the middleware above).
@@ -20,6 +23,9 @@ admin.route('/partners', adminPartners);
 admin.route('/legal', adminLegal);
 // The signed-in admin's own account: change password / login email (guarded by the middleware above).
 admin.route('/account', adminAccount);
+// Owner-only: create / deactivate staff logins and read the audit log. Team members: ADMIN + STAFF.
+admin.route('/', adminStaff);
+admin.route('/team', adminTeam);
 
 // Known SiteSetting keys and their validators. PUT rejects anything not
 // listed here — a typo'd key should fail loudly, not silently create a
@@ -94,7 +100,7 @@ admin.get('/users', async (c) => {
     const [users, total] = await Promise.all([
       prisma.user.findMany({
         where, skip: (page - 1) * limit, take: parseInt(limit), orderBy: { createdAt: 'desc' },
-        select: { id: true, email: true, role: true, firstName: true, lastName: true, emailVerified: true, createdAt: true, artistProfile: { select: { displayName: true, verified: true } }, charityProfile: { select: { name: true, verified: true } } },
+        select: { id: true, email: true, role: true, firstName: true, lastName: true, emailVerified: true, createdAt: true, deactivatedAt: true, mustChangePassword: true, artistProfile: { select: { displayName: true, verified: true } }, charityProfile: { select: { name: true, verified: true } } },
       }),
       prisma.user.count({ where }),
     ]);
@@ -107,8 +113,11 @@ admin.patch('/users/:id', async (c) => {
   try {
     const id = c.req.param('id');
     const { role } = await c.req.json();
+    if (role !== undefined && !['BUYER', 'ARTIST', 'CHARITY', 'ADMIN', 'STAFF'].includes(role)) return c.json({ error: 'Invalid role' }, 400);
+    if (role === 'STAFF') return c.json({ error: 'Create staff logins with "Add staff" so they get a temporary password' }, 400);
     const before = await prisma.user.findUnique({ where: { id }, select: { role: true } });
     if (!before) return c.json({ error: 'Not found' }, 404);
+    if (before.role === 'STAFF') return c.json({ error: 'Use the staff controls to deactivate a staff login' }, 400);
     const data = {};
     if (role) data.role = role;
     const user = await prisma.user.update({ where: { id }, data });
@@ -130,7 +139,7 @@ admin.post('/verify-artist/:id', async (c) => {
 });
 
 // ─── Artist images (profile picture + banner) ───────────────────────────
-admin.get('/artists', async (c) => {
+admin.get('/artists', staffOk, async (c) => {
   const prisma = c.get('prisma');
   try {
     const q = c.req.query();
@@ -215,7 +224,7 @@ admin.patch('/charity-documents/:id/review', async (c) => {
 
 // Full catalog view across every status (public GET /products only ever
 // returns ACTIVE) — this is what AdminProductManager.jsx's list lives on.
-admin.get('/products', async (c) => {
+admin.get('/products', staffOk, async (c) => {
   const prisma = c.get('prisma');
   try {
     const q = c.req.query();
@@ -365,7 +374,7 @@ async function uniqueProjectSlug(prisma, base, exceptId) {
   return slug;
 }
 
-admin.post('/projects', async (c) => {
+admin.post('/projects', staffOk, async (c) => {
   const prisma = c.get('prisma');
   try {
     const body = await c.req.json().catch(() => ({}));
@@ -379,7 +388,7 @@ admin.post('/projects', async (c) => {
   } catch (e) { console.error(e); return c.json({ error: 'Create failed' }, 500); }
 });
 
-admin.get('/projects', async (c) => {
+admin.get('/projects', staffOk, async (c) => {
   const prisma = c.get('prisma');
   try {
     const q = c.req.query();
@@ -403,7 +412,7 @@ admin.get('/projects', async (c) => {
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
 });
 
-admin.get('/projects/:id', async (c) => {
+admin.get('/projects/:id', staffOk, async (c) => {
   const prisma = c.get('prisma');
   try {
     const project = await prisma.project.findUnique({
@@ -418,7 +427,7 @@ admin.get('/projects/:id', async (c) => {
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
 });
 
-admin.patch('/projects/:id', async (c) => {
+admin.patch('/projects/:id', staffOk, async (c) => {
   const prisma = c.get('prisma');
   try {
     const id = c.req.param('id');
@@ -458,7 +467,7 @@ admin.delete('/projects/:id', async (c) => {
 
 // Link / unlink an artwork. Dedicated routes (rather than the generic
 // product PATCH) so each change is audited.
-admin.post('/projects/:id/products', async (c) => {
+admin.post('/projects/:id/products', staffOk, async (c) => {
   const prisma = c.get('prisma');
   try {
     const id = c.req.param('id');
@@ -476,7 +485,7 @@ admin.post('/projects/:id/products', async (c) => {
   } catch (e) { return c.json({ error: 'Link failed' }, 500); }
 });
 
-admin.delete('/projects/:id/products/:productId', async (c) => {
+admin.delete('/projects/:id/products/:productId', staffOk, async (c) => {
   const prisma = c.get('prisma');
   try {
     const id = c.req.param('id'), productId = c.req.param('productId');
@@ -549,7 +558,7 @@ async function parseCharityBody(prisma, body, { partial, exceptId }) {
   return { data };
 }
 
-admin.post('/charities', async (c) => {
+admin.post('/charities', staffOk, async (c) => {
   const prisma = c.get('prisma');
   try {
     const body = await c.req.json().catch(() => ({}));
@@ -564,7 +573,7 @@ admin.post('/charities', async (c) => {
   } catch (e) { console.error(e); return c.json({ error: 'Create failed' }, 500); }
 });
 
-admin.get('/charities', async (c) => {
+admin.get('/charities', staffOk, async (c) => {
   const prisma = c.get('prisma');
   try {
     const q = c.req.query();
@@ -590,7 +599,7 @@ admin.get('/charities', async (c) => {
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
 });
 
-admin.get('/charities/:id', async (c) => {
+admin.get('/charities/:id', staffOk, async (c) => {
   const prisma = c.get('prisma');
   try {
     const id = c.req.param('id');
@@ -609,7 +618,7 @@ admin.get('/charities/:id', async (c) => {
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
 });
 
-admin.patch('/charities/:id', async (c) => {
+admin.patch('/charities/:id', staffOk, async (c) => {
   const prisma = c.get('prisma');
   try {
     const id = c.req.param('id');
@@ -703,7 +712,7 @@ admin.get('/newsletter/export', async (c) => {
 // admin to see any order but their own through them. These bypass that
 // scoping entirely; access is already gated by the router-wide
 // requireRole('ADMIN') at the top of this file.
-admin.get('/orders', async (c) => {
+admin.get('/orders', staffOk, async (c) => {
   const prisma = c.get('prisma');
   try {
     const q = c.req.query();
@@ -732,7 +741,7 @@ admin.get('/orders', async (c) => {
   } catch (e) { return c.json({ error: 'Failed' }, 500); }
 });
 
-admin.get('/orders/:id', async (c) => {
+admin.get('/orders/:id', staffOk, async (c) => {
   const prisma = c.get('prisma');
   try {
     const order = await prisma.order.findUnique({

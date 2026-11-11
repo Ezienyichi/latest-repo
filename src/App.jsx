@@ -27,6 +27,8 @@ const LegalPage = lazy(() => import('./pages/LegalPage'));
 const SubmitPage = lazy(() => import('./pages/submit/SubmitPage'));
 const AdminLegal = lazy(() => import('./pages/dashboard/AdminLegal'));
 const AdminAccount = lazy(() => import('./pages/dashboard/AdminAccount'));
+const AdminTeam = lazy(() => import('./pages/dashboard/AdminTeam'));
+const AdminActivity = lazy(() => import('./pages/dashboard/AdminActivity'));
 const lazyEl = (el) => <Suspense fallback={<div className="wrap" style={{ padding: 40 }}><div className="skel" style={{ height: 240, borderRadius: 12 }} /></div>}>{el}</Suspense>;
 import OrdersPage from './pages/OrdersPage';
 import RegisterPage from './pages/RegisterPage';
@@ -147,6 +149,8 @@ function WithLayout() {
         <Route path="/dashboard/admin/submissions" element={<AdminSubmissions />} />
         <Route path="/dashboard/admin/partners" element={<AdminPartners />} />
         <Route path="/dashboard/admin/account" element={lazyEl(<AdminAccount />)} />
+        <Route path="/dashboard/admin/team" element={lazyEl(<AdminTeam />)} />
+        <Route path="/dashboard/admin/activity" element={lazyEl(<AdminActivity />)} />
         <Route path="/dashboard/admin/legal" element={lazyEl(<AdminLegal />)} />
         <Route path="/dashboard/admin/legal/:slug" element={lazyEl(<AdminLegal />)} />
         <Route path="/dashboard/admin/charities" element={<AdminCharities />} />

@@ -14,8 +14,10 @@ export default function AdminAccount() {
   const { user, refreshUser } = useAuth();
   const { toast } = useCart();
   const navigate = useNavigate();
-  useEffect(() => { if (user && user.role !== 'ADMIN') navigate('/'); }, [user]);
+  useEffect(() => { if (user && !['ADMIN', 'STAFF'].includes(user.role)) navigate('/'); }, [user]);
 
+  const isOwner = user?.role === 'ADMIN';
+  const temporary = !!user?.mustChangePassword;      // first sign-in with a temporary password
   const [pw, setPw] = useState({ current: '', next: '', confirm: '' });
   const [pwErr, setPwErr] = useState(''); const [pwBusy, setPwBusy] = useState(false);
   const [em, setEm] = useState({ current: '', email: '' });
@@ -34,6 +36,7 @@ export default function AdminAccount() {
       await adopt(await api.changeAdminPassword({ currentPassword: pw.current, newPassword: pw.next, confirmPassword: pw.confirm }));
       setPw({ current: '', next: '', confirm: '' });
       toast('Password changed. Other sessions have been signed out.', 'ok');
+      if (temporary) navigate('/dashboard/admin/submissions');
     } catch (err) { setPwErr(err.message || 'Could not change the password'); } finally { setPwBusy(false); }
   };
 
@@ -51,6 +54,7 @@ export default function AdminAccount() {
 
   return (
     <DashboardShell title="Account">
+      {temporary && <div className="alert alert-w" role="alert" data-must-change style={{ maxWidth: 560, marginBottom: 16 }}>You're signing in with a temporary password. Choose your own below to continue — you can't use anything else until you do.</div>}
       <p style={{ fontSize: 13, color: 'var(--muted)', maxWidth: 640, lineHeight: 1.65, marginBottom: 18 }}>
         Signed in as <strong data-account-email style={{ color: 'var(--txt)', overflowWrap: 'anywhere' }}>{user?.email}</strong>. Changing your password or login email signs out every <em>other</em> device or browser; this one stays signed in.
       </p>
@@ -64,14 +68,14 @@ export default function AdminAccount() {
         <button className="btn btn-p" disabled={pwBusy} data-account-submit="password">{pwBusy ? 'Saving…' : 'Change password'}</button>
       </form>
 
-      <form className="card" onSubmit={changeEmail} data-account-form="email" noValidate style={{ padding: 22, maxWidth: 560 }}>
+      {isOwner && <form className="card" onSubmit={changeEmail} data-account-form="email" noValidate style={{ padding: 22, maxWidth: 560 }}>
         <h3 style={{ fontFamily: 'var(--fd)', fontSize: 22, marginBottom: 6 }}>Change login email</h3>
         <p style={{ fontSize: 12.5, color: 'var(--muted)', marginBottom: 14, lineHeight: 1.6 }}>Use an address you can receive mail at. From now on you sign in with it.</p>
         {emErr && <div className="alert alert-e" role="alert" data-account-error="email" style={{ marginBottom: 14 }}>{emErr}</div>}
         <div className="fg"><label className="fl" htmlFor="acct-email">New email</label><input id="acct-email" className="fi" type="email" autoComplete="email" value={em.email} onChange={e => setEm({ ...em, email: e.target.value })} /></div>
         <div className="fg"><label className="fl" htmlFor="acct-em-cur">Current password</label><input id="acct-em-cur" className="fi" type="password" autoComplete="current-password" value={em.current} onChange={e => setEm({ ...em, current: e.target.value })} /></div>
         <button className="btn btn-p" disabled={emBusy} data-account-submit="email">{emBusy ? 'Saving…' : 'Change email'}</button>
-      </form>
+      </form>}
     </DashboardShell>
   );
 }

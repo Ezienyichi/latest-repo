@@ -173,6 +173,16 @@ class ApiClient {
   getAdminLegal() { return this.get('/admin/legal'); }
   getAdminLegalDoc(slug) { return this.get(`/admin/legal/${slug}`); }
   getAdminLegalVersion(slug, n) { return this.get(`/admin/legal/${slug}/versions/${n}`); }
+  // Staff logins (owner only) + audit log + team members (owner and staff)
+  createStaff(data) { return this.post('/admin/users/staff', data); }
+  deactivateStaff(id) { return this.post(`/admin/users/${id}/deactivate`, {}); }
+  reactivateStaff(id) { return this.post(`/admin/users/${id}/reactivate`, {}); }
+  resetStaffPassword(id) { return this.post(`/admin/users/${id}/reset-password`, {}); }
+  getAuditLog(params = {}) { const qs = new URLSearchParams(params).toString(); return this.get(`/admin/audit-log${qs ? '?' + qs : ''}`); }
+  getAdminTeam() { return this.get('/admin/team'); }
+  createTeamMember(data) { return this.post('/admin/team', data); }
+  updateTeamMember(id, data) { return this.patch(`/admin/team/${id}`, data); }
+  deleteTeamMember(id) { return this.delete(`/admin/team/${id}`); }
   // Signed-in admin's own account (each returns a fresh { token, user } — the old token stops working)
   changeAdminPassword(data) { return this.post('/admin/account/password', data); }
   changeAdminEmail(data) { return this.post('/admin/account/email', data); }

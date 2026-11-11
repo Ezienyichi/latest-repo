@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Palette, Package, Wallet, User, Handshake, Mail, Folder, Users, Search, BarChart3, Settings, Flag, HeartHandshake, Inbox, FileText, KeyRound, Brush, ArrowRight, ArrowLeft, Check } from 'lucide-react';
+import { LayoutDashboard, Palette, Package, Wallet, User, Handshake, Mail, Folder, Users, Search, BarChart3, Settings, Flag, HeartHandshake, Inbox, FileText, KeyRound, Brush, Contact, ScrollText, ArrowRight, ArrowLeft, Check } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
@@ -34,12 +34,26 @@ const ADMIN_NAV = [
   { id: 'charities', icon: HeartHandshake, label: 'Charities', path: '/dashboard/admin/charities' },
   { id: 'projects', icon: Flag, label: 'Campaigns', path: '/dashboard/admin/projects' },
   { id: 'partners', icon: Handshake, label: 'Partners', path: '/dashboard/admin/partners' },
+  { id: 'team', icon: Contact, label: 'Team', path: '/dashboard/admin/team' },
   { id: 'users', icon: Users, label: 'Users', path: '/dashboard/users' },
   { id: 'newsletter', icon: Mail, label: 'Newsletter', path: '/dashboard/admin/newsletter' },
   { id: 'moderation', icon: Search, label: 'Moderation', path: '/dashboard/moderation' },
   { id: 'analytics', icon: BarChart3, label: 'Analytics', path: '/dashboard/analytics' },
   { id: 'legal', icon: FileText, label: 'Legal', path: '/dashboard/admin/legal' },
+  { id: 'activity', icon: ScrollText, label: 'Activity', path: '/dashboard/admin/activity' },
   { id: 'settings', icon: Settings, label: 'Settings', path: '/dashboard/settings' },
+  { id: 'account', icon: KeyRound, label: 'Account', path: '/dashboard/admin/account' },
+];
+
+// Assistants (STAFF): only what the server lets them use. Hiding is a convenience; every route is also enforced server-side.
+const STAFF_NAV = [
+  { id: 'submissions', icon: Inbox, label: 'Submissions', path: '/dashboard/admin/submissions', badge: 'submissions' },
+  { id: 'products', icon: Palette, label: 'Products', path: '/dashboard/products' },
+  { id: 'orders', icon: Package, label: 'Orders', path: '/dashboard/admin/orders' },
+  { id: 'charities', icon: HeartHandshake, label: 'Charities', path: '/dashboard/admin/charities' },
+  { id: 'projects', icon: Flag, label: 'Campaigns', path: '/dashboard/admin/projects' },
+  { id: 'partners', icon: Handshake, label: 'Partners', path: '/dashboard/admin/partners' },
+  { id: 'team', icon: Contact, label: 'Team', path: '/dashboard/admin/team' },
   { id: 'account', icon: KeyRound, label: 'Account', path: '/dashboard/admin/account' },
 ];
 
@@ -50,9 +64,14 @@ export default function DashboardShell({ children, title }) {
   const [collapsed, setCollapsed] = useState(false);
   const [pending, setPending] = useState(0);
 
-  // Admin-only: how many invite-link submissions are waiting for review.
+  // A login still on its temporary password can do nothing but choose its own (the API enforces this too).
   useEffect(() => {
-    if (user?.role !== 'ADMIN') return;
+    if (user?.mustChangePassword && pathname !== '/dashboard/admin/account') navigate('/dashboard/admin/account', { replace: true });
+  }, [user?.mustChangePassword, pathname]);
+
+  // Admin / staff: how many invite-link submissions are waiting for review.
+  useEffect(() => {
+    if (user?.role !== 'ADMIN' && user?.role !== 'STAFF') return;
     let live = true;
     const load = () => api.getSubmissionCount().then(d => { if (live) setPending(d.total || 0); }).catch(() => {});
     load();
@@ -63,11 +82,13 @@ export default function DashboardShell({ children, title }) {
   const nav = user?.role === 'ARTIST' ? ARTIST_NAV
     : user?.role === 'CHARITY' ? CHARITY_NAV
     : user?.role === 'ADMIN' ? ADMIN_NAV
+    : user?.role === 'STAFF' ? STAFF_NAV
     : BUYER_NAV;
 
   const roleLabel = user?.role === 'ARTIST' ? 'Artist Studio'
     : user?.role === 'CHARITY' ? 'Charity Dashboard'
     : user?.role === 'ADMIN' ? 'Admin Panel'
+    : user?.role === 'STAFF' ? 'Staff Panel'
     : 'Dashboard';
 
   return (

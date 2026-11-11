@@ -14,6 +14,7 @@ enum UserRole {
   ARTIST
   CHARITY
   ADMIN
+  STAFF
 }
 
 enum ProductType {
@@ -104,30 +105,31 @@ enum ReviewStatus {
 }
 
 model User {
-  id                String               @id @default(cuid())
-  email             String               @unique
-  passwordHash      String?
-  emailVerified     DateTime?
-  verificationCode  String?
-  role              UserRole             @default(BUYER)
-  firstName         String?
-  lastName          String?
-  avatarUrl         String?
-  phone             String?
-  deactivatedAt     DateTime?
-  sessionVersion    Int                  @default(0) // bump to sign out every other session (token claim "sv")
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @updatedAt
-  artistProfile     ArtistProfile?
-  charityProfile    CharityProfile?
-  orders            Order[]
-  reviews           Review[]
-  wishlistItems     WishlistItem[]
-  funderRelations   FunderRelationship[]
-  notifications     Notification[]
-  tcAcceptances     TCAcceptance[]
-  auditLogs         AuditLog[]
-  reviewedDocuments CharityDocument[]
+  id                 String               @id @default(cuid())
+  email              String               @unique
+  passwordHash       String?
+  emailVerified      DateTime?
+  verificationCode   String?
+  role               UserRole             @default(BUYER)
+  firstName          String?
+  lastName           String?
+  avatarUrl          String?
+  phone              String?
+  deactivatedAt      DateTime?
+  mustChangePassword Boolean              @default(false) // temporary password issued: only /auth/me + the password change work until it is replaced
+  sessionVersion     Int                  @default(0) // bump to sign out every other session (token claim "sv")
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  artistProfile      ArtistProfile?
+  charityProfile     CharityProfile?
+  orders             Order[]
+  reviews            Review[]
+  wishlistItems      WishlistItem[]
+  funderRelations    FunderRelationship[]
+  notifications      Notification[]
+  tcAcceptances      TCAcceptance[]
+  auditLogs          AuditLog[]
+  reviewedDocuments  CharityDocument[]
 }
 
 model ArtistProfile {

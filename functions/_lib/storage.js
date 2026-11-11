@@ -54,4 +54,6 @@ export const WRITABLE_BUCKETS_BY_ROLE = {
   CHARITY: ['avatars', 'charity-docs'],
   BUYER: ['avatars'],
   ADMIN: ['artwork', 'previews', 'avatars', 'charity-docs'],
+  // Assistants: product / campaign / partner / team images and charity logos — not the private artwork files or charity documents.
+  STAFF: ['previews', 'avatars'],
 };

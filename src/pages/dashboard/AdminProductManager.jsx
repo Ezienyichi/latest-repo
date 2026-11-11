@@ -67,7 +67,7 @@ export default function AdminProductManager() {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState(EMPTY_FORM);
 
-  useEffect(() => { if (user && user.role !== 'ADMIN') navigate('/'); }, [user]);
+  useEffect(() => { if (user && !['ADMIN', 'STAFF'].includes(user.role)) navigate('/'); }, [user]);
   useEffect(() => { loadProducts(); }, []);
   useEffect(() => { api.getCharities().then(setCharities).catch(() => {}); }, []);
   useEffect(() => { api.getAdminProjects({ limit: 200 }).then(d => setProjects(d.items || [])).catch(() => {}); }, []);
@@ -325,7 +325,7 @@ export default function AdminProductManager() {
                         <div style={{ display: 'flex', gap: 4 }}>
                           <button className="btn btn-s btn-sm" onClick={() => openEdit(p)}>Edit</button>
                           <button className="btn btn-s btn-sm" onClick={() => toggleStatus(p.id, p.status)}>{p.status === 'ACTIVE' ? 'Unpublish' : 'Publish'}</button>
-                          <button className="btn btn-danger btn-sm" onClick={() => deleteProduct(p.id)}>×</button>
+                          {user?.role !== 'STAFF' && <button className="btn btn-danger btn-sm" onClick={() => deleteProduct(p.id)}>×</button>}
                         </div>
                       </td>
                     </tr>

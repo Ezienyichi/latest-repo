@@ -1,3 +1,4 @@
+import { staffOk } from '../auth.js';
 import { Hono } from 'hono';
 import { writeAuditLog } from '../audit.js';
 import { mutatePartners, parsePartner, MAX_PARTNERS } from '../partners.js';
@@ -10,7 +11,7 @@ const audit = (c, action, targetId, before, after) =>
 const fail = (c, out) => c.json({ error: out.error }, out.status || 400);
 
 // Every partner, including inactive ones, in display order.
-adminPartners.get('/', async (c) => {
+adminPartners.get('/', staffOk, async (c) => {
   try {
     const out = await mutatePartners(c.get('prisma'), c.get('userId'), () => ({}));   // read (and persist ids the first time)
     if (out.error) return fail(c, out);
@@ -18,7 +19,7 @@ adminPartners.get('/', async (c) => {
   } catch (e) { console.error(e); return c.json({ error: 'Failed' }, 500); }
 });
 
-adminPartners.post('/', async (c) => {
+adminPartners.post('/', staffOk, async (c) => {
   try {
     const body = await c.req.json().catch(() => ({}));
     const parsed = parsePartner(body, { partial: false });
@@ -36,7 +37,7 @@ adminPartners.post('/', async (c) => {
 });
 
 // Reorder: the new order must contain exactly the current partners.
-adminPartners.post('/reorder', async (c) => {
+adminPartners.post('/reorder', staffOk, async (c) => {
   try {
     const { ids } = await c.req.json().catch(() => ({}));
     if (!Array.isArray(ids) || !ids.every(i => typeof i === 'string')) return c.json({ error: 'ids must be a list of partner ids' }, 400);
@@ -51,7 +52,7 @@ adminPartners.post('/reorder', async (c) => {
   } catch (e) { console.error(e); return c.json({ error: 'Reorder failed' }, 500); }
 });
 
-adminPartners.patch('/:id', async (c) => {
+adminPartners.patch('/:id', staffOk, async (c) => {
   try {
     const id = c.req.param('id');
     const body = await c.req.json().catch(() => ({}));
@@ -71,7 +72,7 @@ adminPartners.patch('/:id', async (c) => {
   } catch (e) { console.error(e); return c.json({ error: 'Update failed' }, 500); }
 });
 
-adminPartners.delete('/:id', async (c) => {
+adminPartners.delete('/:id', staffOk, async (c) => {
   try {
     const id = c.req.param('id');
     let removed;

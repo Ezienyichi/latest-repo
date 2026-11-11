@@ -49,22 +49,32 @@ export async function makeToken(user, secret) {
   return sign({ userId: user.id, role: user.role, email: user.email, sv: user.sessionVersion ?? 0, exp: Math.floor(Date.now() / 1000) + TOKEN_TTL_SECONDS }, secret, 'HS256');
 }
 
-// Admin tokens are tied to the account's sessionVersion: changing the password / login email bumps it and
-// every earlier token stops working. Tokens issued before this existed carry no "sv" and count as version 0.
-// Checked for ADMIN only (one indexed read), so the other roles' requests cost nothing extra.
-async function sessionEnded(c, decoded) {
-  if (decoded.role !== 'ADMIN') return false;
-  const prisma = c.get('prisma'); if (!prisma) return false;
-  const u = await prisma.user.findUnique({ where: { id: decoded.userId }, select: { sessionVersion: true } });
-  return !u || (decoded.sv ?? 0) !== u.sessionVersion;
+// ADMIN and STAFF tokens are tied to the account's live state: changing the password / login email, deactivating
+// the account, or changing its role ends every earlier token. Tokens issued before "sv" existed carry no claim and
+// count as version 0. Checked for these two roles only (one indexed read), so other roles' requests cost nothing extra.
+const PRIVILEGED = ['ADMIN', 'STAFF'];
+async function checkSession(c, decoded) {
+  if (!PRIVILEGED.includes(decoded.role)) return { ok: true };
+  const prisma = c.get('prisma'); if (!prisma) return { ok: true };
+  const u = await prisma.user.findUnique({ where: { id: decoded.userId }, select: { sessionVersion: true, role: true, deactivatedAt: true, mustChangePassword: true } });
+  if (!u || u.deactivatedAt || u.role !== decoded.role || (decoded.sv ?? 0) !== u.sessionVersion) return { ok: false };
+  return { ok: true, mustChange: u.mustChangePassword };
 }
+// While a temporary password is still in use, only these calls work (so the person can look themselves up and replace it).
+const allowedWhileTemporary = (c) => {
+  const m = c.req.method, p = c.req.path;
+  return (m === 'GET' && (p === '/api/auth/me' || p === '/api/admin/account')) || (m === 'POST' && p === '/api/admin/account/password');
+};
 
 export async function authenticate(c, next) {
   const h = c.req.header('authorization');
   if (!h?.startsWith('Bearer ')) return c.json({ error: 'Authentication required' }, 401);
   try {
     const decoded = await verify(h.slice(7), c.env.JWT_SECRET, 'HS256');
-    if (await sessionEnded(c, decoded)) return c.json({ error: 'Session ended — please sign in again' }, 401);
+    const sess = await checkSession(c, decoded);
+    if (!sess.ok) return c.json({ error: 'Session ended — please sign in again' }, 401);
+    // 403 (not 401): the client signs out on a 401, and this person only needs to pick a password.
+    if (sess.mustChange && !allowedWhileTemporary(c)) return c.json({ error: 'Please set your own password before continuing', code: 'PASSWORD_CHANGE_REQUIRED' }, 403);
     c.set('userId', decoded.userId);
     c.set('userRole', decoded.role);
     await next();
@@ -80,12 +90,21 @@ export function requireRole(...roles) {
   };
 }
 
+// Marks a route as available to STAFF as well as ADMIN. The /api/admin router refuses STAFF on every route that
+// does not carry THIS exact handler (default deny), so a route added later is owner-only until someone opts it in.
+export const staffOk = requireRole('ADMIN', 'STAFF');
+export async function staffGate(c, next) {
+  if (c.get('userRole') !== 'STAFF') return next();
+  if (c.req.matchedRoutes.some(r => r.handler === staffOk)) return next();
+  return c.json({ error: 'Insufficient permissions' }, 403);
+}
+
 export async function optionalAuth(c, next) {
   const h = c.req.header('authorization');
   if (h?.startsWith('Bearer ')) {
     try {
       const decoded = await verify(h.slice(7), c.env.JWT_SECRET, 'HS256');
-      if (!(await sessionEnded(c, decoded))) { c.set('userId', decoded.userId); c.set('userRole', decoded.role); }
+      if ((await checkSession(c, decoded)).ok) { c.set('userId', decoded.userId); c.set('userRole', decoded.role); }
     } catch { /* ignore invalid token, proceed unauthenticated */ }
   }
   await next();

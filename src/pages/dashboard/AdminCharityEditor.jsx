@@ -29,7 +29,7 @@ export default function AdminCharityEditor() {
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { if (user && user.role !== 'ADMIN') navigate('/'); }, [user]);
+  useEffect(() => { if (user && !['ADMIN', 'STAFF'].includes(user.role)) navigate('/'); }, [user]);
 
   const fill = (c) => setForm({
     name: c.name || '', mission: c.mission || '', logo: c.logo || '', registrationNo: c.registrationNo || '',
@@ -81,7 +81,7 @@ export default function AdminCharityEditor() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
         <button className="btn btn-g" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => navigate('/dashboard/admin/charities')}><Icon icon={ArrowLeft} size="inline" /> Back to Charities</button>
         <div style={{ display: 'flex', gap: 8 }}>
-          {!isNew && <button className="btn btn-s" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#dc2626' }} onClick={remove}><Icon icon={Trash2} size="inline" /> Delete</button>}
+          {!isNew && user?.role === 'ADMIN' && <button className="btn btn-s" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#dc2626' }} onClick={remove}><Icon icon={Trash2} size="inline" /> Delete</button>}
           <button className="btn btn-p" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={save} disabled={saving}><Icon icon={Save} size="inline" /> {saving ? 'Saving…' : 'Save'}</button>
         </div>
       </div>

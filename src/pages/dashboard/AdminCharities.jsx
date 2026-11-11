@@ -23,7 +23,7 @@ export default function AdminCharities() {
   const [verified, setVerified] = useState('');
   const [search, setSearch] = useState('');
 
-  useEffect(() => { if (user && user.role !== 'ADMIN') navigate('/'); }, [user]);
+  useEffect(() => { if (user && !['ADMIN', 'STAFF'].includes(user.role)) navigate('/'); }, [user]);
 
   const load = (p = 1) => {
     setLoading(true);
