@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Copy, Check, UserPlus } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Copy, Check, UserPlus, Eye, EyeOff } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
@@ -10,6 +10,8 @@ import api from '../../utils/api';
 export function TempPasswordNotice({ temp, onClose }) {
   const { toast } = useCart();
   const [copied, setCopied] = useState(false);
+  const [shown, setShown] = useState(false);
+  useEffect(() => { setShown(false); }, [temp]);      // a new password always starts hidden
   if (!temp) return null;
   const copy = async () => { try { await navigator.clipboard.writeText(temp.password); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { toast('Copy failed — select the password and copy it manually', 'err'); } };
   return (
@@ -19,7 +21,8 @@ export function TempPasswordNotice({ temp, onClose }) {
         Give this to <strong>{temp.name}</strong> (<span style={{ overflowWrap: 'anywhere' }}>{temp.email}</span>). <strong>It is shown only once</strong> and cannot be looked up again. They will be asked to choose their own password the first time they sign in.
       </div>
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-        <code data-temp-value style={{ fontSize: 20, letterSpacing: 1.5, padding: '8px 14px', background: 'var(--glass)', border: '1px solid var(--border)', borderRadius: 8, userSelect: 'all', overflowWrap: 'anywhere' }}>{temp.password}</code>
+        <code data-temp-value style={{ fontSize: 20, letterSpacing: 1.5, padding: '8px 14px', background: 'var(--glass)', border: '1px solid var(--border)', borderRadius: 8, userSelect: shown ? 'all' : 'none', overflowWrap: 'anywhere' }}>{shown ? temp.password : '•'.repeat(temp.password.length)}</code>
+        <button type="button" className="btn btn-s btn-sm" data-temp-eye onClick={() => setShown(s => !s)} aria-label={shown ? 'Hide password' : 'Show password'} aria-pressed={shown} style={{ display: 'inline-flex', alignItems: 'center' }}><Icon icon={shown ? EyeOff : Eye} size="inline" aria-hidden="true" /></button>
         <button className="btn btn-s btn-sm" onClick={copy} style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Icon icon={copied ? Check : Copy} size="inline" /> {copied ? 'Copied' : 'Copy'}</button>
         <button className="btn btn-p btn-sm" onClick={onClose} data-temp-done>I've saved it — hide</button>
       </div>

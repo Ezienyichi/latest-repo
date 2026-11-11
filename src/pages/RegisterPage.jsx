@@ -4,6 +4,7 @@ import { AlertTriangle, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import Icon from '../components/ui/Icon';
+import PasswordInput from '../components/ui/PasswordInput';
 import Wordmark from '../components/ui/Wordmark';
 import LegalLinks from '../components/ui/LegalLinks';
 
@@ -73,11 +74,11 @@ export default function RegisterPage() {
           </div>
           <div className="fg">
             <label className="fl">Password</label>
-            <input className="fi" type="password" value={form.password} onChange={e => set('password', e.target.value)} placeholder="Min. 8 characters" required />
+            <PasswordInput value={form.password} onChange={e => set('password', e.target.value)} placeholder="Min. 8 characters" required />
           </div>
           <div className="fg">
             <label className="fl">Confirm Password</label>
-            <input className="fi" type="password" value={form.confirmPassword} onChange={e => set('confirmPassword', e.target.value)} placeholder="Repeat password" required />
+            <PasswordInput value={form.confirmPassword} onChange={e => set('confirmPassword', e.target.value)} placeholder="Repeat password" required />
           </div>
 
           <button className="btn btn-p" type="submit" disabled={loading} style={{ width: '100%', justifyContent: 'center', padding: '14px 0', marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 6 }}>

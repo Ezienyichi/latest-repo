@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import DashboardShell from './DashboardShell';
+import PasswordInput from '../../components/ui/PasswordInput';
 import api from '../../utils/api';
 
 const MIN_PASSWORD = 12;
@@ -62,9 +63,9 @@ export default function AdminAccount() {
       <form className="card" onSubmit={changePassword} data-account-form="password" noValidate style={{ padding: 22, marginBottom: 18, maxWidth: 560 }}>
         <h3 style={{ fontFamily: 'var(--fd)', fontSize: 22, marginBottom: 14 }}>Change password</h3>
         {pwErr && <div className="alert alert-e" role="alert" data-account-error="password" style={{ marginBottom: 14 }}>{pwErr}</div>}
-        <div className="fg"><label className="fl" htmlFor="acct-cur">Current password</label><input id="acct-cur" className="fi" type="password" autoComplete="current-password" value={pw.current} onChange={e => setPw({ ...pw, current: e.target.value })} /></div>
-        <div className="fg"><label className="fl" htmlFor="acct-new">New password <span style={{ fontWeight: 400, color: 'var(--muted)' }}>(at least {MIN_PASSWORD} characters)</span></label><input id="acct-new" className="fi" type="password" autoComplete="new-password" value={pw.next} onChange={e => setPw({ ...pw, next: e.target.value })} /></div>
-        <div className="fg"><label className="fl" htmlFor="acct-conf">Confirm new password</label><input id="acct-conf" className="fi" type="password" autoComplete="new-password" value={pw.confirm} onChange={e => setPw({ ...pw, confirm: e.target.value })} /></div>
+        <div className="fg"><label className="fl" htmlFor="acct-cur">Current password</label><PasswordInput id="acct-cur" autoComplete="current-password" value={pw.current} onChange={e => setPw({ ...pw, current: e.target.value })} /></div>
+        <div className="fg"><label className="fl" htmlFor="acct-new">New password <span style={{ fontWeight: 400, color: 'var(--muted)' }}>(at least {MIN_PASSWORD} characters)</span></label><PasswordInput id="acct-new" autoComplete="new-password" value={pw.next} onChange={e => setPw({ ...pw, next: e.target.value })} /></div>
+        <div className="fg"><label className="fl" htmlFor="acct-conf">Confirm new password</label><PasswordInput id="acct-conf" autoComplete="new-password" value={pw.confirm} onChange={e => setPw({ ...pw, confirm: e.target.value })} /></div>
         <button className="btn btn-p" disabled={pwBusy} data-account-submit="password">{pwBusy ? 'Saving…' : 'Change password'}</button>
       </form>
 
@@ -73,7 +74,7 @@ export default function AdminAccount() {
         <p style={{ fontSize: 12.5, color: 'var(--muted)', marginBottom: 14, lineHeight: 1.6 }}>Use an address you can receive mail at. From now on you sign in with it.</p>
         {emErr && <div className="alert alert-e" role="alert" data-account-error="email" style={{ marginBottom: 14 }}>{emErr}</div>}
         <div className="fg"><label className="fl" htmlFor="acct-email">New email</label><input id="acct-email" className="fi" type="email" autoComplete="email" value={em.email} onChange={e => setEm({ ...em, email: e.target.value })} /></div>
-        <div className="fg"><label className="fl" htmlFor="acct-em-cur">Current password</label><input id="acct-em-cur" className="fi" type="password" autoComplete="current-password" value={em.current} onChange={e => setEm({ ...em, current: e.target.value })} /></div>
+        <div className="fg"><label className="fl" htmlFor="acct-em-cur">Current password</label><PasswordInput id="acct-em-cur" autoComplete="current-password" value={em.current} onChange={e => setEm({ ...em, current: e.target.value })} /></div>
         <button className="btn btn-p" disabled={emBusy} data-account-submit="email">{emBusy ? 'Saving…' : 'Change email'}</button>
       </form>}
     </DashboardShell>

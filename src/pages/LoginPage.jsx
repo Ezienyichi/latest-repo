@@ -4,6 +4,7 @@ import { AlertTriangle, Lock, ShoppingBag } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import Icon from '../components/ui/Icon';
+import PasswordInput from '../components/ui/PasswordInput';
 import Wordmark from '../components/ui/Wordmark';
 import LegalLinks from '../components/ui/LegalLinks';
 
@@ -65,7 +66,7 @@ export default function LoginPage() {
           </div>
           <div className="fg">
             <label className="fl">Password</label>
-            <input className="fi" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter password" required />
+            <PasswordInput value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter password" required />
           </div>
           <button className="btn btn-p" type="submit" disabled={loading} style={{ width: '100%', justifyContent: 'center', padding: '14px 0' }}>
             {loading ? 'Signing in...' : 'Sign In'}
