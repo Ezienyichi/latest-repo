@@ -41,12 +41,12 @@ export default function CartPage() {
   };
 
   if (cart.length === 0) return (
-    <div style={{ minHeight: '70vh', background: 'var(--base)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ minHeight: '70vh', background: 'var(--base)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 16px', boxSizing: 'border-box' }}>
       <div className="empty">
         <div style={{ marginBottom: 16, opacity: .3, display: 'flex', justifyContent: 'center' }}><Icon icon={ShoppingCart} size={48} /></div>
         <div className="empty-t">Your cart is empty</div>
         <p style={{ color: 'var(--muted)', marginBottom: 24 }}>Discover art that makes a difference</p>
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
           <button className="btn btn-p btn-lg" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => navigate('/shop')}>Browse Artworks <Icon icon={ArrowRight} size="inline" /></button>
           <button className="btn btn-s btn-lg" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => navigate('/digitals')}>Digital Store <Icon icon={ArrowRight} size="inline" /></button>
         </div>

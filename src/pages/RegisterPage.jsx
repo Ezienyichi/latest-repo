@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import Icon from '../components/ui/Icon';
 import Wordmark from '../components/ui/Wordmark';
+import LegalLinks from '../components/ui/LegalLinks';
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -40,7 +41,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--base)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+    <div style={{ minHeight: '100vh', background: 'var(--base)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <div style={{ width: '100%', maxWidth: 460, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 'var(--rl)', padding: '40px 36px', boxShadow: 'var(--shl)' }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <Link to="/" style={{ textDecoration: 'none' }}>
@@ -88,6 +89,7 @@ export default function RegisterPage() {
           </div>
         </form>
       </div>
+      <LegalLinks style={{ marginTop: 18 }} />
     </div>
   );
 }

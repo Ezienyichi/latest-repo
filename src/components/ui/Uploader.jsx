@@ -19,7 +19,9 @@ function humanSize(bytes) {
 // or auth header at all (verified against Supabase directly) — the token
 // is embedded in the URL itself, so nothing Supabase-related ships to the
 // browser beyond that one-time URL.
-export default function Uploader({ bucket, accept, maxBytes, value, onUploaded, kind = 'image', label }) {
+// signer({ bucket, filename, contentType, fileSize }) → { signedUrl, path, publicUrl }: defaults to the
+//   logged-in /uploads/sign; the public invite forms pass their own submissions-scoped one.
+export default function Uploader({ bucket, accept, maxBytes, value, onUploaded, kind = 'image', label, signer }) {
   const { toast } = useCart();
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -39,7 +41,8 @@ export default function Uploader({ bucket, accept, maxBytes, value, onUploaded, 
     setUploading(true);
     setProgress(0);
     try {
-      const sign = await api.signUpload({ bucket, filename: file.name, contentType: file.type, fileSize: file.size });
+      const signArgs = { bucket, filename: file.name, contentType: file.type, fileSize: file.size };
+      const sign = signer ? await signer(signArgs) : await api.signUpload(signArgs);
 
       await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -58,7 +61,7 @@ export default function Uploader({ bucket, accept, maxBytes, value, onUploaded, 
     } finally {
       setUploading(false);
     }
-  }, [bucket, maxBytes]);
+  }, [bucket, maxBytes, signer]);
 
   const onDrop = (e) => {
     e.preventDefault(); setDragOver(false);

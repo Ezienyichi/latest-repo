@@ -6,6 +6,7 @@ import { getCharityRaised, getCharityRaisedMap } from '../charityRollup.js';
 import { CURRENCIES } from '../currency.js';
 import adminSubmissions from './adminSubmissions.js';
 import adminPartners from './adminPartners.js';
+import adminLegal from './adminLegal.js';
 import { EMAIL_RE, normalizePhone } from '../contact.js';
 
 const admin = new Hono();
@@ -14,6 +15,8 @@ admin.use('*', authenticate, requireRole('ADMIN'));
 admin.route('/submissions', adminSubmissions);
 // Homepage / About partners & collaborators carousel (guarded by the middleware above).
 admin.route('/partners', adminPartners);
+// Legal pages: publish new versions (guarded by the middleware above).
+admin.route('/legal', adminLegal);
 
 // Known SiteSetting keys and their validators. PUT rejects anything not
 // listed here — a typo'd key should fail loudly, not silently create a

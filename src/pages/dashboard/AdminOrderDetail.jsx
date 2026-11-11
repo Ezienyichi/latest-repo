@@ -107,6 +107,7 @@ export default function AdminOrderDetail() {
           <Field label="Provider" value={order.paymentProvider === 'stub' ? 'Test mode (no real charge)' : order.paymentProvider} />
           <Field label="Reference" value={order.paymentRef} />
           <Field label="Paid at" value={order.paidAt ? new Date(order.paidAt).toLocaleString('en-GB') : null} />
+          <Field label="Terms accepted" value={order.legalAcceptance ? `Terms of Sale ${order.legalAcceptance.terms?.version ? 'v' + order.legalAcceptance.terms.version : '(unpublished)'} · Privacy Policy ${order.legalAcceptance.privacy?.version ? 'v' + order.legalAcceptance.privacy.version : '(unpublished)'} · ${new Date(order.legalAcceptance.acceptedAt).toLocaleString('en-GB')}` : 'Not recorded (placed before this was tracked)'} />
           <Field label="Campaign credit" value={order.fundsAttributedAt ? `Applied ${new Date(order.fundsAttributedAt).toLocaleString('en-GB')}` : order.paidAt ? 'Reversed (cancelled / refunded)' : 'Not yet — credited when paid'} />
         </div>
       </div>

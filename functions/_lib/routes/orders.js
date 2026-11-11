@@ -6,6 +6,7 @@ import { initiatePayment } from '../payment.js';
 import { checkTransition, reverseFundsAttribution } from '../orderFlow.js';
 import { withAccess } from '../orderView.js';
 import { writeAuditLog } from '../audit.js';
+import { currentVersions } from '../legal.js';
 import { resolveOrderLine } from '../digital.js';
 import { PRODUCT_VIEW_SELECT } from '../orderView.js';
 
@@ -94,6 +95,7 @@ orders.post('/', optionalAuth, async (c) => {
     const { platformAmt: platformFee, charityAmt: charitySplit, artistAmt: artistPayout } = orderSplit;
     const totalAmount = discountedSubtotal + shipping;
 
+    const legalVersions = await currentVersions(prisma, ['terms', 'privacy']);
     let order = await prisma.order.create({
       data: {
         buyerId: userId,
@@ -104,6 +106,9 @@ orders.post('/', optionalAuth, async (c) => {
         charitySplit,
         shippingAddress,
         status: 'PENDING',
+        // The checkout says "By placing your order you agree to our Terms of Sale and Privacy Policy" —
+        // record which versions of those were in force at that moment (null = not published yet).
+        legalAcceptance: { acceptedAt: new Date().toISOString(), terms: { version: legalVersions.terms ?? null }, privacy: { version: legalVersions.privacy ?? null } },
         items: { create: orderItems },
       },
       include: {

@@ -23,7 +23,28 @@ function KV({ k, children }) {
 const Sdgs = ({ ids }) => (ids?.length ? <span style={{ display: 'inline-flex', gap: 4, flexWrap: 'wrap' }}>{ids.map(id => { const s = SDGs.find(x => x.id === id); return <span key={id} className="sdg" title={s?.n} style={{ background: s?.c, color: '#fff', width: 22, height: 22, fontSize: 9, borderRadius: 4 }}>{id}</span>; })}</span> : null);
 const Link2 = ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>{children}</a>;
 
+// The submitter's acceptance of the agreement, recorded when they submitted.
+function Agreement({ a }) {
+  if (!a) return <div className="alert alert-w" data-agreement-record style={{ marginTop: 16 }}>No agreement acceptance on record (submitted before agreements were required).</div>;
+  return (
+    <div className="card" data-agreement-record style={{ padding: 16, marginTop: 16, background: 'var(--glass)' }}>
+      <div className="sub-kv"><div className="k">Agreement accepted</div></div>
+      <div style={{ fontWeight: 600, marginBottom: 6 }}>{a.title}, version {a.version}</div>
+      <div className="sub-grid">
+        <KV k="Signed (typed name)">{a.typedName}</KV>
+        <KV k="Accepted at">{a.acceptedAt && new Date(a.acceptedAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}</KV>
+        <KV k="IP address">{a.ip}</KV>
+      </div>
+      <a href={`/dashboard/admin/legal/${a.slug}`} style={{ fontSize: 12, color: 'var(--accent)' }}>View this agreement's versions</a>
+    </div>
+  );
+}
+
 function Details({ item }) {
+  return <><DetailsBody item={item} /><Agreement a={item.agreement} /></>;
+}
+
+function DetailsBody({ item }) {
   const e = item.entity, x = item.extra || {};
   if (item.type === 'charity') return (
     <>
@@ -63,15 +84,30 @@ function Details({ item }) {
       )}
     </>
   );
+  const offer = x.offer;
+  const digital = e.category === 'MUSIC' || e.category === 'BOOK';
   return (
     <>
       <div className="sub-grid">
-        <KV k="Price">{money(e.basePrice)}</KV>
-        <KV k="Edition">{e.editionType}</KV>
         <KV k="Category">{e.category}</KV>
-        <KV k="Medium">{e.medium}</KV>
+        {!digital && <KV k="Asking price">{money(e.basePrice)}</KV>}
+        {!digital && <KV k="Edition">{e.editionType}</KV>}
+        {!digital && <KV k="Medium">{e.medium}</KV>}
+        {!digital && <KV k="Dimensions">{e.dimensions}</KV>}
         <KV k="Year">{e.year}</KV>
-        <KV k="Dimensions">{e.dimensions}</KV>
+        {e.category === 'MUSIC' && <KV k="Price">{money(e.basePrice)}</KV>}
+        {e.category === 'MUSIC' && <KV k="Artist">{e.creatorName}</KV>}
+        {e.category === 'MUSIC' && <KV k="Listen link">{e.digitalAccessUrl && <Link2 href={e.digitalAccessUrl}>{e.digitalAccessUrl}</Link2>}</KV>}
+        {e.category === 'BOOK' && <KV k="Author">{e.creatorName}</KV>}
+        {e.category === 'BOOK' && <KV k="Format">{e.bookFormat}</KV>}
+        {e.category === 'BOOK' && <KV k="Digital price">{e.digitalPrice != null && money(e.digitalPrice)}</KV>}
+        {e.category === 'BOOK' && <KV k="Physical price">{e.physicalPrice != null && money(e.physicalPrice)}</KV>}
+        {e.category === 'BOOK' && <KV k="Read link">{e.digitalAccessUrl && <Link2 href={e.digitalAccessUrl}>{e.digitalAccessUrl}</Link2>}</KV>}
+        {e.category === 'BOOK' && <KV k="ISBN">{e.isbn}</KV>}
+        {e.category === 'BOOK' && <KV k="Publisher">{e.publisher}</KV>}
+        {e.category === 'BOOK' && <KV k="Language">{e.language}</KV>}
+        {e.category === 'BOOK' && <KV k="Pages">{e.pages}</KV>}
+        {offer && <KV k="Offered as">{[offer.outright && 'Outright sale to FastTackle', offer.consignment && 'Consignment', offer.printLicence && `Print licence (edition of ${offer.editionSize})`].filter(Boolean).join(' · ')}</KV>}
         <KV k="SDG focus"><Sdgs ids={e.sdgIds} /></KV>
       </div>
       <KV k="Description"><span style={{ whiteSpace: 'pre-wrap' }}>{e.description}</span></KV>

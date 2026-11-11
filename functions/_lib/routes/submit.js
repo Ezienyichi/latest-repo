@@ -1,9 +1,10 @@
 import { Hono } from 'hono';
 import { checkRateLimit } from '../rateLimit.js';
+import { legalDoc, latestVersion } from '../legal.js';
 import { getStorageClient, BUCKETS } from '../storage.js';
 import {
   SUBMISSION_TYPES, TYPE_ENUM, SUBMISSION_BUCKET, SUBMISSION_PREFIX, MAX_BODY_BYTES,
-  getFormToken, tokensMatch, parseSubmission, uniqueSlug, createCharityRecord, getHouseArtist,
+  getFormToken, tokensMatch, parseSubmission, uniqueSlug, createCharityRecord, getHouseArtist, AGREEMENT_FOR, parseSignature,
 } from '../submissions.js';
 
 // PUBLIC (no login). Each of the three invite forms posts here. Everything
@@ -97,6 +98,17 @@ for (const type of SUBMISSION_TYPES) {
       if (parsed.error) return c.json({ error: parsed.error }, 400);
       const { contact, entity, extra } = parsed;
 
+      // Every submission carries the submitter's acceptance of the CURRENT agreement for their form:
+      // the version they were shown, their typed full name as a signature, the time and their IP.
+      const slug = AGREEMENT_FOR[type]; const meta = legalDoc(slug); const cur = await latestVersion(prisma, slug);
+      if (!cur) return c.json({ error: 'The agreement isn\'t available right now, so we can\'t take submissions yet — please try again later.' }, 503);
+      const ag = body.agreement;
+      if (!ag || typeof ag !== 'object' || ag.accepted !== true) return c.json({ error: `Please read and accept the ${meta.title} to submit.` }, 400);
+      if (ag.slug !== slug) return c.json({ error: 'That is not the right agreement for this form.' }, 400);
+      if (ag.version !== cur.version) return c.json({ error: `The ${meta.title} was updated to version ${cur.version} while you were filling in the form. Please read the new version and accept it again.`, currentVersion: cur.version }, 409);
+      const sig = parseSignature(ag.typedName); if (sig.error) return c.json({ error: sig.error }, 400);
+      const agreement = { slug, title: meta.title, version: cur.version, acceptedAt: new Date().toISOString(), typedName: sig.value, ip: clientIp(c) };
+
       const submission = await prisma.$transaction(async (tx) => {
         let entityId;
         if (type === 'charity') {
@@ -113,15 +125,15 @@ for (const type of SUBMISSION_TYPES) {
         } else {
           const house = await getHouseArtist(tx);
           if (!house) throw new Error('NO_HOUSE_ARTIST');
-          const pr = await tx.product.create({ data: {
-            artistId: house.id, title: entity.title, slug: uniqueSlug(entity.title), description: entity.description,
-            category: entity.category, editionType: entity.editionType, basePrice: entity.basePrice.toFixed(2),
-            medium: entity.medium, year: entity.year, dimensions: entity.dimensions, images: entity.images, sdgIds: entity.sdgIds,
-            status: 'DRAFT', submissionStatus: 'PENDING',
-          } });
+          const base = { artistId: house.id, title: entity.title, slug: uniqueSlug(entity.title), description: entity.description, category: entity.category, year: entity.year, images: entity.images, sdgIds: entity.sdgIds, status: 'DRAFT', submissionStatus: 'PENDING' };
+          const data = entity.category === 'ARTWORK'
+            ? { ...base, editionType: entity.editionType, basePrice: entity.basePrice.toFixed(2), medium: entity.medium, dimensions: entity.dimensions }
+            // MUSIC / BOOK: the listen / read link, format and per-edition prices travel with the product (never public until approved + live)
+            : { ...base, basePrice: Number(entity.basePrice).toFixed(2), creatorName: entity.creatorName, digitalAccessUrl: entity.digitalAccessUrl, bookFormat: entity.bookFormat, digitalPrice: entity.digitalPrice != null ? Number(entity.digitalPrice).toFixed(2) : null, physicalPrice: entity.physicalPrice != null ? Number(entity.physicalPrice).toFixed(2) : null, isbn: entity.isbn, publisher: entity.publisher, language: entity.language, pages: entity.pages };
+          const pr = await tx.product.create({ data });
           entityId = pr.id;
         }
-        return tx.submission.create({ data: { type: TYPE_ENUM[type], entityId, contact, extra: extra ?? undefined } });
+        return tx.submission.create({ data: { type: TYPE_ENUM[type], entityId, contact, extra: extra ?? undefined, agreement } });
       });
       // Only the reference leaves the server — never the stored record.
       return c.json({ ok: true, reference: submission.id }, 201);

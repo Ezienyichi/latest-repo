@@ -35,7 +35,9 @@ class ApiClient {
         this.clearToken();
         window.dispatchEvent(new Event('auth:logout'));
       }
-      throw new Error(data.error || `Request failed (${res.status})`);
+      const err = new Error(data.error || `Request failed (${res.status})`);
+      err.status = res.status; err.data = data;
+      throw err;
     }
     return data;
   }
@@ -158,6 +160,20 @@ class ApiClient {
   rotateSubmissionLink(type) { return this.post(`/admin/submissions/links/${type}/rotate`, {}); }
   approveSubmission(type, id, data = {}) { return this.post(`/admin/submissions/${type}/${id}/approve`, data); }
   rejectSubmission(type, id, data = {}) { return this.post(`/admin/submissions/${type}/${id}/reject`, data); }
+
+  // Invite-link submission forms (public). Every call carries the form's secret token.
+  submitCheck(type, token) { return this.request(`/submit/${type}/check`, { headers: { 'X-Submit-Token': token } }); }
+  submitSign(type, token, data) { return this.request('/submit/upload/sign', { method: 'POST', headers: { 'X-Submit-Token': token }, body: JSON.stringify({ type, ...data }) }); }
+  submitCreate(type, token, body) { return this.request(`/submit/${type}`, { method: 'POST', headers: { 'X-Submit-Token': token }, body: JSON.stringify(body) }); }
+
+  // Legal pages (public) + admin versioning
+  listLegal() { return this.get('/legal'); }
+  getLegal(slug) { return this.get(`/legal/${slug}`); }
+  getLegalVersion(slug, n) { return this.get(`/legal/${slug}/versions/${n}`); }
+  getAdminLegal() { return this.get('/admin/legal'); }
+  getAdminLegalDoc(slug) { return this.get(`/admin/legal/${slug}`); }
+  getAdminLegalVersion(slug, n) { return this.get(`/admin/legal/${slug}/versions/${n}`); }
+  publishLegal(slug, body, changeNote) { return this.post(`/admin/legal/${slug}`, { body, changeNote }); }
 
   // Partners & collaborators — admin
   getAdminPartners() { return this.get('/admin/partners'); }

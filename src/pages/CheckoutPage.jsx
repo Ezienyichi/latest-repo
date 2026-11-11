@@ -199,6 +199,10 @@ export default function CheckoutPage() {
                   ))}
                 </div>
 
+                {/* Implicit agreement: the server records the versions of these two documents in force on the order. Links open in a new tab so the checkout isn't lost. */}
+                <p data-legal-line style={{ fontSize: 12, color: 'var(--muted)', lineHeight: 1.6, marginBottom: 12, textAlign: 'center' }}>
+                  By placing your order you agree to our <a href="/legal/terms" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>Terms of Sale</a> and <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>Privacy Policy</a>.
+                </p>
                 <div style={{ display: 'flex', gap: 10 }}>
                   <button className="btn btn-s btn-lg" style={{ flex: 1, justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => setStep(2)}><Icon icon={ArrowLeft} size="inline" /> Back</button>
                   <button className="btn btn-p btn-lg" style={{ flex: 2, justifyContent: 'center' }} onClick={placeOrder} disabled={loading}>

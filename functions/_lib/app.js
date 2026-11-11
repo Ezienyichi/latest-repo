@@ -17,6 +17,7 @@ import newsletterRoutes from './routes/newsletter.js';
 import projectsRoutes from './routes/projects.js';
 import submitRoutes from './routes/submit.js';
 import paymentsRoutes from './routes/payments.js';
+import legalRoutes from './routes/legal.js';
 
 const app = new Hono();
 
@@ -43,6 +44,7 @@ app.route('/api/newsletter', newsletterRoutes);
 app.route('/api/projects', projectsRoutes);
 app.route('/api/submit', submitRoutes);
 app.route('/api/payments', paymentsRoutes);
+app.route('/api/legal', legalRoutes);
 
 app.onError((err, c) => {
   console.error('API Error:', err.message);

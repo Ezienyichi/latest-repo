@@ -296,6 +296,8 @@ model Order {
   paymentProvider   String?
   // When this order's charity split was credited to its campaigns' raisedAmount; cleared if it is reversed (cancel / refund).
   fundsAttributedAt DateTime?
+  // { acceptedAt, terms: {version}, privacy: {version} } — the legal documents in force when the order was placed.
+  legalAcceptance   Json?
   refundRequested   Boolean     @default(false)
   refundedAt        DateTime?
   items             OrderItem[]
@@ -429,6 +431,8 @@ model Submission {
   entityId     String
   contact      Json // { name, email, phone? }
   extra        Json? // campaign: { charity: {...} } · artwork: { artist: {...} }
+  // { slug, title, version, acceptedAt, typedName, ip } — the agreement the submitter accepted.
+  agreement    Json?
   reviewNote   String?
   reviewedAt   DateTime?
   reviewedById String?
@@ -482,6 +486,23 @@ model TeamMember {
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Public legal pages (/legal/:slug): terms, privacy, returns, creator agreement, partner agreement.
+// Each publish INSERTS a new version; rows are never updated or deleted, so what a buyer / creator
+// agreed to can always be shown exactly as it read. (TermsDocument below is role-keyed and has no
+// slug or title, so it can't carry five named pages.)
+model LegalDocument {
+  id          String   @id @default(cuid())
+  slug        String
+  version     Int
+  title       String
+  body        String   @db.Text // Markdown
+  changeNote  String?
+  publishedAt DateTime @default(now())
+  createdBy   String
+
+  @@unique([slug, version])
 }
 
 model TermsDocument {

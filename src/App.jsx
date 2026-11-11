@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { useAuth } from './context/AuthContext';
 import { useCart } from './context/CartContext';
 import AnnouncementBar from './components/layout/AnnouncementBar';
@@ -22,6 +22,11 @@ import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import PaymentPage from './pages/PaymentPage';
+// Legal pages + their admin editor pull in the Markdown renderer, so they load on demand.
+const LegalPage = lazy(() => import('./pages/LegalPage'));
+const SubmitPage = lazy(() => import('./pages/submit/SubmitPage'));
+const AdminLegal = lazy(() => import('./pages/dashboard/AdminLegal'));
+const lazyEl = (el) => <Suspense fallback={<div className="wrap" style={{ padding: 40 }}><div className="skel" style={{ height: 240, borderRadius: 12 }} /></div>}>{el}</Suspense>;
 import OrdersPage from './pages/OrdersPage';
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
@@ -86,6 +91,9 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
+        {/* Private invite forms — no nav/footer, never linked from the site */}
+        <Route path="/submit/:type/:token" element={lazyEl(<SubmitPage />)} />
+
         {/* All other pages — with nav/footer */}
         <Route path="*" element={<WithLayout />} />
       </Routes>
@@ -102,6 +110,7 @@ function WithLayout() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/legal/:slug" element={lazyEl(<LegalPage />)} />
         <Route path="/shop" element={<ShopPage />} />
         <Route path="/shop/:slug" element={<ProductPage />} />
         <Route path="/digitals" element={<DigitalsPage />} />
@@ -136,6 +145,8 @@ function WithLayout() {
         <Route path="/dashboard/admin/artists" element={<AdminArtists />} />
         <Route path="/dashboard/admin/submissions" element={<AdminSubmissions />} />
         <Route path="/dashboard/admin/partners" element={<AdminPartners />} />
+        <Route path="/dashboard/admin/legal" element={lazyEl(<AdminLegal />)} />
+        <Route path="/dashboard/admin/legal/:slug" element={lazyEl(<AdminLegal />)} />
         <Route path="/dashboard/admin/charities" element={<AdminCharities />} />
         <Route path="/dashboard/admin/charities/new" element={<AdminCharityEditor />} />
         <Route path="/dashboard/admin/charities/:id" element={<AdminCharityEditor />} />

@@ -6,6 +6,7 @@
 // rejected) record is invisible and never counts toward a rollup until an
 // admin approves it.
 import { slugify } from './helpers.js';
+import { checkDigitalProduct } from './digital.js';
 
 export const SUBMISSION_TYPES = ['charity', 'campaign', 'artwork'];
 export const TYPE_ENUM = { charity: 'CHARITY', campaign: 'CAMPAIGN', artwork: 'ARTWORK' };
@@ -183,33 +184,69 @@ export function parseSubmission(type, body, env) {
     return { contact: contact.value, entity: f.value, extra: { charity: ch.value } };
   }
 
+  // The creator form: ARTWORK, MUSIC or BOOK (the fields adapt to the category, like the admin product form).
   if (type === 'artwork') {
-    if (!isObj(body.artist)) return { error: 'Artist details are required' };
+    if (!isObj(body.artist)) return { error: 'Your creator details are required' };
     const a = collect([
-      ['displayName', text(body.artist.displayName, 'Artist name', { max: 100 })],
-      ['biography', text(body.artist.biography, 'Artist biography', { max: 3000, multiline: true, required: false })],
-      ['location', text(body.artist.location, 'Artist location', { max: 100, required: false })],
-      ['websiteUrl', httpUrl(body.artist.websiteUrl, 'Artist website')],
+      ['displayName', text(body.artist.displayName, 'Your name (as it should appear)', { max: 100 })],
+      ['biography', text(body.artist.biography, 'Biography', { max: 3000, multiline: true, required: false })],
+      ['location', text(body.artist.location, 'Location', { max: 100, required: false })],
+      ['websiteUrl', httpUrl(body.artist.websiteUrl, 'Website')],
     ]); if (a.error) return a;
     const cat = body.category === undefined ? 'ARTWORK' : body.category;
-    if (cat !== 'ARTWORK') return { error: 'The artwork form only accepts artworks' };
-    const ed = body.editionType === undefined ? 'ORIGINAL' : body.editionType;
-    if (!['ORIGINAL', 'PRINT', 'EDITION'].includes(ed)) return { error: 'Edition type must be ORIGINAL, PRINT or EDITION' };
+    if (!['ARTWORK', 'MUSIC', 'BOOK'].includes(cat)) return { error: 'Category must be ARTWORK, MUSIC or BOOK' };
     let year = null;
     if (body.year !== undefined && body.year !== null && body.year !== '') {
       year = Number(body.year);
       if (!Number.isInteger(year) || year < 1800 || year > new Date().getFullYear() + 1) return { error: 'Year is not valid' };
     }
-    const f = collect([
+    const maxImages = cat === 'ARTWORK' ? 8 : cat === 'BOOK' ? 2 : 1;
+    const common = collect([
       ['title', text(body.title, 'Title', { max: 140 })],
       ['description', text(body.description, 'Description', { max: 5000, multiline: true, required: false })],
-      ['basePrice', money(body.basePrice, 'Price', { max: 10_000_000 })],
-      ['medium', text(body.medium, 'Medium', { max: 80, required: false })],
-      ['dimensions', text(body.dimensions, 'Dimensions', { max: 80, required: false })],
-      ['images', gallery(body.images, 'Images', env, { min: 1, max: 8 })],
+      ['images', gallery(body.images, cat === 'ARTWORK' ? 'Images' : 'Cover image', env, { min: 1, max: maxImages })],
       ['sdgIds', sdgIds(body.sdgIds)],
-    ]); if (f.error) return f;
-    return { contact: contact.value, entity: { ...f.value, category: cat, editionType: ed, year }, extra: { artist: a.value } };
+    ]); if (common.error) return common;
+
+    if (cat === 'ARTWORK') {
+      const ed = body.editionType === undefined ? 'ORIGINAL' : body.editionType;
+      if (!['ORIGINAL', 'PRINT', 'EDITION'].includes(ed)) return { error: 'Edition type must be ORIGINAL, PRINT or EDITION' };
+      // How the creator wants to deal with FastTackle: outright sale, consignment and/or a print licence.
+      if (!isObj(body.offer)) return { error: 'Choose how you would like to offer this work' };
+      const o = body.offer;
+      for (const k of ['outright', 'consignment', 'printLicence']) if (o[k] !== undefined && typeof o[k] !== 'boolean') return { error: 'Invalid sale option' };
+      if (!o.outright && !o.consignment && !o.printLicence) return { error: 'Choose at least one: outright sale, consignment or print licence' };
+      let editionSize = null;
+      if (o.printLicence) {
+        editionSize = Number(o.editionSize);
+        if (!Number.isInteger(editionSize) || editionSize < 2 || editionSize > 10000) return { error: 'Edition size must be a whole number from 2 to 10,000' };
+      }
+      const f = collect([
+        ['basePrice', money(body.basePrice, 'Price', { max: 10_000_000 })],
+        ['medium', text(body.medium, 'Medium', { max: 80, required: false })],
+        ['dimensions', text(body.dimensions, 'Dimensions', { max: 80, required: false })],
+      ]); if (f.error) return f;
+      return { contact: contact.value, entity: { ...common.value, ...f.value, category: cat, editionType: ed, year }, extra: { artist: a.value, offer: { outright: !!o.outright, consignment: !!o.consignment, printLicence: !!o.printLicence, editionSize } } };
+    }
+
+    // MUSIC / BOOK: delivered as a link, priced per edition — the same rules the admin product form enforces.
+    let pages = null;
+    if (body.pages !== undefined && body.pages !== null && body.pages !== '') { pages = Number(body.pages); if (!Number.isInteger(pages) || pages < 1 || pages > 10000) return { error: 'Pages must be a whole number' }; }
+    const link = httpUrl(body.digitalAccessUrl, cat === 'MUSIC' ? 'Listen / stream link' : 'Read link'); if (link.error) return link;
+    const price = (k, label) => (body[k] === undefined || body[k] === null || body[k] === '' ? { value: null } : money(body[k], label, { max: 10_000_000 }));
+    const bp = price('basePrice', 'Price'), dp = price('digitalPrice', 'Digital price'), pp = price('physicalPrice', 'Physical price');
+    for (const r of [bp, dp, pp]) if (r.error) return r;
+    const dig = checkDigitalProduct({
+      category: cat, creatorName: a.value.displayName, digitalAccessUrl: link.value || '', bookFormat: body.bookFormat,
+      digitalPrice: dp.value, physicalPrice: pp.value, isbn: body.isbn, publisher: body.publisher, language: body.language,
+    });
+    if (dig.error) return { error: dig.error };
+    if (cat === 'MUSIC' && !(bp.value > 0)) return { error: 'Price is required' };
+    return {
+      contact: contact.value,
+      entity: { ...common.value, ...dig.derived, category: cat, ...(cat === 'MUSIC' ? { basePrice: bp.value } : {}), year, pages },
+      extra: { artist: a.value },
+    };
   }
   return { error: 'Unknown submission type' };
 }
@@ -232,3 +269,9 @@ export async function createCharityRecord(tx, data, { submissionStatus }) {
 export async function getHouseArtist(prisma) {
   return prisma.artistProfile.findFirst({ where: { user: { role: 'ADMIN' } }, orderBy: { createdAt: 'asc' }, select: { id: true } });
 }
+
+// ── agreement acceptance ───────────────────────────────────────────────
+export const AGREEMENT_FOR = { charity: 'partner-agreement', campaign: 'partner-agreement', artwork: 'creator-agreement' };
+
+// Validates the typed signature (a full name).
+export function parseSignature(v) { return text(v, 'Your full name', { max: 100, min: 2 }); }

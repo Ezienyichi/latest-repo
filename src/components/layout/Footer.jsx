@@ -1,4 +1,5 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { LEGAL_DOCS, legalPath } from '../../data/legal';
 import { SDGs } from '../../data/constants';
 import Wordmark from '../ui/Wordmark';
 import ContactDetails, { hasContactDetails } from '../ui/ContactDetails';
@@ -11,7 +12,7 @@ export default function Footer() {
   const sections = [
     ['Platform', [['Discover Art', '/shop'], ['Digital Store', '/digitals'], ['Browse Artists', '/artists'], ['Impact Campaigns', '/campaigns'], ['About Us', '/about']]],
     // "Contact Us" goes to the About page's contact section (the same admin-managed details as the footer column).
-    ['Support', [['Privacy Policy', '/'], ['Contact Us', '/about#contact'], ['Documentation', '/']]],
+    ['Support', [['Contact Us', '/about#contact'], ['Documentation', '/']]],
   ];
 
   return (
@@ -44,6 +45,11 @@ export default function Footer() {
               ))}
             </div>
           ))}
+          {/* Legal — all five pages, on every page that has the footer. */}
+          <div data-footer-legal>
+            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 14 }}>Legal</div>
+            {LEGAL_DOCS.map(d => <Link key={d.slug} to={legalPath(d.slug)} className="footer-link">{d.short}</Link>)}
+          </div>
           {showContact && (
             <div data-footer-contact>
               <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 14 }}>Contact</div>

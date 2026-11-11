@@ -14,7 +14,7 @@ const TARGET_TYPE = { charity: 'CharityProfile', campaign: 'Project', artwork: '
 
 const CHARITY_SEL = { id: true, name: true, logo: true, mission: true, registrationNo: true, websiteUrl: true, sdgIds: true, target: true, images: true, verified: true, submissionStatus: true, createdAt: true };
 const CAMPAIGN_SEL = { id: true, slug: true, title: true, story: true, headerImage: true, campaignVideo: true, images: true, sdgIds: true, targetAmount: true, startDate: true, endDate: true, charityId: true, status: true, submissionStatus: true, createdAt: true };
-const ARTWORK_SEL = { id: true, slug: true, title: true, description: true, category: true, editionType: true, basePrice: true, medium: true, year: true, dimensions: true, images: true, sdgIds: true, artistId: true, status: true, submissionStatus: true, createdAt: true };
+const ARTWORK_SEL = { id: true, slug: true, title: true, description: true, category: true, editionType: true, basePrice: true, medium: true, year: true, dimensions: true, images: true, sdgIds: true, artistId: true, digitalAccessUrl: true, bookFormat: true, digitalPrice: true, physicalPrice: true, creatorName: true, isbn: true, publisher: true, language: true, pages: true, status: true, submissionStatus: true, createdAt: true };
 
 const model = (prisma, type) => (type === 'charity' ? prisma.charityProfile : type === 'campaign' ? prisma.project : prisma.product);
 const select = (type) => (type === 'charity' ? CHARITY_SEL : type === 'campaign' ? CAMPAIGN_SEL : ARTWORK_SEL);
@@ -45,7 +45,7 @@ adminSubmissions.get('/', async (c) => {
         .filter(e => byEntity[e.id])
         .map(e => ({
           type, id: e.id, status: e.submissionStatus, title: titleOf(type, e), submittedAt: byEntity[e.id].createdAt,
-          contact: byEntity[e.id].contact, extra: byEntity[e.id].extra, reviewNote: byEntity[e.id].reviewNote, entity: e,
+          contact: byEntity[e.id].contact, extra: byEntity[e.id].extra, agreement: byEntity[e.id].agreement, reviewNote: byEntity[e.id].reviewNote, entity: e,
         }));
     }));
     const items = groups.flat().sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
