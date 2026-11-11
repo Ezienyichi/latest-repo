@@ -173,6 +173,9 @@ class ApiClient {
   getAdminLegal() { return this.get('/admin/legal'); }
   getAdminLegalDoc(slug) { return this.get(`/admin/legal/${slug}`); }
   getAdminLegalVersion(slug, n) { return this.get(`/admin/legal/${slug}/versions/${n}`); }
+  // Signed-in admin's own account (each returns a fresh { token, user } — the old token stops working)
+  changeAdminPassword(data) { return this.post('/admin/account/password', data); }
+  changeAdminEmail(data) { return this.post('/admin/account/email', data); }
   publishLegal(slug, body, changeNote) { return this.post(`/admin/legal/${slug}`, { body, changeNote }); }
 
   // Partners & collaborators — admin

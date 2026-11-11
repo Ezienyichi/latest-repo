@@ -46,7 +46,17 @@ export async function verifyPassword(password, stored) {
 }
 
 export async function makeToken(user, secret) {
-  return sign({ userId: user.id, role: user.role, email: user.email, exp: Math.floor(Date.now() / 1000) + TOKEN_TTL_SECONDS }, secret, 'HS256');
+  return sign({ userId: user.id, role: user.role, email: user.email, sv: user.sessionVersion ?? 0, exp: Math.floor(Date.now() / 1000) + TOKEN_TTL_SECONDS }, secret, 'HS256');
+}
+
+// Admin tokens are tied to the account's sessionVersion: changing the password / login email bumps it and
+// every earlier token stops working. Tokens issued before this existed carry no "sv" and count as version 0.
+// Checked for ADMIN only (one indexed read), so the other roles' requests cost nothing extra.
+async function sessionEnded(c, decoded) {
+  if (decoded.role !== 'ADMIN') return false;
+  const prisma = c.get('prisma'); if (!prisma) return false;
+  const u = await prisma.user.findUnique({ where: { id: decoded.userId }, select: { sessionVersion: true } });
+  return !u || (decoded.sv ?? 0) !== u.sessionVersion;
 }
 
 export async function authenticate(c, next) {
@@ -54,6 +64,7 @@ export async function authenticate(c, next) {
   if (!h?.startsWith('Bearer ')) return c.json({ error: 'Authentication required' }, 401);
   try {
     const decoded = await verify(h.slice(7), c.env.JWT_SECRET, 'HS256');
+    if (await sessionEnded(c, decoded)) return c.json({ error: 'Session ended — please sign in again' }, 401);
     c.set('userId', decoded.userId);
     c.set('userRole', decoded.role);
     await next();
@@ -74,8 +85,7 @@ export async function optionalAuth(c, next) {
   if (h?.startsWith('Bearer ')) {
     try {
       const decoded = await verify(h.slice(7), c.env.JWT_SECRET, 'HS256');
-      c.set('userId', decoded.userId);
-      c.set('userRole', decoded.role);
+      if (!(await sessionEnded(c, decoded))) { c.set('userId', decoded.userId); c.set('userRole', decoded.role); }
     } catch { /* ignore invalid token, proceed unauthenticated */ }
   }
   await next();

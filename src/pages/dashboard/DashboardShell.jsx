@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Palette, Package, Wallet, User, Handshake, Mail, Folder, Users, Search, BarChart3, Settings, Flag, HeartHandshake, Inbox, FileText, Brush, ArrowRight, ArrowLeft, Check } from 'lucide-react';
+import { LayoutDashboard, Palette, Package, Wallet, User, Handshake, Mail, Folder, Users, Search, BarChart3, Settings, Flag, HeartHandshake, Inbox, FileText, KeyRound, Brush, ArrowRight, ArrowLeft, Check } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Icon from '../../components/ui/Icon';
 import api from '../../utils/api';
@@ -40,6 +40,7 @@ const ADMIN_NAV = [
   { id: 'analytics', icon: BarChart3, label: 'Analytics', path: '/dashboard/analytics' },
   { id: 'legal', icon: FileText, label: 'Legal', path: '/dashboard/admin/legal' },
   { id: 'settings', icon: Settings, label: 'Settings', path: '/dashboard/settings' },
+  { id: 'account', icon: KeyRound, label: 'Account', path: '/dashboard/admin/account' },
 ];
 
 export default function DashboardShell({ children, title }) {
